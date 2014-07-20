@@ -58,12 +58,12 @@ void net_configuration::cfg_error(char const *msg)
 {
   Jwindow *j=wm->CreateWindow(ivec2(-1, 0), ivec2(-1), new info_field(0, 0, 0, msg,
       new button(0, 30,CFG_ERR_OK,symbol_str("ok_button"),NULL)),symbol_str("input_error"));
-  Event ev;
+  SDL_Event ev;
   do
   {
     wm->flush_screen();
-    do { wm->get_event(ev); } while (ev.type==EV_MOUSE_MOVE && wm->IsPending());
-  } while (ev.type!=EV_MESSAGE || ev.message.id!=CFG_ERR_OK || ev.type==EV_CLOSE_WINDOW || (ev.type==EV_KEY && ev.key==JK_ESC));
+    do { wm->get_event(ev); } while (ev.type==SDL_MOUSEMOTION && wm->IsPending());
+  } while (ev.type!=EV_MESSAGE || ev.message.id!=CFG_ERR_OK || ev.type==EV_CLOSE_WINDOW || (ev.type==SDL_KEYDOWN && ev.key==SDLK_ESCAPE));
   wm->close_window(j);
   wm->flush_screen();
 }

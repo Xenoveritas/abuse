@@ -63,7 +63,7 @@ void game_server::game_start_wait()
 {
   int last_count=0;
   Jwindow *stat=NULL;
-  Event ev;
+  SDL_Event ev;
   int abort=0;
   while (!abort && total_players()<main_net_cfg->min_players)
   {
@@ -80,7 +80,7 @@ void game_server::game_start_wait()
 
     if (wm->IsPending())
     {
-      do { wm->get_event(ev); }  while (ev.type==EV_MOUSE_MOVE && wm->IsPending());
+      do { wm->get_event(ev); }  while (ev.type== SDL_MOUSEMOTION && wm->IsPending());
       wm->flush_screen();
       if (ev.type==EV_MESSAGE && ev.message.id==ID_CANCEL)
         abort=1;

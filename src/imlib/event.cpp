@@ -24,7 +24,7 @@
 
 #include "common.h"
 
-#include "event.h"
+#include "../sdlport/event.h"
 #include "video.h"
 #include "filter.h"
 

@@ -40,7 +40,7 @@ public :
   void close_window();
   void open_window();
   char *name;
-  void handle_event(Event &ev);
+  void handle_event(SDL_Event &ev);
   pal_win(void *args);
   void resize(int xa, int ya);
   int get_pat(int x, int y) { return pat[y*w+x]; }
@@ -100,8 +100,8 @@ public :
   void close_oedit_window();
   void show_mem();
   dev_controll();
-  void handle_event(Event &ev);
-  void do_command(char const *st, Event &ev);
+  void handle_event(SDL_Event &ev);
+  void do_command(char const *st, SDL_Event &ev);
   int is_pal_win(Jwindow *win);
   void dev_draw(view *v);
   void load_stuff();
@@ -114,8 +114,8 @@ public :
   int ok_to_scroll();
   int32_t snap_x(int32_t x);
   int32_t snap_y(int32_t y);
-  void area_handle_input(Event &ev);
-  void pick_handle_input(Event &ev);
+  void area_handle_input(SDL_Event &ev);
+  void pick_handle_input(SDL_Event &ev);
   void close_area_win(int read_values);
   void notify_deleted_object(game_object *o);
   void notify_deleted_light(light_source *l);

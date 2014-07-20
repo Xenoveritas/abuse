@@ -45,13 +45,6 @@ short mouse_buttons[5] = { 0, 0, 0, 0, 0 };
 void video_change_settings(void);
 void calculate_mouse_scaling(void);
 
-void EventHandler::SysInit()
-{
-    // Ignore activate events
-    // This event is gone in SDL2, should we be ignoring the replacement? Dunno
-    //SDL_EventState(SDL_ACTIVEEVENT, SDL_IGNORE);
-}
-
 void EventHandler::SysWarpMouse(ivec2 pos)
 {
     // This should take into account mouse scaling.
@@ -60,38 +53,55 @@ void EventHandler::SysWarpMouse(ivec2 pos)
     SDL_WarpMouseInWindow(window, pos.x, pos.y);
 }
 
+void EventHandler::ScaleMouse(Sint32& x, Sint32& y)
+{
+
+    // Remove any padding SDL may have added
+    x -= mouse_xpad;
+    if (x < 0)
+        x = 0;
+    y -= mouse_ypad;
+    if (y < 0)
+        y = 0;
+    x = Min((x << 16) / mouse_xscale, main_screen->Size().x - 1);
+    y = Min((y << 16) / mouse_yscale, main_screen->Size().y - 1);
+}
+
 //
 // IsPending()
 // Are there any events in the queue?
 //
 int EventHandler::IsPending()
 {
-    if (!m_pending && SDL_PollEvent(NULL))
-        m_pending = 1;
-
-    return m_pending;
+    return SDL_PollEvent(NULL);
 }
 
 //
 // Get and handle waiting events
 //
-void EventHandler::SysEvent(Event &ev)
+void EventHandler::SysEvent(SDL_Event &ev)
 {
-    // No more events
-    m_pending = 0;
-
-    // NOTE : that the mouse status should be known
-    // even if another event has occurred.
-    ev.mouse_move.x = m_pos.x;
-    ev.mouse_move.y = m_pos.y;
-    ev.mouse_button = m_button;
-
     // Gather next event
-    SDL_Event sdlev;
-    if (!SDL_PollEvent(&sdlev))
+    if (!SDL_PollEvent(&ev))
         return; // This should not happen
 
     // Sort the mouse out
+    // Always scale mouse events prior to letting them be handled elsewhere.
+    switch (ev.type)
+    {
+    case SDL_MOUSEBUTTONDOWN:
+    case SDL_MOUSEBUTTONUP:
+        ScaleMouse(ev.button.x, ev.button.y);
+        break;
+    case SDL_MOUSEMOTION:
+        ScaleMouse(ev.motion.x, ev.motion.y);
+        break;
+    case SDL_MOUSEWHEEL:
+        ScaleMouse(ev.wheel.x, ev.wheel.y);
+        break;
+    }
+    // And that's it, everything else should deal with raw SDL events now
+#if 0
     int x, y;
     uint8_t buttons = SDL_GetMouseState(&x, &y);
     // Remove any padding SDL may have added
@@ -475,4 +485,5 @@ void EventHandler::SysEvent(Event &ev)
             break;
         }
     }
+#endif
 }

@@ -2,6 +2,9 @@
 ;; See licensing information for more details on usage rights
 ;;(setf player1 'joystick)
 
+;; NOTE: This file is, at present, entirely ignored. The game handles key
+;; bindings internally. Even if it didn't, the new control binding system would
+;; ignore this file anyway.
 
 ;; note : this function is called by the game when it collects input from
 ;; the local player (the machine you are playing on in net games)
@@ -145,4 +148,3 @@
 ;(setq special_key 32)
 ;(setq weapon_left_key 49)
 ;(setq weapon_right_key 50)
-

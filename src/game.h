@@ -15,7 +15,7 @@
 
 #include "image.h"
 #include "video.h"
-#include "event.h"
+#include "sdlport/event.h"
 #include "fonts.h"
 #include "items.h"
 #include "jwindow.h"
@@ -48,6 +48,8 @@ extern WindowManager *wm;
 
 #define tile_type unsigned short
 class Game;
+class Bindings;
+
 extern Game *the_game;
 extern int dev;
 extern int morph_sel_frame_color;
@@ -78,16 +80,11 @@ private:
   int refresh,mousex,mousey,help_text_frames;
   int has_joystick,no_delay;
 
-
   Jwindow *top_menu,*joy_win,*last_input;
   JCFont *game_font;
-  uint8_t keymap[512/8];
+  Bindings* bindings;
 
 public :
-  int key_down(int key) { return keymap[key/8]&(1<<(key%8)); }
-  void set_key_down(int key, int x) { if (x) keymap[key/8]|=(1<<(key%8)); else keymap[key/8]&=~(1<<(key%8)); }
-  void reset_keymap() { memset(keymap,0,sizeof(keymap)); }
-
   int nplayers;
   view *first_view,*old_view;
   int state,zoom;
@@ -129,7 +126,7 @@ public :
   void draw_map(view *v, int interpolate=0);
   void dev_scroll();
 
-  int in_area(Event &ev, int x1, int y1, int x2, int y2);
+  int in_area(SDL_Event &ev, int x1, int y1, int x2, int y2);
   void load_level(char const *name);
   void set_level(level *nl);
   void show_time();
@@ -141,8 +138,8 @@ public :
 
   void update_screen();
   void get_input();
-  void joy_calb(Event &ev);
-  void menu_select(Event &ev2);
+  void joy_calb(SDL_Event &ev);
+  void menu_select(SDL_Event &ev2);
   int can_morph_into(int type);
   void morph_into(int type);
   void set_state(int new_state);

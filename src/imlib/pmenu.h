@@ -32,8 +32,8 @@ public :
   pmenu_item *find_key(int key);
   void draw       (Jwindow *parent, int x, int y, int w, int top, int active);
   void draw_self  (Jwindow *parent, int x, int y, int w, int top, int active);
-  int handle_event(Jwindow *parent, int x, int y, int w, int top, Event &ev);
-  int own_event(Event &ev);
+  int handle_event(Jwindow *parent, int x, int y, int w, int top, SDL_Event &ev);
+  int own_event(SDL_Event &ev);
   ~pmenu_item();
 } ;
 
@@ -51,10 +51,10 @@ public :
   pmenu_item *find_key(int key);
   psub_menu(pmenu_item *First, psub_menu *Next)
   { first=First; Next=Next; win=0; active=0; }
-  int handle_event(Jwindow *parent, int x, int y, Event &ev);
+  int handle_event(Jwindow *parent, int x, int y, SDL_Event &ev);
   void draw(Jwindow *parent, int x, int y);
   void hide(Jwindow *parent, int x, int y);
-  int own_event(Event &ev);
+  int own_event(SDL_Event &ev);
   ~psub_menu();
 } ;
 
@@ -71,7 +71,7 @@ public :
   pmenu(int X, int Y, pmenu_item *first, image *screen);
   void move(int new_x, int new_y);
   void draw(image *screen, int top_only=0);
-  int handle_event(Event &ev, image *screen);
+  int handle_event(SDL_Event &ev, image *screen);
 
 } ;
 

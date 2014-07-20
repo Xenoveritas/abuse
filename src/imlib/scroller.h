@@ -41,11 +41,11 @@ public :
   virtual void area(int &x1, int &y1, int &x2, int &y2);
   virtual void draw_first(image *screen);
   virtual void draw(int active, image *screen);
-  virtual void handle_event(Event &ev, image *screen, InputManager *im);
+  virtual void handle_event(SDL_Event &ev, image *screen, InputManager *im);
   virtual char *read() { return (char *)&sx; }
 
   virtual int activate_on_mouse_move() { return 1; }
-  virtual void handle_inside_event(Event &ev, image *screen, InputManager *inm) { ; }
+  virtual void handle_inside_event(SDL_Event &ev, image *screen, InputManager *inm) { ; }
   virtual void scroll_event(int newx, image *screen);
   virtual void handle_up(image *screen, InputManager *inm);
   virtual void handle_down(image *screen, InputManager *inm);
@@ -69,7 +69,7 @@ class spicker : public scroller
   int get_select(int x);
   int first_selected();
   virtual void scroll_event(int newx, image *screen);
-  virtual void handle_inside_event(Event &ev, image *screen, InputManager *inm);
+  virtual void handle_inside_event(SDL_Event &ev, image *screen, InputManager *inm);
 
   // you should define \/
   virtual void draw_background(image *screen);
@@ -104,7 +104,7 @@ class pick_list : public scroller
   public :
   pick_list(int X, int Y, int ID, int height,
         char **List, int num_entries, int start_yoffset, ifield *Next, image *texture=NULL);
-  virtual void handle_inside_event(Event &ev, image *screen, InputManager *inm);
+  virtual void handle_inside_event(SDL_Event &ev, image *screen, InputManager *inm);
   virtual void scroll_event(int newx, image *screen);
   virtual char *read() { return (char *)this; }
   virtual void area_config();

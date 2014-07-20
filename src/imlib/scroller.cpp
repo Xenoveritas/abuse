@@ -181,107 +181,121 @@ void scroller::draw(int active, image *screen)
                     active ? wm->bright_color() : wm->dark_color());
 }
 
-void scroller::handle_event(Event &ev, image *screen, InputManager *inm)
+void scroller::handle_event(SDL_Event &ev, image *screen, InputManager *inm)
 {
-  int mx=ev.mouse_move.x,my=ev.mouse_move.y;
-  switch (ev.type)
-  {
-    case EV_MOUSE_BUTTON :
+    switch (ev.type)
     {
-      if (ev.mouse_button && drag==-1)
-      {
-    if (mx>=b1x() && mx<b1x()+bw() && my>=b1y()-2 && my<b1y()+bh())
-    {
-      if (sx>0)
-      {
-        draw_widget(screen,1);
-        sx--;
-        draw_widget(screen,0);
-        scroll_event(sx,screen);
-      }
-    } else if (mx>=b2x() && mx<b2x()+bw() && my>=b2y() && my<=b2y()+bh())
-    {
-      if (sx<t-1)
-      {
-        draw_widget(screen,1);
-        sx++;
-        draw_widget(screen,0);
-        scroll_event(sx,screen);
-      }
-    }
-    else
-    {
-      int dx1,dy1,dx2,dy2;
-      dragger_area(dx1,dy1,dx2,dy2);
-      if (mx>=dx1 && mx<=dx2 && my>=dy1 && my<=dy2)
-      {
-        int x1,y1,x2,y2;
-        wig_area(x1,y1,x2,y2);
-        if (mx>=x1 && mx<=x2 && my>=y1 && my<=y2)
+    case SDL_MOUSEBUTTONDOWN:
+        if (ev.button.button == SDL_BUTTON_LEFT && drag==-1)
         {
-          drag=sx;
-          inm->grab_focus(this);
+            Sint32 mx = ev.button.x;
+            Sint32 my = ev.button.y;
+            if (mx>=b1x() && mx<b1x()+bw() && my>=b1y()-2 && my<b1y()+bh())
+            {
+                if (sx>0)
+                {
+                    draw_widget(screen,1);
+                    sx--;
+                    draw_widget(screen,0);
+                    scroll_event(sx,screen);
+                }
+            }
+            else if (mx>=b2x() && mx<b2x()+bw() && my>=b2y() && my<=b2y()+bh())
+            {
+                if (sx<t-1)
+                {
+                    draw_widget(screen,1);
+                    sx++;
+                    draw_widget(screen,0);
+                    scroll_event(sx,screen);
+                }
+            }
+            else
+            {
+                int dx1,dy1,dx2,dy2;
+                dragger_area(dx1,dy1,dx2,dy2);
+                if (mx>=dx1 && mx<=dx2 && my>=dy1 && my<=dy2)
+                {
+                    int x1,y1,x2,y2;
+                    wig_area(x1,y1,x2,y2);
+                    if (mx>=x1 && mx<=x2 && my>=y1 && my<=y2)
+                    {
+                        drag=sx;
+                        inm->grab_focus(this);
+                    }
+                    else if (t>1)
+                    {
+                        int nx=mouse_to_drag(mx,my);
+                        if (nx!=sx && nx>=0 && nx<t)
+                        {
+                            draw_widget(screen,1);
+                            sx=nx;
+                            draw_widget(screen,0);
+                            scroll_event(sx,screen);
+                        }
+                    }
+                }
+                else
+                {
+                    handle_inside_event(ev,screen,inm);
+                }
+            }
         }
-        else if (t>1)
+        break;
+    case SDL_MOUSEBUTTONUP:
+        if (ev.button.button = SDL_MOUSEBUTTONUP && drag!=-1)
         {
-          int nx=mouse_to_drag(mx,my);
-          if (nx!=sx && nx>=0 && nx<t)
-          {
-        draw_widget(screen,1);
-        sx=nx;
-        draw_widget(screen,0);
-        scroll_event(sx,screen);
-          }
+            inm->release_focus();
+            drag=-1;
         }
-      } else handle_inside_event(ev,screen,inm);
+        break;
+    case SDL_MOUSEMOTION:
+        {
+            Sint32 mx = ev.motion.x;
+            Sint32 my = ev.motion.y;
+            if (drag!=-1)
+            {
+                int nx=mouse_to_drag(mx,my);
+                if (nx<0) nx=0; else if (nx>=t) nx=t-1;
+                if (nx!=sx)
+                {
+                    draw_widget(screen,1);
+                    sx=nx;
+                    draw_widget(screen,0);
+                    scroll_event(sx,screen);
+                }
+            }
+            else if ( activate_on_mouse_move())
+            {
+                int x1,y1,x2,y2;
+                wig_area(x1,y1,x2,y2);
+                if (mx>=m_pos.x && mx<=m_pos.x+l-1 && my>=m_pos.y && my<=m_pos.y+h-1)
+                {
+                    handle_inside_event(ev,screen,inm);
+                }
+            }
+            break;
+        }
+    case SDL_KEYDOWN:
+        switch (ev.key.keysym.sym)
+        {
+        case SDLK_LEFT:
+            handle_left(screen,inm);
+            break;
+        case SDLK_RIGHT:
+            handle_right(screen,inm);
+            break;
+        case SDLK_UP:
+            handle_up(screen,inm);
+            break;
+        case SDLK_DOWN:
+            handle_down(screen,inm);
+            break;
+        default:
+            handle_inside_event(ev,screen,inm);
+        }
+        break;
     }
-      } else if (!ev.mouse_button && drag!=-1)
-      {
-    inm->release_focus();
-    drag=-1;
-      }
-    } break;
-
-    case EV_MOUSE_MOVE :
-    {
-      if (drag!=-1)
-      {
-    int nx=mouse_to_drag(mx,my);
-    if (nx<0) nx=0; else if (nx>=t) nx=t-1;
-    if (nx!=sx)
-    {
-      draw_widget(screen,1);
-      sx=nx;
-      draw_widget(screen,0);
-      scroll_event(sx,screen);
-    }
-      } else if ( activate_on_mouse_move())
-      {
-    int x1,y1,x2,y2;
-    wig_area(x1,y1,x2,y2);
-    if (mx>=m_pos.x && mx<=m_pos.x+l-1 && my>=m_pos.y && my<=m_pos.y+h-1)
-      handle_inside_event(ev,screen,inm);
-      }
-
-    } break;
-    case EV_KEY :
-    {
-      switch (ev.key)
-      {
-    case JK_LEFT :
-    { handle_left(screen,inm); } break;
-    case JK_RIGHT :
-    { handle_right(screen,inm); } break;
-    case JK_UP :
-    { handle_up(screen,inm); } break;
-    case JK_DOWN :
-    { handle_down(screen,inm); } break;
-
-    default :
-      handle_inside_event(ev,screen,inm);
-      }
-    } break;
-  }
 }
 
 
@@ -415,7 +429,7 @@ pick_list::pick_list(int X, int Y, int ID, int height,
   cur_sel=sx=start_yoffset;
 }
 
-void pick_list::handle_inside_event(Event &ev, image *screen, InputManager *inm)
+void pick_list::handle_inside_event(SDL_Event &ev, image *screen, InputManager *inm)
 {
   if (ev.type==EV_MOUSE_MOVE && activate_on_mouse_move())
   {
@@ -624,7 +638,7 @@ void spicker::scroll_event(int newx, image *screen)
 }
 
 
-void spicker::handle_inside_event(Event &ev, image *screen, InputManager *inm)
+void spicker::handle_inside_event(SDL_Event &ev, image *screen, InputManager *inm)
 {
   switch (ev.type)
   {
@@ -726,7 +740,3 @@ void spicker::handle_left(image *screen, InputManager *inm)
 void spicker::handle_right(image *screen, InputManager *inm)
 {
 }
-
-
-
-

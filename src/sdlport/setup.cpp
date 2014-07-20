@@ -91,7 +91,7 @@ void createRCFile( char *rcfile )
     {
         fputs( "; Abuse-SDL Configuration file\n\n", fd );
         fputs( "; Startup fullscreen\nfullscreen=1\n\n", fd );
-#if !((defined __APPLE__) || (defined WIN32))
+#if defined ASSETDIR
         fputs( "; Location of the datafiles\ndatadir=", fd );
         fputs( ASSETDIR "\n\n", fd );
 #endif

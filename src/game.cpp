@@ -137,7 +137,7 @@ void handle_no_space()
     button *b = new button(0, 0, ID_QUIT_OK, "Quit", inf);
     Jwindow *no_space = wm->CreateWindow(ivec2(0), ivec2(-1), b, "ERROR");
 
-    Event ev;
+    SDL_Event ev;
     do
     {
         wm->flush_screen();
@@ -447,7 +447,10 @@ void Game::set_state(int new_state)
     dev_cont->set_state(new_state);
 }
 
-void Game::joy_calb(Event &ev)
+// FIXME: This function is almost certainly going away (modern OSes generally
+// provide their own joystick calibration and even if they don't it probably
+// should be punted to SDL in some way in any case)
+void Game::joy_calb(SDL_Event &ev)
 {
     if(!joy_win) // make sure the joystick calibration window is open
         return;
@@ -478,7 +481,7 @@ void Game::joy_calb(Event &ev)
     }
 }
 
-void Game::menu_select(Event &ev)
+void Game::menu_select(SDL_Event &ev)
 {
     state = DEV_MOUSE_RELEASE;
     if(top_menu)
@@ -1083,7 +1086,7 @@ void Game::PutBg(ivec2 pos, int type)
             draw_map(f);
 }
 
-int Game::in_area(Event &ev, int x1, int y1, int x2, int y2)
+int Game::in_area(SDL_Event &ev, int x1, int y1, int x2, int y2)
 {
   return (last_demo_mpos.x >= x1 && last_demo_mpos.x <= x2 &&
       last_demo_mpos.y >= y1 && last_demo_mpos.y <= y2);
@@ -1214,7 +1217,7 @@ void do_title()
         for(int i = 0; i < 32; i++)
         cmap[i] = pal->find_closest(i * 256 / 32, i * 256 / 32, i * 256 / 32);
 
-        Event ev;
+        SDL_Event ev;
         ev.type = EV_SPURIOUS;
         Timer total;
         // HACK: Disable wheel for now since it'll trigger skipping the intro
@@ -1568,7 +1571,7 @@ extern int start_edit;
 
 void Game::get_input()
 {
-    Event ev;
+    SDL_Event ev;
     idle_ticks++;
     while(event_waiting())
     {
@@ -1945,7 +1948,7 @@ void Game::step()
       dev_scroll();
   } else if(state == JOY_CALB_STATE)
   {
-    Event ev;
+    SDL_Event ev;
     joy_calb(ev);
   } else if(state == MENU_STATE)
     main_menu();
@@ -2117,7 +2120,7 @@ void game_getter(char *st, int max)
   {
     dev_console->show();
     int t = 0;
-    Event ev;
+    SDL_Event ev;
     do
     {
       get_event(ev);

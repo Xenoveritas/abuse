@@ -29,7 +29,7 @@ public :
   virtual void area(int &x1, int &y1, int &x2, int &y2);
   virtual void draw_first(image *screen);
   virtual void draw(int active, image *screen);
-  virtual void handle_event(Event &ev, image *screen, InputManager *im);
+  virtual void handle_event(SDL_Event &ev, image *screen, InputManager *im);
   void change_visual(image *new_visual);
   virtual void remap(Filter *f);
   virtual ~button() { if (text) free(text); }
@@ -52,7 +52,7 @@ public :
   virtual void area(int &x1, int &y1, int &x2, int &y2);
   virtual void draw_first(image *screen);
   virtual void draw(int active, image *screen);
-  virtual void handle_event(Event &ev, image *screen, InputManager *im);
+  virtual void handle_event(SDL_Event &ev, image *screen, InputManager *im);
   virtual ~button_box();
   virtual char *read();   // return pointer to first button which is depressed
   virtual ifield *find(int search_id);  // should return pointer to item you control with this id
@@ -84,7 +84,7 @@ public :
   virtual void area(int &x1, int &y1, int &x2, int &y2);
   virtual void draw_first(image *screen);
   virtual void draw(int active, image *screen);
-  virtual void handle_event(Event &ev, image *screen, InputManager *im);
+  virtual void handle_event(SDL_Event &ev, image *screen, InputManager *im);
 
   virtual ~text_field() { free(prompt); free(format); free(data); }
   virtual char *read();
@@ -104,7 +104,7 @@ public :
   virtual void area(int &x1, int &y1, int &x2, int &y2);
   virtual void draw_first(image *screen);
   virtual void draw(int active, image *screen) { (void)active; (void)screen; }
-  virtual void handle_event(Event &ev, image *screen, InputManager *im)
+  virtual void handle_event(SDL_Event &ev, image *screen, InputManager *im)
   {
       (void)ev; (void)screen; (void)im;
   }
@@ -114,13 +114,3 @@ public :
 } ;
 
 #endif
-
-
-
-
-
-
-
-
-
-

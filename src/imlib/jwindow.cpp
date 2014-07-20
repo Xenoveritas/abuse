@@ -44,10 +44,14 @@ void set_frame_size(int x)
 }
 
 void WindowManager::grab_focus(Jwindow *j)
-{ m_grab=j; }
+{
+    m_grab=j;
+}
 
 void WindowManager::release_focus()
-{ m_grab=NULL; }
+{
+    m_grab = NULL;
+}
 
 
 void WindowManager::close_window(Jwindow *j)
@@ -676,7 +680,7 @@ void InputManager::grab_focus(ifield *i)
 {
     m_grab = i;
     if (m_cur)
-        wm->grab_focus(m_cur);
+        wm->GrabFocus(m_cur);
 }
 
 void InputManager::release_focus()
@@ -740,4 +744,3 @@ void ifield::set_owner(Jwindow * newowner)
     if(owner)
         Move(m_pos + ivec2(owner->x1(), owner->y1()));
 }
-

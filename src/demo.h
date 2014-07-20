@@ -39,7 +39,7 @@ class demo_manager
 
 extern demo_manager demo_man;
 
-extern void get_event(Event &ev);
+extern void get_event(SDL_Event &ev);
 extern int event_waiting();
 
 extern ivec2 last_demo_mpos;

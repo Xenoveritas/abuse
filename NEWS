@@ -8,6 +8,9 @@
     (Currently there is no method to do "real" fullscreen)
   - OpenGL support is punted to SDL2 instead of being handled here
   - Which also gets DirectX support plus whatever other backends SDL2 can offer
+  - Completely rewrite event system to solely use SDL2 events
+    - Adds game controller support using the SDL2 API
+    - Allows multiple bindings to be specified for a single key
 
 # News for Abuse 0.8 (2011-05-09)
 

@@ -317,7 +317,7 @@ void pmenu::draw(image *screen, int top_only)
 }
 
 
-int psub_menu::handle_event(Jwindow *parent, int x, int y, Event &ev)
+int psub_menu::handle_event(Jwindow *parent, int x, int y, SDL_Event &ev)
 {
   int w,h;
   calc_size(w,h);
@@ -343,7 +343,7 @@ int psub_menu::handle_event(Jwindow *parent, int x, int y, Event &ev)
       if (active!=-1)
         item_num(active)->draw(win,dx,3+active*(th+1),w-6,0,1);
     }
-    if (ev.type==EV_MOUSE_BUTTON)
+    if (ev.type == SDL_MOUSEBUTTONDOWN)
     {
       if (active!=-1)
         return item_num(active)->handle_event(win,dx,3+active*(th+1),w-6,0,ev);
@@ -357,7 +357,7 @@ int psub_menu::handle_event(Jwindow *parent, int x, int y, Event &ev)
 }
 
 int pmenu_item::handle_event(Jwindow *parent, int x, int y, int w, int top,
-                 Event &ev)
+                 SDL_Event &ev)
 {
   x+=parent->m_pos.x;
   y+=parent->m_pos.y;
@@ -367,8 +367,8 @@ int pmenu_item::handle_event(Jwindow *parent, int x, int y, int w, int top,
     if (sub) return 1;
     else
     {
-      if (ev.type==EV_MOUSE_BUTTON &&n)
-        wm->Push(new Event(id,(char *)this));
+      if (ev.type == SDL_MOUSEBUTTONDOWN && n)
+        wm->PushUIEvent(id, this);
       return 1;
     }
   } else if (sub)
@@ -395,7 +395,7 @@ pmenu_item *pmenu::inarea(int mx, int my, image *screen)
   }
 }
 
-int psub_menu::own_event(Event &ev)
+int psub_menu::own_event(SDL_Event &ev)
 {
   if (win && ev.window==win) return 1; else
     for (pmenu_item *p=first; p; p=p->next)
@@ -404,7 +404,7 @@ int psub_menu::own_event(Event &ev)
   return 0;
 }
 
-int pmenu_item::own_event(Event &ev)
+int pmenu_item::own_event(SDL_Event &ev)
 {
   if (sub)
     return sub->own_event(ev);
@@ -415,7 +415,7 @@ pmenu_item::~pmenu_item()
 { if (n) free(n); if (sub) delete sub;
 }
 
-int pmenu::handle_event(Event &ev, image *screen)
+int pmenu::handle_event(SDL_Event &ev, image *screen)
 {
   if (!active && ev.window!=bar) return 0;
 /*
@@ -431,22 +431,22 @@ int pmenu::handle_event(Event &ev, image *screen)
 
   switch (ev.type)
   {
-    case EV_KEY :
+    case SDL_KEYDOWN:
     {
       for (pmenu_item *p=top; p; p=p->next)
       {
     pmenu_item *r=p->find_key(ev.key);
     if (r)
     {
-      wm->Push(new Event(r->id,(char *)r));
+      wm->PushUIEvent(r->id, r);
       return 1;
     }
       }
       return 0;
     } break;
-    case EV_MOUSE_MOVE :
+    case SDL_MOUSEMOTION:
     {
-      pmenu_item *new_selection=inarea(ev.mouse_move.x,ev.mouse_move.y,screen);
+      pmenu_item *new_selection=inarea(ev.motion.x,ev.motion.y,screen);
       if (!new_selection && active &&
       active->handle_event(bar,itemx(active),1,itemw(active),1,ev))
     return 1;
@@ -461,7 +461,8 @@ int pmenu::handle_event(Event &ev, image *screen)
       if (active) return 1;
       else return 0;
     } break;
-    case EV_MOUSE_BUTTON :
+	case SDL_MOUSEBUTTONDOWN:
+	case SDL_MOUSEBUTTONUP:
     {
       if (active)
       {

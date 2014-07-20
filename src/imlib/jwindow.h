@@ -13,9 +13,9 @@
 
 #include "video.h"
 #include "image.h"
-#include "event.h"
 #include "filter.h"
 #include "fonts.h"
+#include "../sdlport/event.h"
 
 class ifield;
 class WindowManager;
@@ -37,7 +37,7 @@ public:
     InputManager(Jwindow *owner, ifield *first);
     ~InputManager();
 
-    void handle_event(Event &ev, Jwindow *j);
+    void handle_event(SDL_Event &ev, Jwindow *j);
     ifield *get(int id);
     void redraw();
     void add(ifield *i);
@@ -69,7 +69,7 @@ public :
     virtual void area(int &x1, int &y1, int &x2, int &y2) = 0;
     virtual void draw_first(image *screen) = 0;
     virtual void draw(int active, image *screen) = 0;
-    virtual void handle_event(Event &ev, image *screen, InputManager *im) = 0;
+    virtual void handle_event(SDL_Event &ev, image *screen, InputManager *im) = 0;
     virtual int selectable() { return 1; }
     virtual void remap(Filter *f) { (void)f; }
     virtual char *read() = 0;
@@ -165,7 +165,7 @@ public:
     void close_window(Jwindow *j);
     void resize_window(Jwindow *j, int l, int h);
     void move_window(Jwindow *j, int x, int y);
-    void get_event(Event &ev);
+    void get_event(SDL_Event &ev);
     void flush_screen();
     int bright_color() { return hi; }
     int medium_color() { return med; }
@@ -188,5 +188,3 @@ private:
 };
 
 #endif
-
-

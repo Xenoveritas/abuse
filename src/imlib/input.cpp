@@ -111,19 +111,20 @@ char *button_box::read()
   return NULL;
 }
 
-void button_box::handle_event(Event &ev, image *screen, InputManager *im)
+void button_box::handle_event(SDL_Event &ev, image *screen, InputManager *im)
 {
   switch (ev.type)
   {
-    case EV_MOUSE_BUTTON :
+    case SDL_MOUSEBUTTONDOWN:
+    case SDL_MOUSEBUTTONUP:
     {
       int x1,y1,x2,y2;
       int found=0;
       for (button *b=buttons; !found && b; b=(button *)b->next)  // see if the user clicked on a button
       {
     b->area(x1,y1,x2,y2);
-    if (ev.mouse_move.x>=x1 && ev.mouse_move.x<=x2 &&
-        ev.mouse_move.y>=y1 && ev.mouse_move.y<=y2)
+    if (ev.button.x>=x1 && ev.button.x<=x2 &&
+        ev.button.y>=y1 && ev.button.y<=y2)
     {
       b->handle_event(ev,screen,im);
 
@@ -244,7 +245,7 @@ button::button(int X, int Y, int ID, image *Depressed, image *Pressed, image *ac
 }
 
 
-void text_field::change_data(char const *new_data, int new_cursor, // cursor==-1, does not change it.
+void text_field::change_data(const char *new_data, int new_cursor, // cursor==-1, does not change it.
                  int active, image *screen)
 {
   if (strlen(format)<strlen(new_data))
@@ -263,48 +264,120 @@ char *text_field::read()
   return data;
 }
 
-void text_field::handle_event(Event &ev, image *screen, InputManager *im)
+void text_field::handle_event(SDL_Event &ev, image *screen, InputManager *im)
 {
-  int xx;
-  if (ev.type==EV_KEY)
-  {
-    switch (ev.key)
+    int xx;
+    switch(ev.type)
     {
-      case JK_LEFT : if (cur) { draw_cur(wm->dark_color(),screen); cur--;
-                           draw_cur(wm->bright_color(),screen); } break;
-      case JK_RIGHT : if (cur<(int)strlen(format)-1) { draw_cur(wm->dark_color(),screen); cur++;
-                           draw_cur(wm->bright_color(),screen); } break;
-      case JK_END : if (cur!=last_spot())
-                          { draw_cur(wm->dark_color(),screen); cur=last_spot();
-                            if (cur==(int)strlen(format)-1) cur--;
-                           draw_cur(wm->bright_color(),screen); } break;
-      case JK_HOME : if (cur)
-                          { draw_cur(wm->dark_color(),screen); cur=0;
-                           draw_cur(wm->bright_color(),screen); } break;
-      case JK_BACKSPACE : if (cur)
-         { draw_cur(wm->dark_color(),screen); cur--;
-           for (xx=cur; xx<(int)strlen(format)-1; xx++)
-             data[xx]=data[xx+1];
-           data[strlen(format)-1]=' ';
-           draw_text(screen);
-           draw_cur(wm->bright_color(),screen);
-           wm->Push(new Event(id,(char *)this));
-         } break;
-      default : if (ev.key>=' ' && ev.key<='~')
-         {
-           draw_cur(wm->dark_color(),screen);
-           for (xx=strlen(format)-1; xx>cur && xx>0; xx--)
-             data[xx]=data[xx-1];
-           data[cur]=ev.key;
-           if (cur<(int)strlen(format)-1)
-             cur++;
-       data[strlen(format)]=0;
-           draw_text(screen);
-           draw_cur(wm->bright_color(),screen);
-           wm->Push(new Event(id,(char *)this));
-         } break;
+    case SDL_KEYDOWN:
+        switch (ev.key.keysym.sym)
+        {
+        case SDLK_LEFT:
+            if (cur)
+            {
+                draw_cur(wm->dark_color(),screen);
+                cur--;
+                draw_cur(wm->bright_color(),screen);
+            }
+            break;
+        case SDLK_RIGHT:
+            if (cur<(int)strlen(format)-1)
+            {
+                draw_cur(wm->dark_color(),screen);
+                cur++;
+                draw_cur(wm->bright_color(),screen);
+            }
+            break;
+        case SDLK_END:
+            if (cur!=last_spot())
+            {
+                draw_cur(wm->dark_color(),screen);
+                cur=last_spot();
+                if (cur==(int)strlen(format)-1)
+                    cur--;
+                draw_cur(wm->bright_color(),screen);
+            }
+            break;
+        case SDLK_HOME:
+            if (cur)
+            {
+                draw_cur(wm->dark_color(),screen);
+                cur=0;
+                draw_cur(wm->bright_color(),screen);
+            }
+            break;
+        case SDLK_BACKSPACE:
+            if (cur)
+            {
+                draw_cur(wm->dark_color(),screen);
+                cur--;
+                for (xx=cur; xx<(int)strlen(format)-1; xx++)
+                    data[xx]=data[xx+1];
+                data[strlen(format)-1]=' ';
+                draw_text(screen);
+                draw_cur(wm->bright_color(),screen);
+                wm->PushUIEvent(id, this);
+            }
+            break;
+        default:
+            // FIXME: This should be using SDL_TEXTEDITING and SDL_TEXTINPUT
+            // instead.
+            if ((ev.key.keysym.mod == KMOD_NONE || (ev.key.keysym.mod & KMOD_SHIFT) != 0) && ev.key.keysym.sym >= ' ' && ev.key.keysym.sym <= '~')
+            {
+                char key = ev.key.keysym.sym;
+                // See if SHIFT is down
+                if ((ev.key.keysym.mod & KMOD_SHIFT) != 0)
+                {
+                    // If we were using SDL_TEXTINPUT like we should, this
+                    // wouldn't matter. But for now, it does.
+                    // FIXME: And, of course, this rather blatantly ignores
+                    // keyboard mappings. Oh well.
+                    if (key >= 'a' && key <= 'z')
+                    {
+                        key -= 32;
+                    }
+                    else if (key >= '1' && key <= '5')
+                    {
+                        key -= 16;
+                    }
+                    else
+                    {
+                        // FIXME
+                    }
+                }
+                draw_cur(wm->dark_color(),screen);
+                for (xx=strlen(format)-1; xx>cur && xx>0; xx--)
+                    data[xx]=data[xx-1];
+                data[cur]=key;
+                if (cur<(int)strlen(format)-1)
+                    cur++;
+                data[strlen(format)]=0;
+                draw_text(screen);
+                draw_cur(wm->bright_color(),screen);
+                wm->PushUIEvent(id, this);
+            }
+            break;
+        }
+        break;
+    // FIXME: The following events won't be fired until SDL_StartTextInput()
+    // and SDL_StopTextInput() are implemented on focus and blur.
+    // Likewise SDL_SetTextInputRect() should be used.
+    // New for SDL2 (and the primary reason to replace the custom event system
+    // with SDL2's):
+    case SDL_TEXTEDITING:
+        // FIXME: This means we've received "non-commited" text. For example,
+        // it's possible for a user to enter an accent and then a letter that
+        // will be combined into a single character. We don't care for now in
+        // any case because Abuse doesn't support anything besides ASCII.
+        // Conceptually we should display this in some other color as its
+        // entered. Also, again, it hardly matters.
+        break;
+    case SDL_TEXTINPUT:
+        // This is the "commit" event where we take the text input and actually
+        // store it into the text buffer.
+        printf("Text Input: [%s]\n", ev.text.text);
+        break;
     }
-  }
 }
 
 void text_field::draw(int active, image *screen)
@@ -363,18 +436,18 @@ text_field::text_field(int X, int Y, int ID, char const *Prompt,
 void button::push()
 { up=!up; }
 
-void button::handle_event(Event &ev, image *screen, InputManager *im)
+void button::handle_event(SDL_Event &ev, image *screen, InputManager *im)
 {
-  if ((ev.type==EV_KEY && ev.key==13) || (ev.type==EV_MOUSE_BUTTON &&
-                                         ev.mouse_button))
-  {
-    int  x1,y1,x2,y2;
-    area(x1,y1,x2,y2);
-    up=!up;
-    draw_first(screen);
-    draw(act,screen);
-    wm->Push(new Event(id,(char *)this));
-  }
+    if ((ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_RETURN)
+        || (ev.type == SDL_MOUSEBUTTONDOWN && ev.button.button == SDL_BUTTON_LEFT))
+    {
+        int  x1,y1,x2,y2;
+        area(x1,y1,x2,y2);
+        up=!up;
+        draw_first(screen);
+        draw(act,screen);
+        wm->PushUIEvent(id, this);
+    }
 }
 
 void button::draw(int active, image *screen)
@@ -382,7 +455,7 @@ void button::draw(int active, image *screen)
   int x1,y1,x2,y2,color=(active ? wm->bright_color() : wm->medium_color());
   area(x1,y1,x2,y2);
   if (active!=act  && act_id!=-1 && active)
-    wm->Push(new Event(act_id,NULL));
+    wm->PushUIEvent(act_id, NULL);
 
   if (pressed)
   {
@@ -516,4 +589,3 @@ void info_field::draw_first(image *screen)
   put_para(screen, text, m_pos.x, m_pos.y, wm->font()->Size().x,
            wm->font()->Size().y, wm->font(), wm->bright_color());
 }
-

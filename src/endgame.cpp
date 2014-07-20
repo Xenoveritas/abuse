@@ -341,7 +341,7 @@ void show_end2()
   for (si=sinfo,j=0; j<800; j++,si+=3)
     main_screen->PutPixel(ivec2(si[0],si[1]),si[2]);
 
-  Event ev;
+  SDL_Event ev;
   i=0;
   do
   {
@@ -365,7 +365,7 @@ void show_end2()
     if (wm->IsPending())
       wm->get_event(ev);
 
-  } while (ev.type!=EV_KEY && ev.type!=EV_MOUSE_BUTTON);
+  } while (ev.type!=SDL_KEYDOWN && ev.type!=SDL_MOUSEBUTTONDOWN);
 
 
   uint8_t cmap[32];
@@ -445,9 +445,9 @@ void share_end()
   for (i=0; i<32; i++)
     cmap[i]=pal->find_closest(i*256/32,i*256/32,i*256/32);
 
-  Event ev; ev.type=EV_SPURIOUS;
+  SDL_Event ev; ev.type=EV_SPURIOUS;
   time_marker start;
-  for (i=0; i<320 && ev.type!=EV_KEY; i++)
+  for (i=0; i<320 && ev.type!=SDL_KEYDOWN; i++)
   {
     main_screen->PutImage(im, ivec2(dx, dy));
     console_font->PutString(main_screen, ivec2(xres / 2 + 35, yres / 2 + 100 - console_font->Size().y - 2),
@@ -459,19 +459,19 @@ void share_end()
     while (wm->IsPending() && ev.type!=EV_KEY) wm->get_event(ev);
   }
 
-  if (ev.type!=EV_KEY)
+  if (ev.type!=SDL_KEYDOWN)
   {
     do
     {
       wm->flush_screen();
       wm->get_event(ev);
-    } while (ev.type!=EV_KEY && ev.type!=EV_MOUSE_BUTTON);
+	} while (ev.type != SDL_KEYDOWN && ev.type != SDL_MOUSEBUTTONDOWN);
   }
 
   fade_out(16);
   wm->SetMouseShape(blank.copy(), ivec2(0, 0)); // don't show mouse
   show_sell(1);
-  wm->Push(new Event(ID_SHOW_SELL,NULL));
+  wm->PushUIEvent(ID_SHOW_SELL, NULL);
 }
 
 
@@ -497,25 +497,25 @@ void show_end()
   for (i=0; i<32; i++)
     cmap[i]=pal->find_closest(i*256/32,i*256/32,i*256/32);
 
-  Event ev; ev.type=EV_SPURIOUS;
+  SDL_Event ev; ev.type=EV_SPURIOUS;
   time_marker start;
-  for (i=0; i<320 && ev.type!=EV_KEY; i++)
+  for (i=0; i<320 && ev.type!=SDL_KEYDOWN; i++)
   {
     main_screen->PutImage(im, ivec2(dx, dy));
 
     text_draw(205-i,dx+10,dy,dx+319-10,dy+199,lstring_value(end_plot),wm->font(),cmap,wm->bright_color());
     wm->flush_screen();
     time_marker now; while (now.diff_time(&start)<0.18) now.get_time(); start.get_time();
-    while (wm->IsPending() && ev.type!=EV_KEY) wm->get_event(ev);
+	while (wm->IsPending() && ev.type != SDL_KEYDOWN) wm->get_event(ev);
   }
 
-  if (ev.type!=EV_KEY)
+  if (ev.type != SDL_KEYDOWN)
   {
     do
     {
       wm->flush_screen();
       wm->get_event(ev);
-    } while (ev.type!=EV_KEY && ev.type!=EV_MOUSE_BUTTON);
+	} while (ev.type != SDL_KEYDOWN && ev.type != SDL_MOUSEBUTTONDOWN);
   }
 
   delete current_level;

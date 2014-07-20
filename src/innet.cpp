@@ -576,7 +576,7 @@ void net_reload()
                 service_net_request();
                 if (wm->IsPending())
                 {
-                  Event ev;
+                  SDL_Event ev;
                   do
                   {
                     wm->get_event(ev);
@@ -594,8 +594,6 @@ void net_reload()
       } while (!reload_end());
       wm->close_window(j);
       unlink(NET_STARTFILE);
-
-      the_game->reset_keymap();
 
       base->input_state=INPUT_COLLECTING;
 

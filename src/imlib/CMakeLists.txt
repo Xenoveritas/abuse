@@ -22,11 +22,11 @@ add_library(imlib
     sprite.cpp sprite.h
     jwindow.cpp jwindow.h
     video.cpp video.h
-    event.cpp event.h
+    event.cpp
     timing.h jdir.h visobj.h
 )
 
-include_directories(${abuse_SOURCE_DIR}/src)
+include_directories(${abuse_SOURCE_DIR}/src ${SDL2_INCLUDE_DIR})
 add_definitions(-DNO_CHECK)
 #INCLUDES = -I$(srcdir) -I$(srcdir)/.. $(SDL2_CFLAGS)
 
