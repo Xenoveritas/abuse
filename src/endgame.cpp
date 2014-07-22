@@ -363,9 +363,9 @@ void show_end2()
     }
 
     if (wm->IsPending())
-      wm->get_event(ev);
+      wm->GetEvent(ev);
 
-  } while (ev.type!=SDL_KEYDOWN && ev.type!=SDL_MOUSEBUTTONDOWN);
+  } while (!wm->IsActiveUserEvent(ev));
 
 
   uint8_t cmap[32];
@@ -377,8 +377,8 @@ void show_end2()
 
   time_marker start;
 
-  ev.type=EV_SPURIOUS;
-  for (i=0; i<320 && ev.type!=EV_KEY; i++)
+  ev.type=ABUSE_EV_SPURIOUS;
+  for (i=0; i<320 && !wm->IsActiveUserEvent(ev); i++)
   {
     main_screen->clear();
     int j;
@@ -393,7 +393,7 @@ void show_end2()
     wm->flush_screen();
     time_marker now; while (now.diff_time(&start)<0.18) now.get_time(); start.get_time();
 
-    while (wm->IsPending() && ev.type!=EV_KEY) wm->get_event(ev);
+	while (wm->IsPending() && !wm->IsActiveUserEvent(ev)) wm->GetEvent(ev);
   }
 
 
@@ -445,7 +445,7 @@ void share_end()
   for (i=0; i<32; i++)
     cmap[i]=pal->find_closest(i*256/32,i*256/32,i*256/32);
 
-  SDL_Event ev; ev.type=EV_SPURIOUS;
+  SDL_Event ev; ev.type=ABUSE_EV_SPURIOUS;
   time_marker start;
   for (i=0; i<320 && ev.type!=SDL_KEYDOWN; i++)
   {
@@ -456,7 +456,7 @@ void share_end()
     text_draw(205-i,dx+10,dy,dx+319-10,dy+199,lstring_value(mid_plot),wm->font(),cmap,wm->bright_color());
     wm->flush_screen();
     time_marker now; while (now.diff_time(&start)<0.18) now.get_time(); start.get_time();
-    while (wm->IsPending() && ev.type!=EV_KEY) wm->get_event(ev);
+    while (wm->IsPending() && (!wm->IsActiveUserEvent(ev))) wm->GetEvent(ev);
   }
 
   if (ev.type!=SDL_KEYDOWN)
@@ -464,8 +464,8 @@ void share_end()
     do
     {
       wm->flush_screen();
-      wm->get_event(ev);
-	} while (ev.type != SDL_KEYDOWN && ev.type != SDL_MOUSEBUTTONDOWN);
+      wm->GetEvent(ev);
+	} while (!wm->IsActiveUserEvent(ev));
   }
 
   fade_out(16);
@@ -497,7 +497,7 @@ void show_end()
   for (i=0; i<32; i++)
     cmap[i]=pal->find_closest(i*256/32,i*256/32,i*256/32);
 
-  SDL_Event ev; ev.type=EV_SPURIOUS;
+  SDL_Event ev; ev.type=ABUSE_EV_SPURIOUS;
   time_marker start;
   for (i=0; i<320 && ev.type!=SDL_KEYDOWN; i++)
   {
@@ -506,7 +506,7 @@ void show_end()
     text_draw(205-i,dx+10,dy,dx+319-10,dy+199,lstring_value(end_plot),wm->font(),cmap,wm->bright_color());
     wm->flush_screen();
     time_marker now; while (now.diff_time(&start)<0.18) now.get_time(); start.get_time();
-	while (wm->IsPending() && ev.type != SDL_KEYDOWN) wm->get_event(ev);
+	while (wm->IsPending() && (!wm->IsActiveUserEvent(ev))) wm->GetEvent(ev);
   }
 
   if (ev.type != SDL_KEYDOWN)
@@ -514,7 +514,7 @@ void show_end()
     do
     {
       wm->flush_screen();
-      wm->get_event(ev);
+      wm->GetEvent(ev);
 	} while (ev.type != SDL_KEYDOWN && ev.type != SDL_MOUSEBUTTONDOWN);
   }
 

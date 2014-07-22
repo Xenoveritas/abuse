@@ -111,23 +111,22 @@ int get_save_spot()
   if(mx < 0) mx = 0;
 
   Jwindow *l_win=create_num_window(mx,MAX_SAVE_GAMES,MAX_SAVE_LINES,NULL);
-  Event ev;
+  SDL_Event ev;
   int got_level=0;
   int quit=0;
   do
   {
     wm->flush_screen();
-    wm->get_event(ev);
-    if (ev.type==EV_MESSAGE && ev.message.id>=ID_LOAD_GAME_NUMBER && ev.message.id<ID_LOAD_GAME_PREVIEW)
-      got_level=ev.message.id-ID_LOAD_GAME_NUMBER+1;
+    wm->GetEvent(ev);
+	if (ev.type == ABUSE_EV_MESSAGE && ev.user.code >= ID_LOAD_GAME_NUMBER && ev.user.code<ID_LOAD_GAME_PREVIEW)
+		got_level = ev.user.code - ID_LOAD_GAME_NUMBER + 1;
 
 
-    if (ev.type==EV_CLOSE_WINDOW && ev.window==l_win)
+    if (ev.type==ABUSE_EV_CLOSE_WINDOW && wm->GetActiveWindow()==l_win)
       quit=1;
   } while (!got_level && !quit);
 
   wm->close_window(l_win);
-  the_game->reset_keymap();
   return got_level;
 }
 
@@ -237,24 +236,24 @@ int load_game(int show_all, char const *title)   // return 0 if the player escap
 
     preview->m_surf->PutImage(first, ivec2(preview->x1(), preview->y1()));
 
-    Event ev;
+    SDL_Event ev;
     int got_level=0;
     int quit=0;
     do
     {
         wm->flush_screen();
-        wm->get_event(ev);
-        if (ev.type==EV_MESSAGE && ev.message.id>=ID_LOAD_GAME_NUMBER && ev.message.id<ID_LOAD_GAME_PREVIEW)
-            got_level=ev.message.id-ID_LOAD_GAME_NUMBER+1;
+        wm->GetEvent(ev);
+		if (ev.type == ABUSE_EV_MESSAGE && ev.user.code >= ID_LOAD_GAME_NUMBER && ev.user.code<ID_LOAD_GAME_PREVIEW)
+			got_level = ev.user.code - ID_LOAD_GAME_NUMBER + 1;
 
-        if (ev.type==EV_MESSAGE && ev.message.id>=ID_LOAD_GAME_PREVIEW && ev.message.id<ID_LOAD_PLAYER_GAME)
+		if (ev.type == ABUSE_EV_MESSAGE && ev.user.code >= ID_LOAD_GAME_PREVIEW && ev.user.code<ID_LOAD_PLAYER_GAME)
         {
-            int draw_num=ev.message.id-ID_LOAD_GAME_PREVIEW;
+			int draw_num = ev.user.code - ID_LOAD_GAME_PREVIEW;
             preview->clear();
             preview->m_surf->PutImage(thumbnails[draw_num], ivec2(preview->x1(), preview->y1()));
         }
 
-        if ((ev.type==EV_CLOSE_WINDOW) || (ev.type==EV_KEY && ev.key==JK_ESC))
+        if ((ev.type==ABUSE_EV_CLOSE_WINDOW) || (ev.type==SDL_KEYDOWN && ev.key.keysym.key==SDLK_ESCAPE))
             quit=1;
     } while (!got_level && !quit);
 

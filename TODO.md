@@ -7,6 +7,13 @@
 - [ ] Rewrite event handling to allow multiple keybindings for the same actions
 - [ ] Update configuration system to deal with joysticks/gamepads
 - [ ] Strongly considering replacing the jFILE/bFILE stuff with SDL's SDL_RW API
+- [ ] Pick a single code format and use it consistently
+- [ ] Figure out what the heck the pattern
+      do { wm->GetEvent(ev); } while (ev.type == SDL_MOUSEMOTION && wm->IsPending());
+  is attempting to accomplish. My current best-guess is that it's trying to
+  make sure the mouse continues to move while (thing) progresses but it makes
+  so sense to me since it halts as soon as the event queue is emptied along with
+  stopping once any non-mouse motion event happens.
 
 ## Original TODO
 

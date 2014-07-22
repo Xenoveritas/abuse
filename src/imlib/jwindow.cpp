@@ -19,9 +19,10 @@
 #include "video.h"
 #include "image.h"
 #include "input.h"
-#include "event.h"
+#include "../sdlport/event.h"
 #include "filter.h"
 #include "jwindow.h"
+#include "sprite.h"
 
 static int jw_left = 3, jw_right = 3, jw_top = 2, jw_bottom = 3;
 
@@ -106,105 +107,116 @@ void WindowManager::show_window(Jwindow *j)
     }
 }
 
-void WindowManager::get_event(Event &ev)
+void WindowManager::GetEvent(SDL_Event &ev)
 {
-  Get(ev);
+	PollEvent(ev);
 
-  if (ev.type==EV_KEY)
-    key_state[ev.key]=1;
-  else if (ev.type==EV_KEYRELEASE)
-    key_state[ev.key]=0;
+	if (ev.type==SDL_KEYDOWN)
+		key_state[ev.key.keysym.sym]=1;
+	else if (ev.type==SDL_KEYUP)
+		key_state[ev.key.keysym.sym]=0;
 
-  if (state==inputing)
-  {
-    Jwindow *j;
-    for (ev.window=NULL,j=m_first; j; j=j->next)
-      if (!j->is_hidden() && ev.mouse_move >= j->m_pos
-                          && ev.mouse_move < j->m_pos + j->m_size)
-        ev.window=j;
+	if (state==inputing)
+	{
+		Jwindow *j;
+		ivec2 mouse_pos = GetMousePos();
+		for (m_active_window=NULL,j=m_first; j; j=j->next)
+		{
+			if (!j->is_hidden() && mouse_pos >= j->m_pos
+				&& mouse_pos < j->m_pos + j->m_size)
+			{
+				m_active_window = j;
+			}
+		}
 
-    if (!ev.window && m_grab) ev.window=m_grab;
+		if (!m_active_window && m_grab)
+			m_active_window = m_grab;
 
-    if (ev.window)
-    {
-      int closew=0,movew=0;
+		if (m_active_window)
+		{
+			int closew = 0, movew = 0;
 
-      if ((ev.type==EV_MOUSE_BUTTON && ev.mouse_button==1 && ev.window &&
-       ev.mouse_move >= ev.window->m_pos &&
-       ev.mouse_move < ev.window->m_pos + ivec2(ev.window->m_size.x, ev.window->y1())))
-      {
-    if (ev.mouse_move.x-ev.window->m_pos.x < 11) closew=1;
-    else if (ev.window->is_moveable()) movew=1;
-      } else if (m_grab)
-        ev.window=m_grab;
+			if ((ev.type == SDL_MOUSEBUTTONDOWN && ev.button.button == SDL_BUTTON_LEFT &&
+				mouse_pos >= m_active_window->m_pos &&
+				mouse_pos < m_active_window->m_pos + ivec2(m_active_window->m_size.x, m_active_window->y1())))
+			{
+				if (mouse_pos.x - m_active_window->m_pos.x < 11)
+					closew = 1;
+				else if (m_active_window->is_moveable())
+					movew = 1;
+			}
+			else if (m_grab)
+				m_active_window = m_grab;
 
-      if (ev.type==EV_KEY && ev.key==JK_ESC)
-        closew=1;
+			if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE)
+				closew = 1;
 
-
-
-      if (closew)
-        ev.type=EV_CLOSE_WINDOW;
-      else if (movew)
-      {
-    int red=0;
-    if (ev.window==m_first)       // see if we need to raise the window
-    {
-      m_first=m_first->next;
-      if (m_first)
-        red=1;
-    }
-    else
-    {
-      Jwindow *last=m_first;
-      for (; last->next!=ev.window; last=last->next);
-      if (ev.window->next)
-        red=1;
-      last->next=ev.window->next;
-    }
-    if (!m_first)
-      m_first=ev.window;
-    else
-    {
-      Jwindow *last=m_first;
-      for (; last->next; last=last->next);
-      last->next=ev.window;
-    }
-    ev.window->next=NULL;
-    if (red)
-    {
-      Jwindow *j=ev.window;
-/*      m_surf->AddDirty(j->x,j->y,j->x+j->l,j->y+j->h);
-      for (p=m_first; p!=j; p=p->next)
-        p->m_surf->AddDirty(j->x-p->x,j->y-p->y,j->x+j->l-p->x,j->y+j->h-p->y); */
-      j->m_surf->AddDirty(ivec2(0), j->m_size);
-      flush_screen();
-    }
-
-        state=dragging;
-        drag_window=ev.window;
-        drag_mousex=ev.window->m_pos.x-ev.mouse_move.x;
-        drag_mousey=ev.window->m_pos.y-ev.mouse_move.y;
-        ev.type=EV_SPURIOUS;
-      } else if (ev.window)
-        ev.window->inm->handle_event(ev,ev.window);
-    }
-  } else if (state==dragging)
-  {
-    ev.window=drag_window;
-    if (ev.type==EV_MOUSE_BUTTON && ev.mouse_button==0)  // user released the mouse
-    {
-      state=inputing;
-      ev.type=EV_SPURIOUS;
-    } else if (ev.type==EV_MOUSE_MOVE)
-    {
-       move_window(drag_window,ev.mouse_move.x+drag_mousex,ev.mouse_move.y+drag_mousey);
-       flush_screen();
-       ev.type=EV_DRAG_WINDOW;
-       ev.window_position.x=ev.mouse_move.x+drag_mousex;
-       ev.window_position.y=ev.mouse_move.y+drag_mousey;
-    }
-  }
+			if (closew)
+			{
+				ev.type = ABUSE_EV_CLOSE_WINDOW;
+			}
+			else if (movew)
+			{
+				int red = 0;
+				if (m_active_window == m_first)       // see if we need to raise the window
+				{
+					m_first = m_first->next;
+					if (m_first)
+						red = 1;
+				}
+				else
+				{
+					Jwindow *last = m_first;
+					for (; last->next != m_active_window; last = last->next)
+					{
+					}
+					if (m_active_window->next)
+						red = 1;
+					last->next = m_active_window->next;
+				}
+				if (!m_first)
+					m_first = m_active_window;
+				else
+				{
+					Jwindow *last = m_first;
+					for (; last->next; last = last->next);
+					last->next = m_active_window;
+				}
+				m_active_window->next = NULL;
+				if (red)
+				{
+					Jwindow *j = m_active_window;
+					j->m_surf->AddDirty(ivec2(0), j->m_size);
+					FlushScreen();
+				}
+				state = dragging;
+				drag_window = m_active_window;
+				drag_mousex = m_active_window->m_pos.x - mouse_pos.x;
+				drag_mousey = m_active_window->m_pos.y - mouse_pos.y;
+				ev.type = ABUSE_EV_SPURIOUS;
+			}
+			else if (m_active_window)
+			{
+				m_active_window->inm->handle_event(ev, m_active_window);
+			}
+		}
+	}
+	else if (state==dragging)
+	{
+		m_active_window=drag_window;
+		if (ev.type==SDL_MOUSEBUTTONUP)  // user released the mouse
+		{
+			state=inputing;
+			ev.type = ABUSE_EV_SPURIOUS;
+		}
+		else if (ev.type==SDL_MOUSEMOTION)
+		{
+			move_window(drag_window, ev.motion.x + drag_mousex, ev.motion.y + drag_mousey);
+			FlushScreen();
+			// Drag window was never processed, so just make it "spurious"
+			ev.type = ABUSE_EV_SPURIOUS;
+		}
+	}
 }
 
 void Jwindow::Resize(ivec2 size)
@@ -313,34 +325,27 @@ void WindowManager::flush_screen()
 {
     ivec2 m1(0, 0);
 
-    if (has_mouse())
-    {
-        m1 = m_pos - m_center;
-        ivec2 m2 = m1 + m_sprite->m_visual->Size();
+    m1 = m_pos - m_center;
+    ivec2 m2 = m1 + m_sprite->m_visual->Size();
 
-        m_sprite->m_save->PutPart(m_surf, ivec2(0, 0), m1, m2);
-        m_surf->PutImage(m_sprite->m_visual, m1, 1);
-    }
+    m_sprite->m_save->PutPart(m_surf, ivec2(0, 0), m1, m2);
+    m_surf->PutImage(m_sprite->m_visual, m1, 1);
 
     for (Jwindow *p = m_first; p; p = p->next)
         if (!p->is_hidden())
             m_surf->DeleteDirty(p->m_pos, p->m_pos + p->m_size);
     update_dirty(m_surf);
 
-    if (has_mouse())
-        m_surf->PutImage(m_sprite->m_save, m1);
+    m_surf->PutImage(m_sprite->m_save, m1);
 
     for (Jwindow *p = m_first; p; p = p->next)
     {
         if (p->is_hidden())
             continue;
 
-        if (has_mouse())
-        {
-            m_sprite->m_save->PutPart(p->m_surf, ivec2(0, 0), m1 - p->m_pos,
-                                      m1 - p->m_pos + m_sprite->m_visual->Size());
-            p->m_surf->PutImage(m_sprite->m_visual, m1 - p->m_pos, 1);
-        }
+        m_sprite->m_save->PutPart(p->m_surf, ivec2(0, 0), m1 - p->m_pos,
+                                  m1 - p->m_pos + m_sprite->m_visual->Size());
+        p->m_surf->PutImage(m_sprite->m_visual, m1 - p->m_pos, 1);
 
 //      m_surf->DeleteDirty(p->m_pos, p->m_pos + p->m_size);
         for (Jwindow *q = p->next; q; q = q->next)
@@ -348,8 +353,7 @@ void WindowManager::flush_screen()
                 p->m_surf->DeleteDirty(q->m_pos - p->m_pos,
                                        q->m_pos - p->m_pos + q->m_size);
         update_dirty(p->m_surf, p->m_pos.x, p->m_pos.y);
-        if (has_mouse())
-            p->m_surf->PutImage(m_sprite->m_save, m1 - p->m_pos, 0);
+        p->m_surf->PutImage(m_sprite->m_save, m1 - p->m_pos, 0);
     }
 }
 
@@ -565,73 +569,79 @@ void InputManager::clear_current()
     m_active = NULL;
 }
 
-void InputManager::handle_event(Event &ev, Jwindow *j)
+void InputManager::handle_event(SDL_Event &ev, Jwindow *j)
 {
-  ifield *i,*in_area=NULL;
-  int x1,y1,x2,y2;
+	ifield *i,*in_area=NULL;
+	int x1,y1,x2,y2;
+	ivec2 mouse_pos = wm->GetMousePos();
 
-  if(m_owner)
-      m_surf = m_owner->m_surf;
+	if(m_owner)
+		m_surf = m_owner->m_surf;
 
-  if (j)
-  {
-    ev.mouse_move -= j->m_pos;
-    m_cur = j;
-  }
+	if (j)
+	{
+		mouse_pos -= j->m_pos;
+		m_cur = j;
+	}
 
-  if (!m_grab)
-  {
-    if ((ev.type==EV_MOUSE_BUTTON && ev.mouse_button==1) || ev.type==EV_MOUSE_MOVE)
-    {
-      for (i=m_first; i; i=i->next)
-      {
-    i->area(x1,y1,x2,y2);
-    if (ev.mouse_move.x>=x1 && ev.mouse_move.y>=y1 &&
-        ev.mouse_move.x<=x2 && ev.mouse_move.y<=y2)
-        in_area=i;
-      }
-      if (in_area!=m_active && (no_selections_allowed || (in_area && in_area->selectable())))
-      {
-    if (m_active)
-          m_active->draw(0,m_surf);
+	if (!m_grab)
+	{
+		if ((ev.type==SDL_MOUSEBUTTONDOWN && ev.button.button==SDL_BUTTON_LEFT) || ev.type==SDL_MOUSEMOTION)
+		{
+			for (i=m_first; i; i=i->next)
+			{
+				i->area(x1,y1,x2,y2);
+				if (mouse_pos.x>=x1 && mouse_pos.y>=y1 &&
+					mouse_pos.x<=x2 && mouse_pos.y<=y2)
+				{
+					in_area=i;
+				}
+			}
+			if (in_area!=m_active && (no_selections_allowed || (in_area && in_area->selectable())))
+			{
+				if (m_active)
+					m_active->draw(0,m_surf);
+				m_active=in_area;
 
-    m_active=in_area;
+				if (m_active)
+					m_active->draw(1,m_surf);
+			}
+		}
+		if (ev.type==SDL_KEYDOWN && ev.key.keysym.sym==SDLK_TAB && m_active)
+		{
+			m_active->draw(0,m_surf);
+			do
+			{
+				m_active=m_active->next;
+				if (!m_active)
+					m_active=m_first;
+			}
+			while (m_active && !m_active->selectable());
+			m_active->draw(1,m_surf);
+		}
+	}
+	else
+	{
+		m_active=m_grab;
+	}
 
-    if (m_active)
-      m_active->draw(1,m_surf);
-      }
-    }
-    if (ev.type==EV_KEY && ev.key==JK_TAB && m_active)
-    {
-      m_active->draw(0,m_surf);
-      do
-      {
-    m_active=m_active->next;
-    if (!m_active) m_active=m_first;
-      } while (m_active && !m_active->selectable());
-      m_active->draw(1,m_surf);
-    }
-  } else m_active=m_grab;
-
-  if (m_active)
-  {
-    if (ev.type!=EV_MOUSE_MOVE && ev.type!=EV_MOUSE_BUTTON)
-      m_active->handle_event(ev,m_surf,this);
-    else
-    {
-      m_active->area(x1,y1,x2,y2);
-      if (m_grab || (ev.mouse_move.x>=x1 && ev.mouse_move.y>=y1 &&
-          ev.mouse_move.x<=x2 && ev.mouse_move.y<=y2))
-      {
-    if (j)
-      m_active->handle_event(ev,m_surf,j->inm);
-    else m_active->handle_event(ev,m_surf,this);
-      }
-    }
-  }
-
-  if (j)
-    ev.mouse_move += j->m_pos;
+	if (m_active)
+	{
+		if (ev.type != SDL_MOUSEMOTION && ev.type != SDL_MOUSEBUTTONDOWN && ev.type != SDL_MOUSEBUTTONUP)
+			m_active->handle_event(ev,m_surf,this);
+		else
+		{
+			m_active->area(x1,y1,x2,y2);
+			if (m_grab || (mouse_pos.x>=x1 && mouse_pos.y>=y1 &&
+				mouse_pos.x<=x2 && mouse_pos.y<=y2))
+			{
+				if (j)
+					m_active->handle_event(ev,m_surf,j->inm);
+				else
+					m_active->handle_event(ev,m_surf,this);
+			}
+		}
+	}
 }
 
 void InputManager::allow_no_selections()

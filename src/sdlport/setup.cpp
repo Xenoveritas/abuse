@@ -39,9 +39,9 @@
 #include "SDL.h"
 
 #include "specs.h"
-#include "keys.h"
 #include "setup.h"
 #include "errorui.h"
+#include "control_bindings.h"
 
 flags_struct flags;
 keys_struct keys;
@@ -179,62 +179,62 @@ void readRCFile()
             else if( strcasecmp( result, "left" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.left = key_value( result );
+                keys.left = ParseKeyName( result );
             }
             else if( strcasecmp( result, "right" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.right = key_value( result );
+				keys.right = ParseKeyName(result);
             }
             else if( strcasecmp( result, "up" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.up = key_value( result );
+				keys.up = ParseKeyName(result);
             }
             else if( strcasecmp( result, "down" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.down = key_value( result );
+				keys.down = ParseKeyName(result);
             }
             else if( strcasecmp( result, "left2" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.left_2 = key_value( result );
+				keys.left_2 = ParseKeyName(result);
             }
             else if( strcasecmp( result, "right2" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.right_2 = key_value( result );
+				keys.right_2 = ParseKeyName(result);
             }
             else if( strcasecmp( result, "up2" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.up_2 = key_value( result );
+				keys.up_2 = ParseKeyName(result);
             }
             else if( strcasecmp( result, "down2" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.down_2 = key_value( result );
+				keys.down_2 = ParseKeyName(result);
             }
             else if( strcasecmp( result, "fire" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.b2 = key_value( result );
+				keys.b2 = ParseKeyName(result);
             }
             else if( strcasecmp( result, "special" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.b1 = key_value( result );
+				keys.b1 = ParseKeyName(result);
             }
             else if( strcasecmp( result, "weapprev" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.b3 = key_value( result );
+				keys.b3 = ParseKeyName(result);
             }
             else if( strcasecmp( result, "weapnext" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.b4 = key_value( result );
+				keys.b4 = ParseKeyName(result);
             }
         }
         fclose( fd );
@@ -344,16 +344,16 @@ void setup( int argc, char **argv )
     flags.xres = xres        = 320;  // Default window width
     flags.yres = yres        = 200;  // Default window height
     flags.antialias          = 0;    // Don't anti-alias
-    keys.up                  = key_value( "UP" );
-    keys.down                = key_value( "DOWN" );
-    keys.left                = key_value( "LEFT" );
-    keys.right               = key_value( "RIGHT" );
-    keys.up_2                = key_value( "w" );
-    keys.down_2              = key_value( "s" );
-    keys.left_2              = key_value( "a" );
-    keys.right_2             = key_value( "d" );
-    keys.b3                  = key_value( "CTRL_R" );
-    keys.b4                  = key_value( "INSERT" );
+    keys.up                  = ParseKeyName( "UP" );
+    keys.down                = ParseKeyName( "DOWN" );
+    keys.left                = ParseKeyName( "LEFT" );
+    keys.right               = ParseKeyName( "RIGHT" );
+    keys.up_2                = ParseKeyName( "w" );
+    keys.down_2              = ParseKeyName( "s" );
+    keys.left_2              = ParseKeyName( "a" );
+    keys.right_2             = ParseKeyName( "d" );
+    keys.b3                  = ParseKeyName( "CTRL_R" );
+    keys.b4                  = ParseKeyName( "INSERT" );
     scale                    = 2;    // Default scale amount
 
     // Display our name and version

@@ -38,15 +38,15 @@ extern void net_send(int force);
 extern void fade_in(image *im, int steps);
 extern void fade_out(int steps);
 
-void get_event(Event &ev)
+void get_event(SDL_Event &ev)
 { wm->get_event(ev);
   switch (ev.type)
   {
-    case EV_KEY :
+    case SDL_KEYDOWN:
     {
       if (demo_man.state==demo_manager::PLAYING)
         demo_man.set_state(demo_manager::NORMAL);
-      else if (ev.key==JK_ENTER && demo_man.state==demo_manager::RECORDING)
+      else if (ev.key.keysym.sym==SDLK_RETURN && demo_man.state==demo_manager::RECORDING)
       {
         demo_man.set_state(demo_manager::NORMAL);
     the_game->show_help("Finished recording");
@@ -210,7 +210,7 @@ int demo_manager::set_state(demo_state new_state, char *filename)
       delete record_file;
       l_difficulty = initial_difficulty;
       the_game->set_state(MENU_STATE);
-      wm->Push(new Event(ID_NULL,NULL));
+      wm->PushUIEvent(ID_NULL, NULL);
 
       view *v=player_list;
       for (; v; v=v->next)  // reset all the players

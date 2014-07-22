@@ -165,7 +165,11 @@ public:
     void close_window(Jwindow *j);
     void resize_window(Jwindow *j, int l, int h);
     void move_window(Jwindow *j, int x, int y);
-    void get_event(SDL_Event &ev);
+	void GetEvent(SDL_Event &ev);
+	/**
+	 * Gets the "active" window (the window that used to be in the event structure
+	 */
+	Jwindow* GetActiveWindow() { return m_active_window; };
     void flush_screen();
     int bright_color() { return hi; }
     int medium_color() { return med; }
@@ -185,6 +189,7 @@ public:
 private:
     palette *m_pal;
     image *m_surf;
+	Jwindow *m_active_window;
 };
 
 #endif

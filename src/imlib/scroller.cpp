@@ -431,35 +431,35 @@ pick_list::pick_list(int X, int Y, int ID, int height,
 
 void pick_list::handle_inside_event(SDL_Event &ev, image *screen, InputManager *inm)
 {
-  if (ev.type==EV_MOUSE_MOVE && activate_on_mouse_move())
+  if (ev.type==SDL_MOUSEMOTION && activate_on_mouse_move())
   {
-    int sel=last_sel+(ev.mouse_move.y-m_pos.y)/(wm->font()->Size().y+1);
+    int sel=last_sel+(ev.motion.y-m_pos.y)/(wm->font()->Size().y+1);
     if (sel!=cur_sel && sel<t && sel>=0)
     {
       cur_sel=sel;
       scroll_event(last_sel,screen);
     }
   }
-  else if (ev.type==EV_MOUSE_BUTTON)
+  else if (ev.type==SDL_MOUSEBUTTONDOWN)
   {
-    int sel=last_sel+(ev.mouse_move.y-m_pos.y)/(wm->font()->Size().y+1);
+    int sel=last_sel+(ev.motion.y-m_pos.y)/(wm->font()->Size().y+1);
     if (sel<t && sel>=0)
     {
       if (sel==cur_sel)
-      wm->Push(new Event(id,(char *)this));
+      wm->PushUIEvent(id, this);
       else
       {
     cur_sel=sel;
     scroll_event(last_sel,screen);
       }
     }
-  } else if (ev.type==EV_KEY && ev.key==JK_ENTER)
-    wm->Push(new Event(id,(char *)this));
-  else if (ev.type==EV_KEY)
+  } else if (ev.type==SDL_KEYDOWN && ev.key.keysym.sym==SDLK_RETURN)
+    wm->PushUIEvent(id, this);
+  else if (ev.type==SDL_KEYDOWN)
   {
     int found=-1;
     if (key_hist_total<20)
-      key_hist[(int)(key_hist_total++)]=ev.key;
+      key_hist[(int)(key_hist_total++)]=ev.key.keysym.sym;
 
     for (int i=0; i<t && found==-1; i++)
     {
@@ -640,66 +640,66 @@ void spicker::scroll_event(int newx, image *screen)
 
 void spicker::handle_inside_event(SDL_Event &ev, image *screen, InputManager *inm)
 {
-  switch (ev.type)
-  {
-    case EV_MOUSE_MOVE :
+    switch (ev.type)
     {
-      if (activate_on_mouse_move())
-      {
-    int me;
-    if (vert)
-      me=last_sel+(ev.mouse_move.y-m_pos.y)/item_height();
-    else
-      me=last_sel+(ev.mouse_move.x-m_pos.x)/item_width();
-    if (me<t && me>=0)
-    {
-      if (cur_sel!=me)
-      {
-        cur_sel=me;
-        scroll_event(last_sel,screen);
-        note_new_current(screen,inm,me);
-      }
-    }
-      }
-    } break;
-    case EV_MOUSE_BUTTON :
-    {
-      int me;
-      if (vert)
-    me=last_sel+(ev.mouse_move.y-m_pos.y)/item_height();
-      else
-    me=last_sel+(ev.mouse_move.x-m_pos.x)/item_width();
-      if (me<t && me>=0)
-      {
-    if (m)
-    {
-      if (ev.mouse_button)
-      {
-        if (ok_to_select(me))
+    case SDL_MOUSEMOTION:
+        if (activate_on_mouse_move())
         {
-          set_select(me,!get_select(me));
-          scroll_event(last_sel,screen);
-          inm->grab_focus(this);
+            int me;
+            if (vert)
+                me=last_sel+(ev.motion.y-m_pos.y)/item_height();
+            else
+                me=last_sel+(ev.motion.x-m_pos.x)/item_width();
+            if (me<t && me>=0)
+            {
+                if (cur_sel!=me)
+                {
+                    cur_sel=me;
+                    scroll_event(last_sel,screen);
+                    note_new_current(screen,inm,me);
+                }
+            }
         }
-      } else last_click=-1;
-
-    } else if (ok_to_select(me))
-    {
-      if (cur_sel==me)
-        note_selection(screen,inm,me);
-      else
-      {
-        cur_sel=me;
-        scroll_event(last_sel,screen);
-        note_new_current(screen,inm,me);
+        break;
+    case SDL_MOUSEBUTTONDOWN:
+        int me;
+        if (vert)
+            me=last_sel+(ev.button.y-m_pos.y)/item_height();
+        else
+            me=last_sel+(ev.button.x-m_pos.x)/item_width();
+        if (me<t && me>=0)
+        {
+            if (m)
+            {
+                if (ev.button.button == SDL_BUTTON_LEFT)
+                {
+                    if (ok_to_select(me))
+                    {
+                        set_select(me,!get_select(me));
+                        scroll_event(last_sel,screen);
+                        inm->grab_focus(this);
+                    }
+                }
+                else
+                {
+                    last_click=-1;
+                }
+            }
+            else if (ok_to_select(me))
+            {
+                if (cur_sel==me)
+                    note_selection(screen,inm,me);
+                else
+                {
+                    cur_sel=me;
+                    scroll_event(last_sel,screen);
+                    note_new_current(screen,inm,me);
+                }
+            }
       }
+      break;
     }
-      }
-    } break;
-  }
 }
-
-
 
 void spicker::handle_up(image *screen, InputManager *inm)
 {

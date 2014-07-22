@@ -137,7 +137,7 @@ void console::put_char(char ch)
 
   switch (ch)
   {
-    case JK_BACKSPACE :
+    case SDLK_BACKSPACE :
     {
       if (cx)
       {
@@ -149,7 +149,7 @@ void console::put_char(char ch)
       }
     } break;
     case '\n' :
-    case JK_ENTER :
+    case SDLK_RETURN :
     {
       do_cr();
     } break;
@@ -195,39 +195,39 @@ void shell_term::execute(char const *st)
   put_string(" : unhandled\n");
 }
 
-int shell_term::handle_event(Event &ev)
+int shell_term::handle_event(SDL_Event &ev)
 {
   if (ev.window==con_win && con_win)
   {
     switch (ev.type)
     {
-      case EV_KEY :
+      case SDL_KEYDOWN:
       {
-    switch (ev.key)
+    switch (ev.key.keysym.sym)
     {
-      case JK_BACKSPACE:
+      case SDLK_BACKSPACE:
       {
         if (shcmd[0]!=0)
         {
           shcmd[strlen(shcmd)-1]=0;
-          put_char(ev.key);
+          put_char(ev.key.keysym.sym);
         }
       } break;
-      case JK_ENTER :
+      case SDLK_RETURN :
       {
-        put_char(ev.key);
+        put_char(ev.key.keysym.sym);
         execute(shcmd);
         prompt();
         shcmd[0]=0;
       } break;
       default :
       {
-        if (ev.key<256 && isprint(ev.key))
+        if (ev.key.keysym.sym<256 && isprint(ev.key.keysym.sym))
         {
           int x=strlen(shcmd);
           shcmd[x+1]=0;
-          shcmd[x]=ev.key;
-          put_char(ev.key);
+          shcmd[x]=ev.key.keysym.sym;
+          put_char(ev.key.keysym.sym);
         }
       } break;
     } break;

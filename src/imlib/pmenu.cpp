@@ -330,9 +330,10 @@ int psub_menu::handle_event(Jwindow *parent, int x, int y, SDL_Event &ev)
   if (has_flags) dx+=wm->font()->Size().x;
 
   int th=wm->font()->Size().y;
-  if (ev.mouse_move.x>=x && ev.mouse_move.y>=y && ev.mouse_move.x<x+w && ev.mouse_move.y<y+h)
+  ivec2 mouse_pos = wm->GetMousePos();
+  if (mouse_pos.x >= x && mouse_pos.y >= y && mouse_pos.x<x + w && mouse_pos.y<y + h)
   {
-    int new_active=(ev.mouse_move.y-y-3)/(th+1);
+	  int new_active = (mouse_pos.y - y - 3) / (th + 1);
     if (item_num(new_active)==NULL) new_active=-1;
 
     if (new_active!=active)
@@ -361,8 +362,9 @@ int pmenu_item::handle_event(Jwindow *parent, int x, int y, int w, int top,
 {
   x+=parent->m_pos.x;
   y+=parent->m_pos.y;
-  if (ev.mouse_move.x>=x && ev.mouse_move.y>=y && ev.mouse_move.x<x+w &&
-      ev.mouse_move.y<y+wm->font()->Size().y+2)
+  ivec2 mouse_pos = wm->GetMousePos();
+  if (mouse_pos.x >= x && mouse_pos.y >= y && mouse_pos.x<x + w &&
+	  mouse_pos.y<y + wm->font()->Size().y + 2)
   {
     if (sub) return 1;
     else
@@ -397,7 +399,7 @@ pmenu_item *pmenu::inarea(int mx, int my, image *screen)
 
 int psub_menu::own_event(SDL_Event &ev)
 {
-  if (win && ev.window==win) return 1; else
+  if (win && wm->GetActiveWindow()==win) return 1; else
     for (pmenu_item *p=first; p; p=p->next)
       if (p->own_event(ev))
         return 1;
@@ -417,7 +419,7 @@ pmenu_item::~pmenu_item()
 
 int pmenu::handle_event(SDL_Event &ev, image *screen)
 {
-  if (!active && ev.window!=bar) return 0;
+  if (!active && wm->GetActiveWindow()!=bar) return 0;
 /*
     int yes=0;
     if (ev.window==bar) yes=1;    // event in top bar?
@@ -435,7 +437,7 @@ int pmenu::handle_event(SDL_Event &ev, image *screen)
     {
       for (pmenu_item *p=top; p; p=p->next)
       {
-    pmenu_item *r=p->find_key(ev.key);
+    pmenu_item *r=p->find_key(ev.key.keysym.sym);
     if (r)
     {
       wm->PushUIEvent(r->id, r);

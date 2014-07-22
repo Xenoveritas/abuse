@@ -17,7 +17,7 @@ class chat_console : public console
 {
 
   public :
-  int chat_event(Event &ev) { if (!con_win) return 0; else return con_win==ev.window; }
+  int chat_event(SDL_Event &ev) { if (!con_win) return 0; else return con_win==wm->GetActiveWindow(); }
   void draw_user(char *st);
   void put_all(char *st);
   void clear();

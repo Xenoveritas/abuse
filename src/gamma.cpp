@@ -150,20 +150,20 @@ void gamma_correct(palette *&pal, int force_menu)
         Jwindow *gw = wm->CreateWindow(ivec2(xres / 2 - 190,
                                              yres / 2 - 90), ivec2(-1), gp);
 
-        Event ev;
+        SDL_Event ev;
         wm->flush_screen();
         do
         {
             do
             {
                 wm->get_event(ev);
-            } while(ev.type == EV_MOUSE_MOVE && wm->IsPending());
+            } while(ev.type == SDL_MOUSEMOTION && wm->IsPending());
             wm->flush_screen();
             if(ev.type == EV_CLOSE_WINDOW)
                 abort = 1;
-            if(ev.type == EV_KEY && ev.key == JK_ESC)
+            if(ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE)
                 abort = 1;
-        } while(!abort && (ev.type != EV_MESSAGE || ev.message.id != ID_GAMMA_OK));
+        } while(!abort && (ev.type != ABUSE_EV_MESSAGE || ev.user.code != ID_GAMMA_OK));
 
         dg = ((spicker *)gw->inm->get(ID_GREEN_PICKER))->first_selected() * 4;
 

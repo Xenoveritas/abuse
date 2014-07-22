@@ -11,7 +11,6 @@ add_library(imlib
     supmorph.cpp supmorph.h
     pcxread.cpp pcxread.h
     jrand.cpp jrand.h
-    keys.cpp keys.h
     dprint.cpp dprint.h
     status.cpp status.h
     pmenu.cpp pmenu.h
@@ -22,7 +21,6 @@ add_library(imlib
     sprite.cpp sprite.h
     jwindow.cpp jwindow.h
     video.cpp video.h
-    event.cpp
     timing.h jdir.h visobj.h
 )
 

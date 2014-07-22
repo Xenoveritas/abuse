@@ -579,8 +579,8 @@ void net_reload()
                   SDL_Event ev;
                   do
                   {
-                    wm->get_event(ev);
-                    if (ev.type==EV_MESSAGE && ev.message.id==ID_NET_DISCONNECT)
+                    wm->GetEvent(ev);
+					if (ev.type == ABUSE_EV_MESSAGE && ev.user.code == ID_NET_DISCONNECT)
                     {
                       game_face->end_reload(1);
                       base->input_state=INPUT_PROCESSING;
@@ -672,11 +672,11 @@ int get_inputs_from_server(unsigned char *buf)
       {
     if (wm->IsPending())
     {
-      Event ev;
+      SDL_Event ev;
       do
       {
-        wm->get_event(ev);
-        if (ev.type==EV_MESSAGE && ev.message.id==ID_NET_DISCONNECT)
+        wm->GetEvent(ev);
+		if (ev.type == ABUSE_EV_MESSAGE && ev.user.code == ID_NET_DISCONNECT)
         {
           kill_slackers();
           base->input_state=INPUT_PROCESSING;
@@ -691,8 +691,6 @@ int get_inputs_from_server(unsigned char *buf)
     if (abort)
     {
       wm->close_window(abort);
-      the_game->reset_keymap();
-
     }
   }
 

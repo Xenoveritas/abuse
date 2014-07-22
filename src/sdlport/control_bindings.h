@@ -39,6 +39,8 @@ public:
     virtual void OnControlChange(bool state) = 0;
 };
 
+SDL_Scancode ParseKeyName(const char* keyname);
+
 /**
  * Control bindings. Deals with directing SDL events to bound controls.
  * Note that it is the responsibility of the caller to deal with creating and

@@ -2,6 +2,7 @@
  *  Abuse - dark 2D side-scrolling platform game
  *  Copyright (c) 2001 Anthony Kruize <trandor@labyrinth.net.au>
  *  Copyright (c) 2005-2011 Sam Hocevar <sam@hocevar.net>
+ *  Copyright (c) 2014 Daniel Potter <dmpotter44@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,26 +46,107 @@ short mouse_buttons[5] = { 0, 0, 0, 0, 0 };
 void video_change_settings(void);
 void calculate_mouse_scaling(void);
 
+// Internal Abuse event used mostly for UI events but also for network events
+Uint32 ABUSE_EV_MESSAGE = -1;
+// Internal Abuse event for when a UI window is being closed.
+Uint32 ABUSE_EV_CLOSE_WINDOW = -1;
+// Internal Abuse event flag used to mark an event as "processed"
+Uint32 ABUSE_EV_SPURIOUS = -1;
+
+//
+// Constructor
+//
+EventHandler::EventHandler(image *screen, palette *pal)
+{
+	CHECK(screen && pal);
+
+	m_screen = screen;
+
+	// Mouse stuff
+	uint8_t mouse_sprite[]=
+	{
+		0, 2, 0, 0, 0, 0, 0, 0,
+		2, 1, 2, 0, 0, 0, 0, 0,
+		2, 1, 1, 2, 0, 0, 0, 0,
+		2, 1, 1, 1, 2, 0, 0, 0,
+		2, 1, 1, 1, 1, 2, 0, 0,
+		2, 1, 1, 1, 1, 1, 2, 0,
+		0, 2, 1, 1, 2, 2, 0, 0,
+		0, 0, 2, 1, 1, 2, 0, 0,
+		0, 0, 2, 1, 1, 2, 0, 0,
+		0, 0, 0, 2, 2, 0, 0, 0
+	};
+
+	Filter f;
+	f.Set(1, pal->brightest(1));
+	f.Set(2, pal->darkest(1));
+	image *im = new image(ivec2(8, 10), mouse_sprite);
+	f.Apply(im);
+
+	m_sprite = new Sprite(screen, im, ivec2(100, 100));
+	m_pos = screen->Size() / 2;
+	m_center = ivec2(0, 0);
+	if (ABUSE_EV_MESSAGE == -1)
+	{
+		ABUSE_EV_MESSAGE = SDL_RegisterEvents(3);
+		if (ABUSE_EV_MESSAGE == -1)
+		{
+			// TODO: Some sort of error handling (although there isn't much we
+			// can do right now other than die entirely, and this should be
+			// basically impossible to cause)
+		}
+		else
+		{
+			ABUSE_EV_CLOSE_WINDOW = ABUSE_EV_MESSAGE + 1;
+			ABUSE_EV_SPURIOUS = ABUSE_EV_MESSAGE + 2;
+		}
+	}
+}
+
+//
+// Destructor
+//
+EventHandler::~EventHandler()
+{
+	;
+}
+
+void EventHandler::PushUIEvent(int id, void* widget)
+{
+	SDL_Event event;
+	event.type = ABUSE_EV_MESSAGE;
+	event.user.code = id;
+	event.user.data1 = widget;
+	SDL_PushEvent(&event);
+}
+
+ivec2 EventHandler::GetMousePos()
+{
+	ivec2 pos;
+	SDL_GetMouseState(&pos.x, &pos.y);
+	ScaleMouse(pos.x, pos.y);
+	return pos;
+}
+
 void EventHandler::SysWarpMouse(ivec2 pos)
 {
-    // This should take into account mouse scaling.
-    pos.x = ((pos.x * mouse_xscale + 0x8000) >> 16) + mouse_xpad;
-    pos.y = ((pos.y * mouse_yscale + 0x8000) >> 16) + mouse_ypad;
-    SDL_WarpMouseInWindow(window, pos.x, pos.y);
+	// This should take into account mouse scaling.
+	pos.x = ((pos.x * mouse_xscale + 0x8000) >> 16) + mouse_xpad;
+	pos.y = ((pos.y * mouse_yscale + 0x8000) >> 16) + mouse_ypad;
+	SDL_WarpMouseInWindow(window, pos.x, pos.y);
 }
 
 void EventHandler::ScaleMouse(Sint32& x, Sint32& y)
 {
-
-    // Remove any padding SDL may have added
-    x -= mouse_xpad;
-    if (x < 0)
-        x = 0;
-    y -= mouse_ypad;
-    if (y < 0)
-        y = 0;
-    x = Min((x << 16) / mouse_xscale, main_screen->Size().x - 1);
-    y = Min((y << 16) / mouse_yscale, main_screen->Size().y - 1);
+	// Remove any padding SDL may have added
+	x -= mouse_xpad;
+	if (x < 0)
+		x = 0;
+	y -= mouse_ypad;
+	if (y < 0)
+		y = 0;
+	x = Min((x << 16) / mouse_xscale, main_screen->Size().x - 1);
+	y = Min((y << 16) / mouse_yscale, main_screen->Size().y - 1);
 }
 
 //
@@ -73,34 +155,46 @@ void EventHandler::ScaleMouse(Sint32& x, Sint32& y)
 //
 int EventHandler::IsPending()
 {
-    return SDL_PollEvent(NULL);
+	return SDL_PollEvent(NULL);
+}
+
+//
+// flush_screen()
+// Redraw the screen
+//
+void EventHandler::FlushScreen()
+{
+	update_dirty(main_screen);
 }
 
 //
 // Get and handle waiting events
 //
-void EventHandler::SysEvent(SDL_Event &ev)
+int EventHandler::PollEvent(SDL_Event &ev)
 {
-    // Gather next event
-    if (!SDL_PollEvent(&ev))
-        return; // This should not happen
+	// Gather next event
+	int rv = SDL_PollEvent(&ev);
 
-    // Sort the mouse out
-    // Always scale mouse events prior to letting them be handled elsewhere.
-    switch (ev.type)
-    {
-    case SDL_MOUSEBUTTONDOWN:
-    case SDL_MOUSEBUTTONUP:
-        ScaleMouse(ev.button.x, ev.button.y);
-        break;
-    case SDL_MOUSEMOTION:
-        ScaleMouse(ev.motion.x, ev.motion.y);
-        break;
-    case SDL_MOUSEWHEEL:
-        ScaleMouse(ev.wheel.x, ev.wheel.y);
-        break;
-    }
-    // And that's it, everything else should deal with raw SDL events now
+	if (rv > 0)
+	{
+		// Sort the mouse out
+		// Always scale mouse events prior to letting them be handled elsewhere.
+		switch (ev.type)
+		{
+		case SDL_MOUSEBUTTONDOWN:
+		case SDL_MOUSEBUTTONUP:
+			ScaleMouse(ev.button.x, ev.button.y);
+			break;
+		case SDL_MOUSEMOTION:
+			ScaleMouse(ev.motion.x, ev.motion.y);
+			break;
+		case SDL_MOUSEWHEEL:
+			ScaleMouse(ev.wheel.x, ev.wheel.y);
+			break;
+		}
+	}
+	// And that's it, everything else should deal with raw SDL events now
+	return rv;
 #if 0
     int x, y;
     uint8_t buttons = SDL_GetMouseState(&x, &y);
@@ -486,4 +580,9 @@ void EventHandler::SysEvent(SDL_Event &ev)
         }
     }
 #endif
+}
+
+bool EventHandler::IsActiveUserEvent(SDL_Event &ev)
+{
+	return ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_CONTROLLERBUTTONDOWN || ev.type == SDL_KEYDOWN;
 }

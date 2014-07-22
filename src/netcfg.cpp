@@ -62,8 +62,8 @@ void net_configuration::cfg_error(char const *msg)
   do
   {
     wm->flush_screen();
-    do { wm->get_event(ev); } while (ev.type==SDL_MOUSEMOTION && wm->IsPending());
-  } while (ev.type!=EV_MESSAGE || ev.message.id!=CFG_ERR_OK || ev.type==EV_CLOSE_WINDOW || (ev.type==SDL_KEYDOWN && ev.key==SDLK_ESCAPE));
+    do { wm->GetEvent(ev); } while (ev.type==SDL_MOUSEMOTION && wm->IsPending());
+  } while (ev.type!=ABUSE_EV_MESSAGE || ev.user.code!=CFG_ERR_OK || ev.type==ABUSE_EV_CLOSE_WINDOW || (ev.type==SDL_KEYDOWN && ev.key.keysym.sym==SDLK_ESCAPE));
   wm->close_window(j);
   wm->flush_screen();
 }
@@ -296,14 +296,14 @@ void net_configuration::error(char const *message)
     inm.clear_current();
 
     int done=0;
-    Event ev;
+    SDL_Event ev;
     do
     {
       wm->flush_screen();
-      do  { wm->get_event(ev); } while (ev.type==EV_MOUSE_MOVE && wm->IsPending());
+      do  { wm->GetEvent(ev); } while (ev.type==SDL_MOUSEMOTION && wm->IsPending());
       inm.handle_event(ev,NULL);
-      if ((ev.type==EV_KEY && (ev.key==JK_ESC || ev.key==JK_ENTER)) ||
-      ev.type==EV_MESSAGE) done=1;
+      if ((ev.type==SDL_KEYDOWN && (ev.key.keysym.sym==SDLK_ESCAPE || ev.key.keysym.sym==SDLK_RETURN)) ||
+      ev.type==ABUSE_EV_MESSAGE) done=1;
     } while (!done);
   }
 
@@ -416,15 +416,15 @@ int net_configuration::get_options(int server)
     inm.clear_current();
 
     int done=0;
-    Event ev;
+    SDL_Event ev;
     do
     {
       wm->flush_screen();
-      do { wm->get_event(ev); } while (ev.type==EV_MOUSE_MOVE && wm->IsPending());
+      do { wm->GetEvent(ev); } while (ev.type==SDL_MOUSEMOTION && wm->IsPending());
       inm.handle_event(ev,NULL);
-      if (ev.type==EV_MESSAGE)
+      if (ev.type==ABUSE_EV_MESSAGE)
       {
-    switch (ev.message.id)
+    switch (ev.user.code)
     {
       case NET_OK : { if (confirm_inputs(&inm,server))
           { ret=1; done=1; }
@@ -432,7 +432,7 @@ int net_configuration::get_options(int server)
           } break;
       case NET_CANCEL : done=1;
     }
-      } if (ev.type==EV_KEY && ev.key==JK_ESC) done=1;
+      } if (ev.type==SDL_KEYDOWN && ev.key.keysym.sym==SDLK_ESCAPE) done=1;
 
     } while (!done);
 
@@ -472,7 +472,7 @@ int net_configuration::input()   // pulls up dialog box and input fileds
     inm.clear_current();
 
 
-    Event ev;
+    SDL_Event ev;
     int done=0;
     int button_y=25,total_games=0;
     enum { MAX_GAMES=9 };
@@ -484,24 +484,24 @@ int net_configuration::input()   // pulls up dialog box and input fileds
     {
       if (wm->IsPending())
       {
-        do  { wm->get_event(ev); } while (ev.type==EV_MOUSE_MOVE && wm->IsPending());
+        do  { wm->GetEvent(ev); } while (ev.type==SDL_MOUSEMOTION && wm->IsPending());
         inm.handle_event(ev,NULL);
-        if (ev.type==EV_MESSAGE)
+        if (ev.type==ABUSE_EV_MESSAGE)
         {
-          switch (ev.message.id)
+          switch (ev.user.code)
           {
             case NET_CANCEL : done=1; break;
             case NET_SERVER : done=1; break;
             case NET_SINGLE : done=1; break;
             default :
-              if (ev.message.id>=NET_GAME && ev.message.id<NET_GAME+MAX_GAMES)
+				if (ev.user.code >= NET_GAME && ev.user.code<NET_GAME + MAX_GAMES)
               {
-                join_game=ev.message.id-NET_GAME;
+				  join_game = ev.user.code - NET_GAME;
                 done=1;
               }
           }
         }
-        else if (ev.type==EV_KEY && ev.key==JK_ESC )
+        else if (ev.type==SDL_KEYDOWN && ev.key.keysym.sym==SDLK_ESCAPE)
         {
             done=1;
         }
@@ -573,7 +573,7 @@ int net_configuration::input()   // pulls up dialog box and input fileds
         for (i=0; i<total_games; i++)        // delete all the addresses we found and stored
           delete game_addr[join_game];
       }
-    } else if (ev.type==EV_MESSAGE && ev.message.id==NET_SERVER)
+    } else if (ev.type==ABUSE_EV_MESSAGE && ev.user.code==NET_SERVER)
     {
       if (get_options(1))
       {
@@ -581,7 +581,7 @@ int net_configuration::input()   // pulls up dialog box and input fileds
         return 1;
       }
       else return 0;
-    } else if (ev.type==EV_MESSAGE && ev.message.id==NET_SINGLE)
+    } else if (ev.type==ABUSE_EV_MESSAGE && ev.user.code==NET_SINGLE)
     {
       state=RESTART_SINGLE;
       start_running=0;

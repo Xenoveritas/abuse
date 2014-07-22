@@ -80,9 +80,9 @@ void game_server::game_start_wait()
 
     if (wm->IsPending())
     {
-      do { wm->get_event(ev); }  while (ev.type== SDL_MOUSEMOTION && wm->IsPending());
+      do { wm->GetEvent(ev); } while (ev.type == SDL_MOUSEMOTION && wm->IsPending());
       wm->flush_screen();
-      if (ev.type==EV_MESSAGE && ev.message.id==ID_CANCEL)
+      if (ev.type == ABUSE_EV_MESSAGE && ev.user.code == ID_CANCEL)
         abort=1;
     }
 
