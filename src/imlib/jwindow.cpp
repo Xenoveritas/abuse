@@ -111,11 +111,6 @@ void WindowManager::GetEvent(SDL_Event &ev)
 {
 	PollEvent(ev);
 
-	if (ev.type==SDL_KEYDOWN)
-		key_state[ev.key.keysym.sym]=1;
-	else if (ev.type==SDL_KEYUP)
-		key_state[ev.key.keysym.sym]=0;
-
 	if (state==inputing)
 	{
 		Jwindow *j;
@@ -257,7 +252,6 @@ WindowManager::WindowManager(image *screen, palette *pal, int Hi,
     hi = Hi; low = Low; med = Med; m_first = NULL; m_pal = pal; m_grab = NULL;
     bk = pal->find_closest(0, 0, 0);
     state = inputing; fnt = Font;  wframe_fnt = Font;
-    memset(key_state, 0, sizeof(key_state));
     frame_suppress = 0;
 }
 
@@ -319,6 +313,17 @@ Jwindow * WindowManager::CreateWindow(ivec2 pos, ivec2 size,
     j->show();
 
     return j;
+}
+
+int WindowManager::KeyPressed(SDL_Keycode keycode)
+{
+    int numkeys;
+    const Uint8* keymap = SDL_GetKeyboardState(&numkeys);
+    SDL_Scancode scancode = SDL_GetScancodeFromKey(keycode);
+    if (scancode >= numkeys)
+        return 0;
+    else
+        return keymap[scancode];
 }
 
 void WindowManager::flush_screen()
@@ -529,7 +534,6 @@ int Jwindow::bottom_border()
     return frame_bottom();
 }
 
-
 ifield *InputManager::unlink(int id)     // unlinks ID from fields list and return the pointer to it
 {
   for (ifield *i=m_first,*last=NULL; i; i=i->next)
@@ -690,7 +694,7 @@ void InputManager::grab_focus(ifield *i)
 {
     m_grab = i;
     if (m_cur)
-        wm->GrabFocus(m_cur);
+		wm->grab_focus(m_cur);
 }
 
 void InputManager::release_focus()

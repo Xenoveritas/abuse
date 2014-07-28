@@ -23,6 +23,7 @@
 #include "SDL.h"
 
 class image;
+class palette;
 class Sprite;
 
 // Abuse user events

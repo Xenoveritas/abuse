@@ -30,6 +30,14 @@ chat_console::chat_console(JCFont *font, int width, int height) :
     lasty = yres - h;
 }
 
+int chat_console::chat_event(SDL_Event &ev)
+{
+    if (!con_win)
+        return 0;
+    else
+        return con_win==wm->GetActiveWindow();
+}
+
 void chat_console::clear()
 {
   memset(screen,' ',w*h);
@@ -54,4 +62,3 @@ void chat_console::draw_user(char *st)
   cy=h-1;
   redraw();
 }
-

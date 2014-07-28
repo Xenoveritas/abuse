@@ -15,18 +15,14 @@
 
 class chat_console : public console
 {
-
-  public :
-  int chat_event(SDL_Event &ev) { if (!con_win) return 0; else return con_win==wm->GetActiveWindow(); }
-  void draw_user(char *st);
-  void put_all(char *st);
-  void clear();
-  chat_console(JCFont *font, int width, int height);
-
-} ;
+public:
+    int chat_event(SDL_Event &ev);
+    void draw_user(char *st);
+    void put_all(char *st);
+    void clear();
+    chat_console(JCFont *font, int width, int height);
+};
 
 extern chat_console *chat;
 
 #endif
-
-

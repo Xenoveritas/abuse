@@ -185,34 +185,24 @@ automap::automap(level *l, int width, int height)
   toggle_window();
 }
 
-void automap::handle_event(Event &ev)
+void automap::handle_event(SDL_Event &ev)
 {
+	Jwindow *window = wm->GetActiveWindow();
 
-  //only respond to stuff in our window or on the main screen
-  if (ev.window==NULL || ev.window==automap_window)
-  {
-    switch (ev.type)
-    {
-      case EV_KEY :
-        switch(ev.key)
-    {
-      case 'A' :
-      case 'a' :
-          toggle_window();
-        break;
-    }
-    break;
-      case EV_CLOSE_WINDOW :
-        wm->close_window(automap_window);
-    automap_window=NULL;
-    break;
-    }
-  }
+	//only respond to stuff in our window or on the main screen
+	if (window == NULL || window==automap_window)
+	{
+		if (ev.type == SDL_KEYDOWN)
+		{
+			if (ev.key.keysym.sym == SDLK_a)
+			{
+				toggle_window();
+			}
+		}
+		else if (ev.type == ABUSE_EV_CLOSE_WINDOW)
+		{
+			wm->close_window(automap_window);
+			automap_window=NULL;
+		}
+	}
 }
-
-
-
-
-
-
-

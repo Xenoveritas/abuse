@@ -197,7 +197,7 @@ void shell_term::execute(char const *st)
 
 int shell_term::handle_event(SDL_Event &ev)
 {
-  if (ev.window==con_win && con_win)
+  if (wm->GetActiveWindow()==con_win && con_win)
   {
     switch (ev.type)
     {

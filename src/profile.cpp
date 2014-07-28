@@ -43,9 +43,9 @@ void profile_toggle()
   else profile_init();
 }
 
-int profile_handle_event(Event &ev)
+int profile_handle_event(SDL_Event &ev)
 {
-  if (ev.type==EV_CLOSE_WINDOW && ev.window==prof_win)
+  if (ev.type==ABUSE_EV_CLOSE_WINDOW && wm->GetActiveWindow()==prof_win)
   {
     profile_toggle();
     return 1;

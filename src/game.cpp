@@ -141,8 +141,8 @@ void handle_no_space()
     do
     {
         wm->flush_screen();
-        wm->get_event(ev);
-    } while(ev.type != EV_MESSAGE || ev.message.id != ID_QUIT_OK);
+        wm->GetEvent(ev);
+    } while(ev.type != ABUSE_EV_MESSAGE || ev.user.code != ID_QUIT_OK);
     wm->close_window(no_space);
 
     close_graphics();
@@ -381,7 +381,7 @@ void Game::set_state(int new_state)
     if (new_state != RUN_STATE)
         wm->SetRightStickMouse();
     int d = 0;
-    reset_keymap(); // we think all the keys are up right now
+    //reset_keymap(); // we think all the keys are up right now
 
     if(playing_state(new_state) && !playing_state(state))
     {
@@ -455,7 +455,7 @@ void Game::joy_calb(SDL_Event &ev)
     if(!joy_win) // make sure the joystick calibration window is open
         return;
 
-    if(ev.type == EV_SPURIOUS) // spurious means we should update our status
+    if(ev.type == ABUSE_EV_SPURIOUS) // spurious means we should update our status
     {
         int b1, b2, b3 = 0, x, y;
         joy_status(b1, b2, b2, x, y);
@@ -473,7 +473,7 @@ void Game::joy_calb(SDL_Event &ev)
         if(but)
             joy_calibrate();
     }
-    else if(ev.type == EV_MESSAGE && ev.message.id == JOY_OK)
+    else if(ev.type == ABUSE_EV_MESSAGE && ev.user.code == JOY_OK)
     {
         wm->close_window(joy_win);
         joy_win = NULL;
@@ -583,18 +583,18 @@ void Game::dev_scroll()
     int xs, ys;
     if(mousex < xmargin &&  dev_cont->ok_to_scroll()) xs = -18;
     else if(mousex>(main_screen->Size().x-xmargin) &&  dev_cont->ok_to_scroll()) xs = 18;
-    else if(wm->key_pressed(JK_LEFT) && !last_input && !dev_cont->need_arrows())
+    else if(wm->KeyPressed(SDLK_LEFT) && !last_input && !dev_cont->need_arrows())
       xs = -18;
-    else if(wm->key_pressed(JK_RIGHT) && !last_input && !dev_cont->need_arrows())
+    else if(wm->KeyPressed(SDLK_RIGHT) && !last_input && !dev_cont->need_arrows())
       xs = 18;
     else xs = 0;
 
 
     if(mousey < ymargin && dev_cont->ok_to_scroll()) ys = -18;
     else if(mousey>(main_screen->Size().y-ymargin) &&  dev_cont->ok_to_scroll()) ys = 18;
-    else if(wm->key_pressed(JK_UP) && !last_input)
+	else if (wm->KeyPressed(SDLK_UP) && !last_input)
       ys = -18;
-    else if(wm->key_pressed(JK_DOWN) && !last_input)
+	else if (wm->KeyPressed(SDLK_DOWN) && !last_input)
       ys = 18;
     else ys = 0;
 
@@ -1218,12 +1218,10 @@ void do_title()
         cmap[i] = pal->find_closest(i * 256 / 32, i * 256 / 32, i * 256 / 32);
 
         SDL_Event ev;
-        ev.type = EV_SPURIOUS;
+        ev.type = ABUSE_EV_SPURIOUS;
         Timer total;
-        // HACK: Disable wheel for now since it'll trigger skipping the intro
-        wm->SetIgnoreWheelEvents(true);
 
-        while (ev.type != EV_KEY && ev.type != EV_MOUSE_BUTTON)
+        while (!wm->IsActiveUserEvent(ev))
         {
             Timer frame;
 
@@ -1238,8 +1236,8 @@ void do_title()
             wm->flush_screen();
             time_marker now;
 
-            while(wm->IsPending() && ev.type != EV_KEY)
-                wm->get_event(ev);
+            while(wm->IsPending() && !wm->IsActiveUserEvent(ev))
+                wm->GetEvent(ev);
 
             if((i % 5) == 0 && DEFINEDP(space_snd) && (sound_avail & SFX_INITIALIZED))
                 cache.sfx(lnumber_value(space_snd))->play(sfx_volume * 90 / 127);
@@ -1247,10 +1245,8 @@ void do_title()
             frame.WaitMs(25.f);
             frame.GetMs();
         }
-        // HACK: And reenable them
-        wm->SetIgnoreWheelEvents(false);
 
-        the_game->reset_keymap();
+        //the_game->reset_keymap();
 
         fade_out(16);
 
@@ -1322,7 +1318,7 @@ Game::Game(int argc, char **argv)
 
   get_key_bindings();
 
-  reset_keymap();                   // we think all the keys are up right now
+  //reset_keymap();                   // we think all the keys are up right now
   finished = false;
 
   calc_light_table(pal);
@@ -1391,14 +1387,6 @@ Game::Game(int argc, char **argv)
 
 
   chat = new chat_console( console_font, 50, 6);
-
-  if(!wm->has_mouse())
-  {
-    close_graphics();
-    image_uninit();
-    printf("No mouse driver detected, please rectify.\n");
-    exit(0);
-  }
 
   gamma_correct(pal);
 
@@ -1571,260 +1559,234 @@ extern int start_edit;
 
 void Game::get_input()
 {
-    SDL_Event ev;
-    idle_ticks++;
-    while(event_waiting())
-    {
-        get_event(ev);
+	SDL_Event ev;
+	idle_ticks++;
+	while(event_waiting())
+	{
+		get_event(ev);
 
-        if(ev.type == EV_MOUSE_MOVE)
-        {
-            last_input = ev.window;
-        }
-        // don't process repeated keys in the main window, it will slow down the game to handle such
-        // useless events. However in other windows it might be useful, such as in input windows
-        // where you want to repeatedly scroll down...
-        if(ev.type != EV_KEY || !key_down(ev.key) || ev.window || (dev & EDIT_MODE))
-        {
-            if(ev.type == EV_KEY)
-            {
-                set_key_down(ev.key, 1);
-                if(playing_state(state))
-                {
-                    if(ev.key < 256)
-                    {
-                        if(chat && chat->chat_event(ev))
-                            base->packet.write_uint8(SCMD_CHAT_KEYPRESS);
-                        else
-                            base->packet.write_uint8(SCMD_KEYPRESS);
-                    }
-                    else
-                        base->packet.write_uint8(SCMD_EXT_KEYPRESS);
-                    base->packet.write_uint8(client_number());
-                    if(ev.key > 256)
-                        base->packet.write_uint8(ev.key - 256);
-                    else
-                        base->packet.write_uint8(ev.key);
-                }
-            }
-            else if(ev.type == EV_KEYRELEASE)
-            {
-                set_key_down(ev.key, 0);
-                if(playing_state(state))
-                {
-                    if(ev.key < 256)
-                        base->packet.write_uint8(SCMD_KEYRELEASE);
-                    else
-                        base->packet.write_uint8(SCMD_EXT_KEYRELEASE);
-                    base->packet.write_uint8(client_number());
-                    if(ev.key > 255)
-                        base->packet.write_uint8(ev.key - 256);
-                    else
-                        base->packet.write_uint8(ev.key);
-                }
-            }
+		if(ev.type == SDL_MOUSEMOTION)
+		{
+			last_input = wm->GetActiveWindow();
+		}
+		// don't process repeated keys in the main window, it will slow down the game to handle such
+		// useless events. However in other windows it might be useful, such as in input windows
+		// where you want to repeatedly scroll down...
+		if(ev.type != SDL_KEYDOWN || !key_down(ev.key.keysym.sym) || wm->GetActiveWindow() != NULL || (dev & EDIT_MODE))
+		{
+			if(ev.type == SDL_KEYDOWN)
+			{
+				set_key_down(ev.key, 1);
+				if(playing_state(state))
+				{
+					if(ev.key.keysym.sym < 256)
+					{
+						if(chat && chat->chat_event(ev))
+							base->packet.write_uint8(SCMD_CHAT_KEYPRESS);
+						else
+							base->packet.write_uint8(SCMD_KEYPRESS);
+					}
+					else
+						base->packet.write_uint8(SCMD_EXT_KEYPRESS);
+					base->packet.write_uint8(client_number());
+					if (ev.key.keysym.sym > 256)
+						base->packet.write_uint8(ev.key.keysym.sym - 256);
+					else
+						base->packet.write_uint8(ev.key.keysym.sym);
+				}
+			}
+			else if(ev.type == SDL_KEYUP)
+			{
+				set_key_down(ev.key.keysym.sym, 0);
+				if(playing_state(state))
+				{
+					if (ev.key.keysym.sym < 256)
+						base->packet.write_uint8(SCMD_KEYRELEASE);
+					else
+						base->packet.write_uint8(SCMD_EXT_KEYRELEASE);
+					base->packet.write_uint8(client_number());
+					if (ev.key.keysym.sym > 255)
+						base->packet.write_uint8(ev.key.keysym.sym - 256);
+					else
+						base->packet.write_uint8(ev.key.keysym.sym);
+				}
+			}
 
-            if((dev & EDIT_MODE) || start_edit || ev.type == EV_MESSAGE)
-            {
-                dev_cont->handle_event(ev);
-            }
+			if((dev & EDIT_MODE) || start_edit || ev.type == ABUSE_EV_MESSAGE)
+			{
+				dev_cont->handle_event(ev);
+			}
 
-            view *v = first_view;
-            for(; v; v = v->next)
-            {
-                if(v->local_player() && v->handle_event(ev))
-                    ev.type = EV_SPURIOUS;       // if the Event was used by the view, gobble it up
-            }
+			view *v = first_view;
+			for(; v; v = v->next)
+			{
+				if(v->local_player() && v->handle_event(ev))
+					ev.type = ABUSE_EV_SPURIOUS;       // if the Event was used by the view, gobble it up
+			}
 
-            if(current_automap)
-            {
-                current_automap->handle_event(ev);
-            }
+			if(current_automap)
+			{
+				current_automap->handle_event(ev);
+			}
 
-            help_handle_event(ev);
-            mousex = last_demo_mpos.x;
-            mousey = last_demo_mpos.y;
+			help_handle_event(ev);
+			mousex = last_demo_mpos.x;
+			mousey = last_demo_mpos.y;
 
-            if(ev.type == EV_MESSAGE)
-            {
-                switch (ev.message.id)
-                {
-                    case CALB_JOY:
-                    {
-                        if(!joy_win)
-                        {
-                            joy_win = wm->CreateWindow(ivec2(80, 50), ivec2(-1),
-                                    new button(70, 9, JOY_OK, "OK",
-                                    new info_field(0, 30, DEV_NULL,
-                                    " Center joystick and\n"
-                                    "press the fire button", NULL)),
-                                    "Joystick");
-                            set_state(JOY_CALB_STATE);
-                        }
-                    }
-                    case TOP_MENU:
-                    {
-                        menu_select(ev);
-                    } break;
-                    case DEV_QUIT:
-                    {
-                        finished = true;
-                    } break;
-                }
-            }
-            else if(ev.type == EV_CLOSE_WINDOW && ev.window == top_menu)
-            {
-                wm->close_window(top_menu);
-                top_menu = NULL;
-            }
+			if(ev.type == ABUSE_EV_MESSAGE)
+			{
+				switch (ev.user.code)
+				{
+				case CALB_JOY:
+					if(!joy_win)
+					{
+						joy_win = wm->CreateWindow(ivec2(80, 50), ivec2(-1),
+							new button(70, 9, JOY_OK, "OK",
+							new info_field(0, 30, DEV_NULL,
+								" Center joystick and\n"
+								"press the fire button", NULL)),
+							"Joystick");
+						set_state(JOY_CALB_STATE);
+					}
+				case TOP_MENU:
+					menu_select(ev);
+					break;
+				case DEV_QUIT:
+					finished = true;
+					break;
+				}
+			}
+			else if(ev.type == ABUSE_EV_CLOSE_WINDOW && wm->GetActiveWindow() == top_menu)
+			{
+				wm->close_window(top_menu);
+				top_menu = NULL;
+			}
 
-            switch(state)
-            {
-                case JOY_CALB_STATE:
-                {
-                    joy_calb(ev);
-                } break;
-                case INTRO_START_STATE:
-                {
-                    if(dev & EDIT_MODE)
-                        set_state(RUN_STATE);
-                    else
-                        set_state(MENU_STATE);
-                } break;
-                case PAUSE_STATE:
-                {
-                    if(ev.type == EV_KEY && (ev.key == JK_SPACE || ev.key == JK_ENTER))
-                    {
-                        set_state(RUN_STATE);
-                    }
-                } break;
-                case RUN_STATE:
-                {
-                    if(ev.window == NULL)
-                    {
-                        switch (ev.type)
-                        {
-                            case EV_KEY:
-                            {
-                                switch (ev.key)
-                                {
-                                    case 'm':
-                                    {
-                                        if(dev & MAP_MODE)
-                                            dev -= MAP_MODE;
-                                        else if((player_list && player_list->next) || dev & EDIT_MODE)
-                                            dev |= MAP_MODE;
+			switch(state)
+			{
+			case JOY_CALB_STATE:
+				joy_calb(ev);
+				break;
+			case INTRO_START_STATE:
+				if(dev & EDIT_MODE)
+					set_state(RUN_STATE);
+				else
+					set_state(MENU_STATE);
+				break;
+			case PAUSE_STATE:
+				if (ev.type == SDL_KEYDOWN && (ev.key.keysym.sym == SDLK_SPACE || ev.key.keysym.sym == SDLK_RETURN))
+				{
+					set_state(RUN_STATE);
+				}
+				break;
+			case RUN_STATE:
+				if(wm->GetActiveWindow() == NULL)
+				{
+					if (ev.type == SDL_KEYDOWN)
+					{
+						bool shift = (ev.key.keysym.mod & KMOD_SHIFT) != 0;
+						switch (ev.key.keysym.sym)
+						{
+						case SDLK_m:
+							if (!shift)
+							{
+								if(dev & MAP_MODE)
+									dev -= MAP_MODE;
+								else if((player_list && player_list->next) || dev & EDIT_MODE)
+									dev |= MAP_MODE;
 
-                                        if(!(dev & MAP_MODE))
-                                        {
-                                            if(dev_cont->tbw)
-                                                dev_cont->toggle_toolbar();
-                                            edit_mode = ID_DMODE_DRAW;
-                                        }
-                                        need_refresh();
-                                    } break;
-                                    case 'v':
-                                    {
-                                        wm->Push(new Event(DO_VOLUME, NULL));
-                                    } break;
-                                    case 'p':
-                                    {
-                                        if(!(dev & EDIT_MODE) && (!main_net_cfg ||
-                                            (main_net_cfg->state != net_configuration::SERVER &&
-                                            main_net_cfg->state != net_configuration::CLIENT)))
-                                        {
-                                            set_state(PAUSE_STATE);
-                                        }
-                                    } break;
-                                    case 'S':
-                                    {
-                                        if(start_edit)
-                                        {
-                                            wm->Push(new Event(ID_LEVEL_SAVE, NULL));
-                                        }
-                                    } break;
-                                    case JK_TAB:
-                                        if(start_edit)
-                                            toggle_edit_mode();
-                                        need_refresh();
-                                        break;
-                                    case 'c':
-                                    case 'C':
-                                        if(chatting_enabled && (!(dev & EDIT_MODE) && chat))
-                                            chat->toggle();
-                                        break;
-                                    case '9':
-                                        dev = dev ^ PERFORMANCE_TEST_MODE;
-                                        need_refresh();
-                                        break;
-                                }
-                            } break;
-                            case EV_RESIZE:
-                            {
-                                view *v;
-                                for(v = first_view; v; v = v->next)  // see if any views need to change size
-                                {
-                                    if(v->local_player())
-                                    {
-                                        int w = (xres - 10)/(small_render ? 2 : 1);
-                                        int h = (yres - 10)/(small_render ? 2 : 1);
+								if(!(dev & MAP_MODE))
+								{
+									if(dev_cont->tbw)
+										dev_cont->toggle_toolbar();
+									edit_mode = ID_DMODE_DRAW;
+								}
+								need_refresh();
+							}
+							break;
+						case SDLK_v:
+							if (!shift)
+							{
+								wm->PushUIEvent(DO_VOLUME, NULL);
+							}
+							break;
+						case SDLK_p:
+							if (!shift)
+							{
+								if(!(dev & EDIT_MODE) && (!main_net_cfg ||
+									(main_net_cfg->state != net_configuration::SERVER &&
+									main_net_cfg->state != net_configuration::CLIENT)))
+								{
+									set_state(PAUSE_STATE);
+								}
+							}
+							break;
+						case SDLK_s:
+							if (shift)
+							{
+								if(start_edit)
+								{
+									wm->PushUIEvent(ID_LEVEL_SAVE, NULL);
+								}
+							}
+							break;
+						case SDLK_TAB:
+							if(start_edit)
+								toggle_edit_mode();
+							need_refresh();
+							break;
+						case SDLK_c:
+							if(chatting_enabled && (!(dev & EDIT_MODE) && chat))
+								chat->toggle();
+							break;
+						case SDLK_9:
+							dev = dev ^ PERFORMANCE_TEST_MODE;
+							need_refresh();
+							break;
+						}
+					}
+					else if (ev.type == ABUSE_EV_MESSAGE)
+					{
+						switch (ev.user.code)
+						{
+						case RAISE_SFX:
+						case LOWER_SFX:
+						case RAISE_MUSIC:
+						case LOWER_MUSIC:
+							if (ev.user.code == RAISE_SFX && sfx_volume != 127)
+								sfx_volume = Min(127, sfx_volume + 16);
+							if (ev.user.code == LOWER_SFX && sfx_volume != 0)
+								sfx_volume = Max(sfx_volume - 16, 0);
+							if (ev.user.code == RAISE_MUSIC && music_volume != 126)
+							{
+								music_volume = Min(music_volume + 16, 127);
+								if(current_song && (sound_avail & MUSIC_INITIALIZED))
+									current_song->set_volume(music_volume);
+							}
 
-                                        v->suggest.send_view = 1;
-                                        v->suggest.cx1 = 5;
-                                        v->suggest.cx2 = 5 + w;
-                                        v->suggest.cy1 = 5;
-                                        v->suggest.cy2 = 5 + h;
-                                        v->suggest.pan_x = v->pan_x;
-                                        v->suggest.pan_y = v->pan_y;
-                                        v->suggest.shift = v->m_shift;
-                                    }
-                                }
-                                draw();
-                            } break;
-                            case EV_MESSAGE:
-                            {
-                                switch (ev.message.id)
-                                {
-                                    case RAISE_SFX:
-                                    case LOWER_SFX:
-                                    case RAISE_MUSIC:
-                                    case LOWER_MUSIC:
-                                    {
-                                        if(ev.message.id == RAISE_SFX && sfx_volume != 127)
-                                            sfx_volume = Min(127, sfx_volume + 16);
-                                        if(ev.message.id == LOWER_SFX && sfx_volume != 0)
-                                            sfx_volume = Max(sfx_volume - 16, 0);
-                                        if(ev.message.id == RAISE_MUSIC && music_volume != 126)
-                                        {
-                                            music_volume = Min(music_volume + 16, 127);
-                                            if(current_song && (sound_avail & MUSIC_INITIALIZED))
-                                                current_song->set_volume(music_volume);
-                                        }
+							if (ev.user.code == LOWER_MUSIC && music_volume != 0)
+							{
+								music_volume = Max(music_volume - 16, 0);
+								if(current_song && (sound_avail & MUSIC_INITIALIZED))
+									current_song->set_volume(music_volume);
+							}
 
-                                        if(ev.message.id == LOWER_MUSIC && music_volume != 0)
-                                        {
-                                            music_volume = Max(music_volume - 16, 0);
-                                            if(current_song && (sound_avail & MUSIC_INITIALIZED))
-                                                current_song->set_volume(music_volume);
-                                        }
-
-                                        ((button *)ev.message.data)->push();
-/*                                        volume_window->inm->redraw();
-                                        draw_value(volume_window->m_surf, 2, 43,
-                                                (volume_window->x2()-volume_window->x1()-1), 8, sfx_volume, 127);
-                                        draw_value(volume_window->m_surf, 2, 94,
-                                                (volume_window->x2()-volume_window->x1()-1), 8, music_volume, 127);
-*/
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } break;
-            }
-        }
-    }
+							((button *)ev.user.data1)->push();
+							/*
+							volume_window->inm->redraw();
+							draw_value(volume_window->m_surf, 2, 43,
+								(volume_window->x2()-volume_window->x1()-1), 8, sfx_volume, 127);
+							draw_value(volume_window->m_surf, 2, 94,
+								(volume_window->x2()-volume_window->x1()-1), 8, music_volume, 127);
+							*/
+							break;
+						}
+					}
+				}
+				break;
+			}
+		}
+	}
 }
 
 
@@ -1931,10 +1893,10 @@ void Game::step()
     }
     else if(!(dev & EDIT_MODE))               // if edit mode, then don't step anything
     {
-      if(key_down(JK_ESC))
+      if(key_down(SDLK_ESCAPE))
       {
     set_state(MENU_STATE);
-    set_key_down(JK_ESC, 0);
+	set_key_down(SDLK_ESCAPE, 0);
       }
       ambient_ramp = 0;
       view *v;
@@ -1953,8 +1915,8 @@ void Game::step()
   } else if(state == MENU_STATE)
     main_menu();
 
-  if((key_down('x') || key_down(JK_F4))
-      && (key_down(JK_ALT_L) || key_down(JK_ALT_R))
+  if((key_down(SDLK_x) || key_down(SDLK_F4))
+      && (key_down(SDLK_LALT) || key_down(SDLK_RALT))
       && confirm_quit())
     finished = true;
 }
@@ -2124,22 +2086,23 @@ void game_getter(char *st, int max)
     do
     {
       get_event(ev);
-      if(ev.type == EV_KEY)
+      if(ev.type == SDL_KEYDOWN)
       {
-    if(ev.key == JK_BACKSPACE)
+    if(ev.key.keysym.sym == SDLK_BACKSPACE)
     {
       if(t)
       {
-        dev_console->print_f("%c", ev.key);
+        dev_console->print_f("%c", ev.key.keysym.sym);
         t--;
         st--;
         *st = 0;
         max++;
       }
-    } else if(ev.key>=' ' && ev.key<='~')
+	}
+	else if (ev.key.keysym.sym >= ' ' && ev.key.keysym.sym <= '~')
     {
       dev_console->print_f("%c", ev.key);
-      *st = ev.key;
+	  *st = ev.key.keysym.sym;
       t++;
       max--;
       st++;
@@ -2147,7 +2110,7 @@ void game_getter(char *st, int max)
     }
       }
       wm->flush_screen();
-    } while(ev.type != EV_KEY || ev.key != JK_ENTER);
+	} while (ev.type != SDL_KEYDOWN || ev.key.keysym.sym != SDLK_RETURN);
     dprintf("\n");
   }
   else

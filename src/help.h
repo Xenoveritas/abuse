@@ -11,11 +11,11 @@
 #ifndef __HELP_HPP_
 #define __HELP_HPP_
 
-#include "event.h"
+#include "sdlport/event.h"
 
 extern int total_help_screens;
 extern int *help_screens;
-void help_handle_event(Event &ev);
+void help_handle_event(SDL_Event &ev);
 void draw_help();        // called from game draw if in help mode
 
 #endif

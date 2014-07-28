@@ -610,7 +610,7 @@ void *cop_mover(int xm, int ym, int but)
   if (o->controller() && o->controller()->freeze_time)
   {
     o->controller()->freeze_time--;
-    if (but || o->controller()->key_down(JK_SPACE) || o->controller()->key_down(JK_ENTER))
+    if (but || o->controller()->key_down(SDLK_SPACE) || o->controller()->key_down(SDLK_RETURN))
       o->controller()->freeze_time=0;
   }
   else
@@ -673,7 +673,7 @@ void *cop_mover(int xm, int ym, int but)
       }
     } else if (o->aistate()==3)
     {
-      if (!o->controller() || o->controller()->key_down(JK_SPACE))
+      if (!o->controller() || o->controller()->key_down(SDLK_SPACE))
       {
         // call the user function to reset the player
     ((LSymbol *)l_restart_player)->EvalFunction(NULL);

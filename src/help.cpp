@@ -37,28 +37,34 @@ void draw_help()
   main_screen->Bar(ivec2(x1, y2), ivec2(x2, yres), 0);
 }
 
-void help_handle_event(Event &ev)
+void help_handle_event(SDL_Event &ev)
 {
-  if (ev.window!=NULL) return ;
+	if (wm->GetActiveWindow()!=NULL)
+		return;
 
-  if (the_game->state!=HELP_STATE)
-  {
-    if (ev.type==EV_KEY && (ev.key=='h' || ev.key=='?' || ev.key==JK_F1) && help_screens)
-    {
-      if (!main_net_cfg || (main_net_cfg->state!=net_configuration::SERVER && main_net_cfg->state!=net_configuration::CLIENT))
-      {
-    the_game->state=HELP_STATE;
-    help_page=0;
-      }
-    }
-  } else if (ev.type==EV_KEY)
-  {
-    if (ev.key==JK_ESC || help_page>=total_help_screens-1)
-    {
-      the_game->state=RUN_STATE;
-      the_game->draw(0);
-    }
-    else
-      help_page++;
-  }
+	if (the_game->state != HELP_STATE)
+	{
+		if (ev.type == SDL_KEYDOWN &&
+			(ev.key.keysym.sym == SDLK_h ||
+				((ev.key.keysym.mod & KMOD_SHIFT) != 0 && ev.key.keysym.sym == SDLK_SLASH) ||
+				ev.key.keysym.sym == SDLK_F1) &&
+			help_screens)
+		{
+			if (!main_net_cfg || (main_net_cfg->state!=net_configuration::SERVER && main_net_cfg->state!=net_configuration::CLIENT))
+			{
+				the_game->state=HELP_STATE;
+				help_page=0;
+			}
+		}
+	}
+	else if (ev.type == SDL_KEYDOWN)
+	{
+		if (ev.key.keysym.sym == SDLK_ESCAPE || help_page >= total_help_screens-1)
+		{
+			the_game->state=RUN_STATE;
+			the_game->draw(0);
+		}
+		else
+			help_page++;
+	}
 }

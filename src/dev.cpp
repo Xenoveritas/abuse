@@ -181,27 +181,27 @@ int confirm_quit()
     {
         wm->flush_screen();
 
-        Event ev;
-        wm->get_event(ev);
-        if(ev.type == EV_MESSAGE && ev.message.id == ID_QUIT_OK)
+        SDL_Event ev;
+        wm->GetEvent(ev);
+        if(ev.type == ABUSE_EV_MESSAGE && ev.user.code == ID_QUIT_OK)
             fin = quit = 1;
-        else if(ev.type == EV_MESSAGE && ev.message.id == ID_CANCEL)
+        else if (ev.type == ABUSE_EV_MESSAGE && ev.user.code == ID_CANCEL)
             fin = 1;
-        else if(ev.type == EV_KEY
-                 && toupper(ev.key) == toupper(*symbol_str("YES")))
+        else if(ev.type == SDL_KEYDOWN
+                 && toupper(ev.key.keysym.sym) == toupper(*symbol_str("YES")))
             fin = quit = 1;
-        else if(ev.type == EV_KEY
-                 && toupper(ev.key) == toupper(*symbol_str("NO")))
+        else if(ev.type == SDL_KEYDOWN
+                 && toupper(ev.key.keysym.sym) == toupper(*symbol_str("NO")))
             fin = 1;
-        if((ev.type == EV_KEY && ev.key == JK_ESC)
-           || ev.type == EV_CLOSE_WINDOW)
+        if((ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE)
+           || ev.type == ABUSE_EV_CLOSE_WINDOW)
             fin = 1;
     }
 
     delete ok_image;
     delete cancel_image;
 
-    the_game->reset_keymap();
+    //the_game->reset_keymap();
 
     wm->close_window(quitw);
     wm->flush_screen();
@@ -298,20 +298,22 @@ void dev_controll::search_forward()
 
 int32_t dev_controll::snap_x(int32_t x)
 {
-  if (wm->key_pressed(JK_CTRL_L) || wm->key_pressed(JK_CTRL_R))
-    return x-(x%the_game->ftile_width());
-  else if (wm->key_pressed(JK_ALT_L) || wm->key_pressed(JK_ALT_R))
-    return x-(x%the_game->ftile_width())+the_game->ftile_width()/2;
-  else return x;
+    if (wm->KeyPressed(SDLK_LCTRL) || wm->KeyPressed(SDLK_RCTRL))
+        return x-(x%the_game->ftile_width());
+    else if (wm->KeyPressed(SDLK_LALT) || wm->KeyPressed(SDLK_RALT))
+        return x-(x%the_game->ftile_width())+the_game->ftile_width()/2;
+    else
+        return x;
 }
 
 int32_t dev_controll::snap_y(int32_t y)
 {
-  if (wm->key_pressed(JK_CTRL_L) || wm->key_pressed(JK_CTRL_R))
-    return y-(y%the_game->ftile_height())-1;
-  else if (wm->key_pressed(JK_ALT_L) || wm->key_pressed(JK_ALT_R))
-    return y-(y%the_game->ftile_height())+the_game->ftile_height()/2-1;
-  else return y;
+    if (wm->KeyPressed(SDLK_LCTRL) || wm->KeyPressed(SDLK_RCTRL))
+        return y-(y%the_game->ftile_height())-1;
+    else if (wm->KeyPressed(SDLK_LALT) || wm->KeyPressed(SDLK_RALT))
+        return y-(y%the_game->ftile_height())+the_game->ftile_height()/2-1;
+    else
+        return y;
 }
 
 void dev_controll::make_ambient()
@@ -332,7 +334,7 @@ void dev_term::execute(char *st)
            "load, esave, name\n");
   } else
   {
-    Event ev;
+    SDL_Event ev;
     dv->do_command(st,ev);
   }
 }
@@ -969,7 +971,7 @@ void dev_controll::load_stuff()
 
 }
 
-void dev_controll::do_command(char const *command, Event &ev)
+void dev_controll::do_command(char const *command, SDL_Event &ev)
 {
   char fword[50];
   char const *st;
@@ -1282,7 +1284,7 @@ void dev_controll::do_command(char const *command, Event &ev)
         which->change_aitype(x);
       else
       {
-    switch (ev.key)
+    switch (ev.key.keysym.sym)
     {
       case '0' : which->change_aitype(0); break;
       case '1' : which->change_aitype(1); break;
@@ -1505,10 +1507,10 @@ void dev_controll::close_ai_window()
 }
 
 
-void dev_controll::area_handle_input(Event &ev)
+void dev_controll::area_handle_input(SDL_Event &ev)
 {
 
-  if (ev.type==EV_MOUSE_BUTTON && ev.mouse_button)
+  if (ev.type==SDL_MOUSEBUTTONDOWN)
   {
     ivec2 pos = the_game->MouseToGame(last_demo_mpos);
     if (!current_level) return ;
@@ -1542,12 +1544,12 @@ void dev_controll::close_area_win(int read_values)
   }
 }
 
-void dev_controll::pick_handle_input(Event &ev)
+void dev_controll::pick_handle_input(SDL_Event &ev)
 {
   area_controller *find=NULL;
   int find_top=0;
   if (!current_level) return;
-  if (ev.type==EV_MOUSE_BUTTON && ev.mouse_button)
+  if (ev.type==SDL_MOUSEBUTTONDOWN)
   {
     ivec2 m = last_demo_mpos;
     view *v = the_game->GetView(m);
@@ -1612,7 +1614,7 @@ void dev_controll::close_oedit_window()
 int screen_shot_on=1;
 int sshot_fcount=-1;
 
-void dev_controll::handle_event(Event &ev)
+void dev_controll::handle_event(SDL_Event &ev)
 {
   int32_t x,y;
   if (link_object && (dlast.x!=last_link_x || dlast.y!=last_link_y))
@@ -1628,19 +1630,19 @@ void dev_controll::handle_event(Event &ev)
 
   for (x=0; x<total_pals; x++)
     pal_wins[x]->handle_event(ev);
-  if (ev.type==EV_MOUSE_MOVE)
+  if (ev.type==SDL_MOUSEBUTTONDOWN)
     dlast = last_demo_mpos;
   if (dev_console && dev_console->handle_event(ev))
     return;
 
-  if (ev.type==EV_KEY && ev.key==JK_F2)
+  if (ev.type==SDL_KEYDOWN && ev.key.keysym.sym==SDLK_F2)
     write_PCX(main_screen,pal,"scrnshot.pcx");
-  else if (ev.type==EV_KEY && ev.key==JK_F3)
+  else if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_F3)
   {
     char name[100];
     sprintf(name,"shot%04d.pcx",screen_shot_on++);
     write_PCX(main_screen,pal,name);
-  } else if (ev.type==EV_KEY && ev.key==JK_F5)
+  } else if (ev.type==SDL_KEYDOWN && ev.key.keysym.sym==SDLK_F5)
   {
     if (sshot_fcount!=-1)
     {
@@ -1658,13 +1660,13 @@ void dev_controll::handle_event(Event &ev)
   {
     case DEV_MOUSE_RELEASE :
     {
-      if (!ev.mouse_button)
+      if (ev.type == SDL_MOUSEBUTTONUP)
         state=DEV_SELECT;
     } break;
 
     case DEV_CREATE_OBJECT :
     {
-      if (!ev.mouse_button)
+      if (ev.type == SDL_MOUSEBUTTONUP)
         state=DEV_MOVE_OBJECT;
     } break;
 
@@ -1675,19 +1677,19 @@ void dev_controll::handle_event(Event &ev)
       { state=DEV_SELECT; }
       else
       {
-    if (ev.type==EV_MOUSE_MOVE)
+    if (ev.type==SDL_MOUSEMOTION)
     {
       ivec2 pos = the_game->MouseToGame(last_demo_mpos);
       edit_object->x = snap_x(pos.x);
       edit_object->y = snap_y(pos.y);
       the_game->need_refresh();
     }
-    else if (ev.mouse_button==1 && ev.window==NULL)
+    else if ((ev.type==SDL_MOUSEBUTTONDOWN && ev.button.button==SDL_BUTTON_LEFT) && wm->GetActiveWindow()==NULL)
     {
       state=DEV_MOUSE_RELEASE;
       selected_object=edit_object=NULL;
     }
-    if (ev.window==NULL && ev.type==EV_KEY && ev.key=='d')
+    if (wm->GetActiveWindow()==NULL && ev.type==SDL_KEYDOWN && ev.key.keysym.sym==SDLK_d)
     {
       int32_t xv=0,yv=100;
       edit_object->try_move(edit_object->x,edit_object->y,xv,yv,1);
@@ -1703,7 +1705,7 @@ void dev_controll::handle_event(Event &ev)
     {
       if (edit_light)
       {
-    if (ev.type==EV_MOUSE_MOVE)
+    if (ev.type==SDL_MOUSEMOTION)
     {
       ivec2 pos = the_game->MouseToGame(last_demo_mpos);
       edit_light->x = snap_x(pos.x);
@@ -1711,10 +1713,10 @@ void dev_controll::handle_event(Event &ev)
 
       edit_light->calc_range();
       the_game->need_refresh();
-    } else if (ev.type==EV_KEY)
+    } else if (ev.type==SDL_KEYDOWN)
     {
       int rd=0;
-      switch (ev.key)
+      switch (ev.key.keysym.sym)
       {
         case '+' :
         {
@@ -1733,14 +1735,14 @@ void dev_controll::handle_event(Event &ev)
           } else if (edit_light->outer_radius>edit_light->inner_radius+1)
           { edit_light->outer_radius--; rd=1; }
         } break;
-        case JK_RIGHT :
+        case SDLK_RIGHT :
         {
           if (edit_light->type==9)
           { edit_light->xshift++; rd=1; }
           else if (edit_light->xshift>0)
           { edit_light->xshift--; rd=1; }
         } break;
-        case JK_LEFT :
+        case SDLK_LEFT :
         {
           if (edit_light->type==9)
           {
@@ -1750,14 +1752,14 @@ void dev_controll::handle_event(Event &ev)
           else
           { edit_light->xshift++; rd=1; }
         } break;
-        case JK_UP :
+        case SDLK_UP :
         {
           if (edit_light->type==9)
           { edit_light->yshift++; rd=1; }
           else if (edit_light->yshift>0)
           { edit_light->yshift--; rd=1; }
         } break;
-        case JK_DOWN :
+        case SDLK_DOWN :
         {
           if (edit_light->type==9)
           {
@@ -1778,7 +1780,7 @@ void dev_controll::handle_event(Event &ev)
     }
       }
 
-      if ((ev.mouse_button==1 && ev.window==NULL) || !edit_light)
+      if ((ev.type==SDL_MOUSEBUTTONDOWN && ev.button.button==SDL_BUTTON_LEFT && wm->GetActiveWindow()==NULL) || !edit_light)
         state=DEV_MOUSE_RELEASE;
     } break;
 
@@ -1797,7 +1799,7 @@ void dev_controll::handle_event(Event &ev)
         current_area->h=pos.y-current_area->y;
       }
     }
-    if (ev.type==EV_MOUSE_BUTTON && !ev.mouse_button)
+    if (ev.type==SDL_MOUSEBUTTONUP)
     {
       current_area->active=0;
       state=DEV_SELECT;
@@ -1819,7 +1821,7 @@ void dev_controll::handle_event(Event &ev)
         current_area->y=pos.y;
       }
     }
-    if (ev.type==EV_MOUSE_BUTTON && !ev.mouse_button)
+    if (ev.type==SDL_MOUSEBUTTONUP)
     {
       current_area->active=0;
       state=DEV_SELECT;
@@ -1833,7 +1835,7 @@ void dev_controll::handle_event(Event &ev)
       {
     game_object *old=selected_object;
     selected_object=NULL;
-    if (ev.window==NULL)
+    if (wm->GetActiveWindow()==NULL)
     {
       ivec2 pos = the_game->MouseToGame(last_demo_mpos);
 
@@ -1850,14 +1852,14 @@ void dev_controll::handle_event(Event &ev)
       if (edit_mode==ID_DMODE_DRAW)
       {
         // FIXME: there is a bug here, the two if conditionals are the same
-        if (ev.mouse_button==1 && !selected_object && !selected_light)
+        if ((ev.type==SDL_MOUSEBUTTONDOWN && ev.button.button==SDL_BUTTON_LEFT) && !selected_object && !selected_light)
         {
           ivec2 tile = the_game->GetFgTile(last_demo_mpos);
           if (tile.x>=0 && tile.y>=0 && tile.x<current_level->foreground_width() &&
           tile.y<current_level->foreground_height())
           current_level->PutFg(tile, raise_all ? make_above_tile(cur_fg) : cur_fg);
           the_game->need_refresh();
-        } else if (ev.mouse_button==1 && !selected_object && !selected_light)
+        } else if ((ev.type==SDL_MOUSEBUTTONDOWN && ev.button.button==SDL_BUTTON_LEFT) && !selected_object && !selected_light)
         {
           ivec2 tile = the_game->GetBgTile(last_demo_mpos);
           if (tile.x>=0 && tile.y>=0 && tile.x<current_level->background_width() &&
@@ -1875,7 +1877,7 @@ void dev_controll::handle_event(Event &ev)
         the_game->need_refresh();
 
 
-    if (ev.mouse_button)
+    if (ev.type == SDL_MOUSEBUTTONDOWN)
     {
       if (selected_object)
       {
@@ -1936,18 +1938,18 @@ void dev_controll::handle_event(Event &ev)
          new text_field(0,bh+th*3,DEV_LEDIT_R2,"R2","******",(int)(edit_light->outer_radius),
                    NULL))))));
       }
-      else if (ev.window==NULL)
+      else if (wm->GetActiveWindow()==NULL)
       {
         if (dlast.x>=0 && dlast.y>=0 && edit_mode==ID_DMODE_DRAW)
         {
-          if ((dev & DRAW_FG_LAYER) && ev.mouse_button==1)
+          if ((dev & DRAW_FG_LAYER) && (ev.type==SDL_MOUSEBUTTONDOWN && ev.button.button==SDL_BUTTON_LEFT))
           {
         ivec2 tile = the_game->GetFgTile(last_demo_mpos);
         if (tile.x>=0 && tile.y>=0 && tile.x<current_level->foreground_width() &&
             tile.y<current_level->foreground_height())
         the_game->PutFg(tile, raise_all ? make_above_tile(cur_fg) : cur_fg);
           }
-          if ((dev & DRAW_BG_LAYER) && ev.mouse_button==2)
+          if ((dev & DRAW_BG_LAYER) && (ev.type==SDL_MOUSEBUTTONDOWN && ev.button.button==SDL_BUTTON_RIGHT))
           {
         ivec2 tile = the_game->GetBgTile(last_demo_mpos);
         if (tile.x>=0 && tile.y>=0 && tile.x<current_level->background_width() &&
@@ -1963,928 +1965,1070 @@ void dev_controll::handle_event(Event &ev)
       break;
   }
 
-  switch (ev.type)
-  {
-    case EV_MESSAGE :
-    {
-      switch (ev.message.id)
-      {
-    case ID_DMODE_DRAW :
-    case ID_DMODE_PICK :
-    case ID_DMODE_FILL :
-    case ID_DMODE_LINE :
-    case ID_DMODE_RECT :
-    case ID_DMODE_BAR  :
-    case ID_DMODE_AREA :
-    {
-      edit_mode=ev.message.id;
-    } break;
-/*    case ID_ENLARGE_RENDER :
-    {
-      if (!small_render)
-        double_render();
-      else
-        single_render();
+	if (ev.type == ABUSE_EV_MESSAGE)
+	{
+		switch (ev.user.code)
+		{
+		case ID_DMODE_DRAW :
+		case ID_DMODE_PICK :
+		case ID_DMODE_FILL :
+		case ID_DMODE_LINE :
+		case ID_DMODE_RECT :
+		case ID_DMODE_BAR  :
+		case ID_DMODE_AREA :
+			edit_mode=ev.user.code;
+			break;
+/*
+		case ID_ENLARGE_RENDER:
+			if (!small_render)
+				double_render();
+			else
+				single_render();
+			view_shift_disabled=!view_shift_disabled;
+			break;
+*/
+		case ID_SEARCH:
+			toggle_search_window();
+			break;
+		case ID_SEARCH_FOREWARD:
+			search_forward();
+			break;
+		case ID_SEARCH_BACKWARD:
+			search_forward();
+			break;
+		case ID_CANCEL:
+			if (mess_win)
+			{
+				wm->close_window(mess_win);
+				mess_win=NULL;
+			}
+			break;
+		case ID_LEVEL_LOAD:
+			if (!mess_win)
+			{
+				mess_win=file_dialog(symbol_str("level_name"),current_level ? current_level->name() : "",
+						ID_LEVEL_LOAD_OK,symbol_str("ok_button"),ID_CANCEL,symbol_str("cancel_button"),
+						symbol_str("FILENAME"),ID_MESS_STR1);
+				wm->grab_focus(mess_win);
+			}
+			break;
+		case ID_LEVEL_LOAD_OK:
+			{
+				char cmd[100];
+				sprintf(cmd,"load %s",mess_win->read(ID_MESS_STR1));
+				dev_cont->do_command(cmd,ev);
+				wm->PushUIEvent(ID_CANCEL, NULL);		// close window
+			}
+			break;
+		case ID_GAME_SAVE:
+			current_level->save("savegame.spe",1);
+			the_game->show_help(symbol_str("saved_game"));
+			the_game->need_refresh();
+			break;
+		case ID_LEVEL_SAVE:
+			if (current_level)
+			{
+				if (current_level->save(current_level->name(),0))
+				{
+					char msg[100];
+					sprintf(msg,symbol_str("saved_level"),current_level->name());
+					the_game->show_help(msg);
+					the_game->need_refresh();
+				}
+			}
+			else
+			{
+				the_game->show_help("no current level, cannot save");
+			}
+			break;
+		case ID_LEVEL_SAVEAS:
+			if (!mess_win)
+			{
+				mess_win=file_dialog(symbol_str("saveas_name"),current_level ? current_level->name() : "untitled.spe",
+						ID_LEVEL_SAVEAS_OK,symbol_str("ok_button"),
+						ID_CANCEL,symbol_str("cancel_button"),
+						symbol_str("FILENAME"),ID_MESS_STR1);
+				wm->grab_focus(mess_win);
+			}
+			break;
+		case ID_LEVEL_SAVEAS_OK:
+			if (current_level)
+			{
+				current_level->set_name(mess_win->read(ID_MESS_STR1));
+				wm->PushUIEvent(ID_CANCEL,NULL);		// close window after save
+				wm->PushUIEvent(ID_LEVEL_SAVE,NULL);
+			}
+			break;
+		case ID_EDIT_SAVE:
+			do_command("esave",ev);
+			the_game->show_help(symbol_str("edit_saved"));
+			break;
+		case ID_CACHE_PROFILE:
+			if (current_level && !cache.prof_is_on())
+			{
+				cache.prof_init();
+				the_game->show_help("Cache profiling is now on.");
+			}
+			else
+			{
+				the_game->show_help("Cache profiling is already on!");
+			}
+			break;
+		case ID_CACHE_PROFILE_END:  // ask the user for a file name to save as
+			if (cache.prof_is_on())
+			{
+				cache.prof_uninit();
+				the_game->show_help(symbol_str("prof_off"));
+			}
+			else
+			{
+				the_game->show_help(symbol_str("prof"));
+			}
+			break;
+		case ID_LEVEL_NEW:
+			if (!mess_win)
+			{
+				mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
+					new button(10,20,ID_LEVEL_NEW_OK,symbol_str("YES"),
+								new button(40,20,ID_CANCEL,symbol_str("NO"),
+				new info_field(0,0,ID_NULL,symbol_str("sure?"),NULL))),symbol_str("New?"));
+				wm->grab_focus(mess_win);
+			}
+			break;
+		case ID_LEVEL_NEW_OK:
+			wm->PushUIEvent(ID_CANCEL,NULL);  // close_window
+			if (current_level)
+				delete current_level;
+			current_level=new level(100,100,"untitled.spe");
+			break;
+		case ID_LEVEL_RESIZE:
+			if (!mess_win)
+			{
+				int h=wm->font()->Size().y+8;
+				mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
+				new text_field(0,h*0,ID_MESS_STR1,symbol_str("width_"),"****",
+					current_level ? current_level->foreground_width() : 100,
+				new text_field(0,h*1,ID_MESS_STR2,symbol_str("height_"),"****",
+					current_level ? current_level->foreground_height() : 100,
+					new button(10,h*4,ID_LEVEL_RESIZE_OK,symbol_str("ok_button"),
+					new button(40,h*4,ID_CANCEL,symbol_str("cancel_button"),NULL)))),symbol_str("_scroll"));
+			}
+			break;
+		case ID_LEVEL_RESIZE_OK:
+			if (current_level)
+			{
+				current_level->set_size(atoi(mess_win->read(ID_MESS_STR1)),
+					atoi(mess_win->read(ID_MESS_STR2)));
+			}
+			else
+			{
+				the_game->show_help("Create a level first!");
+			}
+			wm->PushUIEvent(ID_CANCEL,NULL);  // close_window
+			break;
+		case ID_SUSPEND:
+			dev^=SUSPEND_MODE;
+			if (dev&SUSPEND_MODE)
+				the_game->show_help(symbol_str("suspend_on"));
+			else
+				the_game->show_help(symbol_str("suspend_off"));
+			break;
+		case ID_PLAY_MODE:
+			dev^=EDIT_MODE;
+			break;
+		case ID_QUIT:
+			if (confirm_quit())
+				do_command("quit",ev);
+			// Is this really supposed to fall though? 'Cause it does
+		case ID_TOGGLE_MAP:
+			if (dev&MAP_MODE)
+			{
+				dev-=MAP_MODE;
+			}
+			else
+			{
+				dev|=MAP_MODE;
+			}
+			the_game->need_refresh();
+			break;
+		case ID_TOGGLE_LIGHT:
+			dev^=DRAW_LIGHTS;
+			the_game->need_refresh();
+			break;
+		case ID_RECORD_DEMO:
+			if (!mess_win)
+			{
+				int h=wm->font()->Size().y+8;
+				mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
+				new text_field(0,h*0,ID_RECORD_DEMO_FILENAME,
+					"demo filename","*******************",
+					"demo.dat",
+					new button(10,h*2,ID_RECORD_DEMO_OK,symbol_str("ok_button"),
+					new button(40,h*2,ID_CANCEL,symbol_str("cancel_button"),NULL))));
+			}
+			break;
+		case ID_RECORD_DEMO_OK:
+			demo_man.set_state(demo_manager::RECORDING,mess_win->read(ID_RECORD_DEMO_FILENAME));
+			wm->PushUIEvent(ID_CANCEL,NULL);		// close window
+			break;
+		case ID_PLAY_DEMO:
+			if (!mess_win)
+			{
+				int h=wm->font()->Size().y+8;
+				mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
+					new text_field(0,h*0,ID_PLAY_DEMO_FILENAME,
+						"demo filename","*******************",
+						"demo.dat",
+						new button(10,h*2,ID_PLAY_DEMO_OK,symbol_str("ok_button"),
+						new button(40,h*2,ID_CANCEL,symbol_str("cancel_button"),NULL))));
+			}
+			break;
+		case ID_PLAY_DEMO_OK:
+			demo_man.set_state(demo_manager::PLAYING,mess_win->read(ID_PLAY_DEMO_FILENAME));
+			wm->close_window(mess_win);
+			mess_win=NULL;
+			break;
+		case ID_SET_SCROLL:
+			if (!mess_win)
+			{
+				int h=wm->font()->Size().y+8;
+				mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
+					new text_field(0,h*0,ID_MESS_STR1,symbol_str("x_mul"),"****",bg_xmul,
+					new text_field(0,h*1,ID_MESS_STR2,symbol_str("x_div"),"****",bg_xdiv,
+					new text_field(0,h*2,ID_MESS_STR3,symbol_str("y_mul"),"****",bg_ymul,
+					new text_field(0,h*3,ID_MESS_STR4,symbol_str("y_div"),"****",bg_ydiv,
+						new button(10,h*4,ID_SET_SCROLL_CHECK,symbol_str("ok_button"),
+						new button(40,h*4,ID_CANCEL,symbol_str("cancel_button"),NULL)))))),symbol_str("_scroll"));
+			}
+			break;
+		case ID_SET_SCROLL_CHECK:
+			{
+				int tbg_xmul=atoi(mess_win->read(ID_MESS_STR1));
+				int tbg_xdiv=atoi(mess_win->read(ID_MESS_STR2));
+				int tbg_ymul=atoi(mess_win->read(ID_MESS_STR3));
+				int tbg_ydiv=atoi(mess_win->read(ID_MESS_STR4));
 
-      view_shift_disabled=!view_shift_disabled;
-    } break; */
+				if ( (((float)tbg_xmul/(float)tbg_xdiv) < ((float)bg_xmul/(float)bg_xdiv)) ||
+					(((float)tbg_ymul/(float)tbg_ydiv) < ((float)bg_ymul/(float)bg_ydiv)))
+				{
+					int h=wm->font()->Size().y+8;
 
-    case ID_SEARCH :
-    {
-      toggle_search_window();
-    } break;
-    case ID_SEARCH_FOREWARD :
-    { search_forward();
-    } break;
-    case ID_SEARCH_BACKWARD :
-    { search_forward();
-    } break;
-    case ID_CANCEL :
-    {
-      if (mess_win)
-      {
-        wm->close_window(mess_win);
-        mess_win=NULL;
-      } break;
-    } break;
-    case ID_LEVEL_LOAD :
-    {
-      if (!mess_win)
-      {
-        mess_win=file_dialog(symbol_str("level_name"),current_level ? current_level->name() : "",
-                 ID_LEVEL_LOAD_OK,symbol_str("ok_button"),ID_CANCEL,symbol_str("cancel_button"),
-                 symbol_str("FILENAME"),ID_MESS_STR1);
-        wm->grab_focus(mess_win);
-      }
-    } break;
-    case ID_LEVEL_LOAD_OK :
-    {
-      char cmd[100];
-      sprintf(cmd,"load %s",mess_win->read(ID_MESS_STR1));
-      dev_cont->do_command(cmd,ev);
-      wm->Push(new Event(ID_CANCEL,NULL));        // close window
-    } break;
-    case ID_GAME_SAVE :
-    {
-      current_level->save("savegame.spe",1);
-      the_game->show_help(symbol_str("saved_game"));
-      the_game->need_refresh();
-    } break;
-    case ID_LEVEL_SAVE :
-    { if (current_level)
-      {
-        if (current_level->save(current_level->name(),0))
-        {
-          char msg[100];
-          sprintf(msg,symbol_str("saved_level"),current_level->name());
-          the_game->show_help(msg);
-          the_game->need_refresh();
-        }
-      }
-      else the_game->show_help("no current level, cannot save");
-    } break;
-    case ID_LEVEL_SAVEAS :
-    {
-      if (!mess_win)
-      {
-        mess_win=file_dialog(symbol_str("saveas_name"),current_level ? current_level->name() : "untitled.spe",
-                   ID_LEVEL_SAVEAS_OK,symbol_str("ok_button"),
-                 ID_CANCEL,symbol_str("cancel_button"),
-                 symbol_str("FILENAME"),ID_MESS_STR1);
-        wm->grab_focus(mess_win);
-      }
-    } break;
-    case ID_LEVEL_SAVEAS_OK :
-    {
-      if (current_level)
-      {
-        current_level->set_name(mess_win->read(ID_MESS_STR1));
-        wm->Push(new Event(ID_CANCEL,NULL));        // close window after save
-        wm->Push(new Event(ID_LEVEL_SAVE,NULL));
-      }
-    } break;
-    case ID_EDIT_SAVE :
-    {
-      do_command("esave",ev);
-      the_game->show_help(symbol_str("edit_saved"));
-    } break;
-    case ID_CACHE_PROFILE :
-    {
-      if (current_level && !cache.prof_is_on())
-      {
-        cache.prof_init();
-        the_game->show_help("Cache profiling is now on.");
-      }
-      else the_game->show_help("Cache profiling is already on!");
-    } break;
+					warn_win=wm->CreateWindow(ivec2(xres / 2 - 40, yres / 2 - 40),
+						ivec2(-1),
+						new info_field(0,0,ID_NULL,
+							symbol_str("back_loss"),
+							new button(10,h*4,ID_SET_SCROLL_OK,symbol_str("ok_button"),
+							new button(40,h*4,ID_WARN_CANCEL,symbol_str("cancel_button"),NULL))),
+						symbol_str("WARNING"));
+					wm->grab_focus(warn_win);
+				}
+				else
+				{
+					wm->PushUIEvent(ID_SET_SCROLL_OK,NULL);
+				}
+			}
+			break;
+		case ID_WARN_CANCEL:
+			wm->close_window(warn_win);
+			warn_win=NULL;
+			wm->PushUIEvent(ID_CANCEL,NULL);
+			break;
+		case ID_SET_SCROLL_OK:
+			if (warn_win)
+			{
+				wm->close_window(warn_win);
+				warn_win=NULL;
+			}
+			bg_xmul=atoi(mess_win->read(ID_MESS_STR1));
+			bg_xdiv=atoi(mess_win->read(ID_MESS_STR2));
+			bg_ymul=atoi(mess_win->read(ID_MESS_STR3));
+			bg_ydiv=atoi(mess_win->read(ID_MESS_STR4));
+			wm->PushUIEvent(ID_CANCEL,NULL);		// close window
+			break;
 
-    case ID_CACHE_PROFILE_END :  // ask the user for a file name to save as
-    {
-      if (cache.prof_is_on())
-      {
-        cache.prof_uninit();
-        the_game->show_help(symbol_str("prof_off"));
-      } else the_game->show_help(symbol_str("prof"));
-    } break;
+		case ID_CENTER_PLAYER:
+			do_command("center",ev);
+			break;
 
-    case ID_LEVEL_NEW :
-    {
-      if (!mess_win)
-      {
-        mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
-               new button(10,20,ID_LEVEL_NEW_OK,symbol_str("YES"),
-                        new button(40,20,ID_CANCEL,symbol_str("NO"),
-          new info_field(0,0,ID_NULL,symbol_str("sure?"),NULL))),symbol_str("New?"));
-        wm->grab_focus(mess_win);
-      }
-    } break;
-    case ID_LEVEL_NEW_OK :
-    {
-      wm->Push(new Event(ID_CANCEL,NULL));  // close_window
-      if (current_level)
-        delete current_level;
-      current_level=new level(100,100,"untitled.spe");
-    } break;
-    case ID_LEVEL_RESIZE :
-    {
-      if (!mess_win)
-      {
-        int h=wm->font()->Size().y+8;
-        mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
-            new text_field(0,h*0,ID_MESS_STR1,symbol_str("width_"),"****",
-                   current_level ? current_level->foreground_width() : 100,
-            new text_field(0,h*1,ID_MESS_STR2,symbol_str("height_"),"****",
-                   current_level ? current_level->foreground_height() : 100,
-                   new button(10,h*4,ID_LEVEL_RESIZE_OK,symbol_str("ok_button"),
-                   new button(40,h*4,ID_CANCEL,symbol_str("cancel_button"),NULL)))),symbol_str("_scroll"));
-      }
-    } break;
-    case ID_LEVEL_RESIZE_OK :
-    {
-      if (current_level)
-      {
-        current_level->set_size(atoi(mess_win->read(ID_MESS_STR1)),
-                    atoi(mess_win->read(ID_MESS_STR2)));
-      } else the_game->show_help("Create a level first!");
-      wm->Push(new Event(ID_CANCEL,NULL));  // close_window
-    } break;
+		case ID_INTERPOLATE_DRAW:
+			interpolate_draw=!interpolate_draw;
+			break;
 
-    case ID_SUSPEND :
-    {
-      dev^=SUSPEND_MODE;
-      if (dev&SUSPEND_MODE)
-        the_game->show_help(symbol_str("suspend_on"));
-      else
-         the_game->show_help(symbol_str("suspend_off"));
-    } break;
-    case ID_PLAY_MODE :
-    {
-      dev^=EDIT_MODE;
-    } break;
-    case ID_QUIT :
-    {
-      if (confirm_quit())
-        do_command("quit",ev);
-    } ;
-    case ID_TOGGLE_MAP :
-    {
-      if (dev&MAP_MODE) dev-=MAP_MODE;
-      else dev|=MAP_MODE;
-      the_game->need_refresh();
-    } break;
-    case ID_TOGGLE_LIGHT :
-    {
-      dev^=DRAW_LIGHTS;
-      the_game->need_refresh();
-    } break;
-    case ID_RECORD_DEMO :
-    {
-      if (!mess_win)
-      {
-        int h=wm->font()->Size().y+8;
-        mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
-            new text_field(0,h*0,ID_RECORD_DEMO_FILENAME,
-                   "demo filename","*******************",
-                   "demo.dat",
-                   new button(10,h*2,ID_RECORD_DEMO_OK,symbol_str("ok_button"),
-                   new button(40,h*2,ID_CANCEL,symbol_str("cancel_button"),NULL))));
-      }
-    } break;
+		case ID_DISABLE_AUTOLIGHT:
+			disable_autolight=!disable_autolight;
+			break;
 
-        case ID_RECORD_DEMO_OK :
-    {
-      demo_man.set_state(demo_manager::RECORDING,mess_win->read(ID_RECORD_DEMO_FILENAME));
-      wm->Push(new Event(ID_CANCEL,NULL));        // close window
-    } break;
+		case ID_ADD_PALETTE:
+			if (!mess_win)
+			{
+				int h=wm->font()->Size().y+8;
+				mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
+					new text_field(0,h*0,ID_MESS_STR1,symbol_str("ap_width"),"****",2,
+					new text_field(0,h*1,ID_MESS_STR2,symbol_str("ap_height"),"****",2,
+					new text_field(0,h*2,ID_MESS_STR3,symbol_str("ap_name"),"***********","pal",
+						new button(10,h*3,ID_ADD_PALETTE_OK,symbol_str("ok_button"),
+						new button(40,h*3,ID_CANCEL,symbol_str("cancel_button"),NULL))))),
+					symbol_str("ap_pal"));
+			}
+			break;
+		case ID_ADD_PALETTE_OK:
+			{
+				char name[70];
+				sprintf(name,"(add_palette \"%s\" %d %d)",mess_win->read(ID_MESS_STR3),
+					atoi(mess_win->read(ID_MESS_STR1)),
+					atoi(mess_win->read(ID_MESS_STR2)));
+				char const *s=name;
+				LObject::Compile(s)->Eval();
+				wm->PushUIEvent(ID_CANCEL,NULL); // close window
+			}
+			break;
+		case ID_TOGGLE_DELAY:
+			the_game->toggle_delay();
+			break;
+		case ID_SMALL_MODE:
+			make_screen_size(311,160);
+			break;
+		case ID_CLEAR_WEAPONS:
+			{
+				SDL_Event ev;
+				do_command("clear_weapons",ev);
+			}
+			break;
+		case ID_GOD_MODE:
+			for (view *v=player_list; v; v=v->next)
+			{
+				v->god=!v->god;
+			}
+			break;
+		case ID_MOUSE_SCROLL:
+			mouse_scrolling=!mouse_scrolling;
+			prop->setd("mouse_scrolling",mouse_scrolling);
+			if (mouse_scrolling)
+				the_game->show_help(symbol_str("ms_on"));
+			else
+				the_game->show_help(symbol_str("ms_off"));
+			break;
 
-    case ID_PLAY_DEMO :
-    {
-      if (!mess_win)
-      {
-        int h=wm->font()->Size().y+8;
-        mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
-            new text_field(0,h*0,ID_PLAY_DEMO_FILENAME,
-                   "demo filename","*******************",
-                   "demo.dat",
-                   new button(10,h*2,ID_PLAY_DEMO_OK,symbol_str("ok_button"),
-                   new button(40,h*2,ID_CANCEL,symbol_str("cancel_button"),NULL))));
-      }
-    } break;
+		case ID_LOCK_PALETTES:
+			palettes_locked=!palettes_locked;
+			prop->setd("palettes_locked",palettes_locked);
+			if (palettes_locked)
+				the_game->show_help(symbol_str("pal_lock"));
+			else
+				the_game->show_help(symbol_str("pal_unlock"));
+			break;
 
-        case ID_PLAY_DEMO_OK :
-    {
-      demo_man.set_state(demo_manager::PLAYING,mess_win->read(ID_PLAY_DEMO_FILENAME));
-      wm->close_window(mess_win);
-      mess_win=NULL;
-    } break;
+		case ID_DISABLE_VIEW_SHIFT:
+			view_shift_disabled=!view_shift_disabled;
+			prop->setd("view_shift_disabled",view_shift_disabled);
+			if (view_shift_disabled)
+				the_game->show_help(symbol_str("vs_dis"));
+			else
+				the_game->show_help(symbol_str("vs_en"));
+			break;
 
-    case ID_SET_SCROLL :
-    {
-      if (!mess_win)
-      {
-        int h=wm->font()->Size().y+8;
-        mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
-            new text_field(0,h*0,ID_MESS_STR1,symbol_str("x_mul"),"****",bg_xmul,
-            new text_field(0,h*1,ID_MESS_STR2,symbol_str("x_div"),"****",bg_xdiv,
-            new text_field(0,h*2,ID_MESS_STR3,symbol_str("y_mul"),"****",bg_ymul,
-            new text_field(0,h*3,ID_MESS_STR4,symbol_str("y_div"),"****",bg_ydiv,
-                   new button(10,h*4,ID_SET_SCROLL_CHECK,symbol_str("ok_button"),
-                   new button(40,h*4,ID_CANCEL,symbol_str("cancel_button"),NULL)))))),symbol_str("_scroll"));
-      }
-    } break;
-    case ID_SET_SCROLL_CHECK :
-    {
-      int tbg_xmul=atoi(mess_win->read(ID_MESS_STR1));
-      int tbg_xdiv=atoi(mess_win->read(ID_MESS_STR2));
-      int tbg_ymul=atoi(mess_win->read(ID_MESS_STR3));
-      int tbg_ydiv=atoi(mess_win->read(ID_MESS_STR4));
+		case ID_WIN_FORE:
+			toggle_fgw();
+			break;
+		case ID_WIN_BACK:
+			toggle_bgw();
+			break;
+		case ID_WIN_OBJECTS:
+			toggle_omenu();
+			break;
+		case ID_WIN_PALETTES:
+			toggle_pmenu();
+			break;
+		case ID_WIN_LIGHTING:
+			toggle_light_window();
+			break;
+		case ID_WIN_LAYERS:
+			toggle_show_menu();
+			break;
+		case ID_WIN_CONSOLE:
+			if (dev_console)
+				dev_console->toggle();
+			break;
+		case ID_WIN_TOOLBAR:
+			toggle_toolbar();
+			break;
 
-      if ( (((float)tbg_xmul/(float)tbg_xdiv) < ((float)bg_xmul/(float)bg_xdiv)) ||
-          (((float)tbg_ymul/(float)tbg_ydiv) < ((float)bg_ymul/(float)bg_ydiv)))
-      {
-        int h=wm->font()->Size().y+8;
+		case DEV_AMBIENT:
+			if (!ambw)
+				make_ambient();
+			break;
+		case DEV_AREA_OK:
+			close_area_win(1);
+			break;
+		case DEV_AREA_DELETE:
+			close_area_win(0);
+			if (current_area && current_level)
+			{
+				if (current_level->area_list==current_area)
+					current_level->area_list=current_level->area_list->next;
+				else
+				{
+					area_controller *a=current_level->area_list,*l=NULL;
+					for (; a!=current_area && a; a=a->next)
+					{
+						l=a;
+					}
+					l->next=a->next;
+					delete a;
+				}
+				current_area=NULL;
+				the_game->need_refresh();
+			}
+			break;
+		case DEV_AI_OK:
+			close_ai_window();
+			break;
+		case DEV_OEDIT_AI:
+			make_ai_window(edit_object);
+			break;
+		case DEV_OBJECTS_DELETE:
+			if (edit_object)
+			{
+				for (int i=0; i<edit_object->total_objects(); i++)
+					edit_object->remove_object(edit_object->get_object(0));
+				the_game->need_refresh();
+			}
+			break;
 
-        warn_win=wm->CreateWindow(ivec2(xres / 2 - 40, yres / 2 - 40),
-                                  ivec2(-1),
-                  new info_field(0,0,ID_NULL,
-                      symbol_str("back_loss"),
-                      new button(10,h*4,ID_SET_SCROLL_OK,symbol_str("ok_button"),
-                      new button(40,h*4,ID_WARN_CANCEL,symbol_str("cancel_button"),NULL))),
-                    symbol_str("WARNING"));
-        wm->grab_focus(warn_win);
-      } else wm->Push(new Event(ID_SET_SCROLL_OK,NULL));
-    } break;
-    case ID_WARN_CANCEL :
-    {
-      wm->close_window(warn_win); warn_win=NULL;
-      wm->Push(new Event(ID_CANCEL,NULL));
-    } break;
-    case ID_SET_SCROLL_OK :
-    {
-      if (warn_win) { wm->close_window(warn_win); warn_win=NULL; }
-      bg_xmul=atoi(mess_win->read(ID_MESS_STR1));
-      bg_xdiv=atoi(mess_win->read(ID_MESS_STR2));
-      bg_ymul=atoi(mess_win->read(ID_MESS_STR3));
-      bg_ydiv=atoi(mess_win->read(ID_MESS_STR4));
-      wm->Push(new Event(ID_CANCEL,NULL));        // close window
-    } break;
+		case DEV_LIGHTS_DELETE:
+			if (edit_object)
+			{
+				for (int i=0; i<edit_object->total_lights(); i++)
+					edit_object->remove_light(edit_object->get_light(0));
+				the_game->need_refresh();
+			}
+			break;
 
-    case ID_CENTER_PLAYER :
-    {
-       do_command("center",ev); break;
-    } break;
+		case DEV_LEDIT_DEL:
+			prop->setd("ledit x",ledit->m_pos.x);
+			prop->setd("ledit y",ledit->m_pos.y);
+			wm->close_window(ledit);
+			ledit=NULL;
+			if (current_level)
+				current_level->remove_light(edit_light);
+			else
+				delete_light(edit_light);
+			edit_light=NULL;
+			the_game->need_refresh();
+			break;
+		case DEV_LEDIT_OK:
+			edit_light->xshift=atoi(ledit->read(DEV_LEDIT_W));
+			edit_light->yshift=atoi(ledit->read(DEV_LEDIT_H));
+			edit_light->inner_radius=atoi(ledit->read(DEV_LEDIT_R1));
+			edit_light->outer_radius=atoi(ledit->read(DEV_LEDIT_R2));
+			if (edit_light->outer_radius<=edit_light->inner_radius)
+			{
+				edit_light->inner_radius=edit_light->outer_radius-1;
+				if (edit_light->inner_radius<1)
+				{
+					edit_light->inner_radius=1;
+					edit_light->outer_radius=2;
+				}
+			}
 
-    case ID_INTERPOLATE_DRAW :
-    {
-      interpolate_draw=!interpolate_draw;
-    } break;
+			edit_light->calc_range();
+			edit_light=NULL;
+			prop->setd("ledit x",ledit->m_pos.x);
+			prop->setd("ledit y",ledit->m_pos.y);
+			wm->close_window(ledit);
+			ledit=NULL;
+			the_game->need_refresh();
+			break;
+		case DEV_LEDIT_MOVE:
+			prop->setd("ledit x",ledit->m_pos.x);
+			prop->setd("ledit y",ledit->m_pos.y);
+			wm->close_window(ledit);
+			ledit=NULL;
+			state=DEV_MOVE_LIGHT;
+			break;
+		case DEV_LEDIT_COPY:
+			edit_light=edit_light->copy();
+			prop->setd("ledit x",ledit->m_pos.x);
+			prop->setd("ledit y",ledit->m_pos.y);
+			wm->close_window(ledit); ledit=NULL;
+			state=DEV_MOVE_LIGHT;
+			break;
 
-    case ID_DISABLE_AUTOLIGHT :
-    {
-      disable_autolight=!disable_autolight;
-    } break;
+		case DEV_LIGHT0:
+		case DEV_LIGHT1:
+		case DEV_LIGHT2:
+		case DEV_LIGHT3:
+		case DEV_LIGHT4:
+		case DEV_LIGHT5:
+		case DEV_LIGHT6:
+		case DEV_LIGHT7:
+		case DEV_LIGHT8:
+		case DEV_LIGHT9:
+			{
+				ivec2 pos = the_game->MouseToGame(last_demo_mpos);
+				edit_light = add_light_source(ev.user.code - DEV_LIGHT0,
+					snap_x(pos.x), snap_y(pos.y),
+					atoi(lightw->read(DEV_LIGHTR1)),
+					atoi(lightw->read(DEV_LIGHTR2)),
+					atoi(lightw->read(DEV_LIGHTW)),
+					atoi(lightw->read(DEV_LIGHTH)));
+				state=DEV_MOVE_LIGHT;
+			}
+			break;
+		case ID_RAISE_ALL:
+			raise_all=!raise_all;
+			prop->setd("raise_all",raise_all);
+			if (raise_all)
+				the_game->show_help(symbol_str("fg_r"));
+			else
+				the_game->show_help(symbol_str("fg_l"));
+			break;
+		case DEV_OEDIT_COPY:
+			{
+				game_object *use=copy_object;
+				if (!use)
+					use=edit_object;
+				if (use)
+				{
+					game_object *old=use;
+					close_oedit_window();
+					if (use->controller())
+						the_game->show_help(symbol_str("no_clone"));
+					else
+					{
+						edit_object=old->copy();
 
-    case ID_ADD_PALETTE :
-    {
-      if (!mess_win)
-      {
-        int h=wm->font()->Size().y+8;
-        mess_win=wm->CreateWindow(ivec2(xres / 2, yres / 2), ivec2(-1),
-            new text_field(0,h*0,ID_MESS_STR1,symbol_str("ap_width"),"****",2,
-            new text_field(0,h*1,ID_MESS_STR2,symbol_str("ap_height"),"****",2,
-            new text_field(0,h*2,ID_MESS_STR3,symbol_str("ap_name"),"***********","pal",
-                   new button(10,h*3,ID_ADD_PALETTE_OK,symbol_str("ok_button"),
-                   new button(40,h*3,ID_CANCEL,symbol_str("cancel_button"),NULL))))),symbol_str("ap_pal"));
-      }
-    } break;
-    case ID_ADD_PALETTE_OK :
-    {
-      char name[70];
-      sprintf(name,"(add_palette \"%s\" %d %d)",mess_win->read(ID_MESS_STR3),
-          atoi(mess_win->read(ID_MESS_STR1)),
-          atoi(mess_win->read(ID_MESS_STR2)));
-      char const *s=name;
-      LObject::Compile(s)->Eval();
-      wm->Push(new Event(ID_CANCEL,NULL));        // close window
-    } break;
-    case ID_TOGGLE_DELAY :
-    {
-      the_game->toggle_delay(); break;
-    } break;
+						current_level->add_object(edit_object);
+						the_game->need_refresh();
+						state=DEV_MOVE_OBJECT;
 
-    case ID_SMALL_MODE :
-    {
-      make_screen_size(311,160); break;
-    } break;
-    case ID_CLEAR_WEAPONS :
-    {
-      Event ev;
-      do_command("clear_weapons",ev);
-    } break;
-    case ID_GOD_MODE :
-    {
-      for (view *v=player_list; v; v=v->next)
-        v->god=!v->god;
-    } break;
-    case ID_MOUSE_SCROLL :
-    {
-      mouse_scrolling=!mouse_scrolling;
-      prop->setd("mouse_scrolling",mouse_scrolling);
-      if (mouse_scrolling)
-        the_game->show_help(symbol_str("ms_on"));
-      else
-        the_game->show_help(symbol_str("ms_off"));
-    } break;
+						close_oedit_window();
+						copy_object=NULL;
+					}
+				}
+			}
+			break;
+		case DEV_OEDIT_LEFT:
+			if (edit_object)
+			{
+				the_game->need_refresh();
+				edit_object->direction=-1;
+			}
+			break;
+		case DEV_OEDIT_RIGHT:
+			if (edit_object)
+			{
+				the_game->need_refresh();
+				edit_object->direction=1;
+			}
+			break;
 
-    case ID_LOCK_PALETTES :
-    {
-      palettes_locked=!palettes_locked;
-      prop->setd("palettes_locked",palettes_locked);
-      if (palettes_locked)
-        the_game->show_help(symbol_str("pal_lock"));
-      else the_game->show_help(symbol_str("pal_unlock"));
-    } break;
+		case DEV_COMMAND_OK:
+			{
+				char cmd[100];
+				strcpy(cmd,commandw->inm->get(DEV_COMMAND)->read());
+				prop->setd("commandw x",commandw->m_pos.x);
+				prop->setd("commandw y",commandw->m_pos.y);
+				wm->close_window(commandw);
+				commandw=NULL;
+				do_command(cmd,ev);
+			}
+			break;
 
-    case ID_DISABLE_VIEW_SHIFT :
-    {
-      view_shift_disabled=!view_shift_disabled;
-      prop->setd("view_shift_disabled",view_shift_disabled);
-      if (view_shift_disabled)
-        the_game->show_help(symbol_str("vs_dis"));
-      else the_game->show_help(symbol_str("vs_en"));
-    } break;
+		case ID_SHOW_FPS:
+			fps_on = !fps_on;
+			break;
+		case ID_PROFILE :
+			profile_toggle();
+			profile_on = !profile_on;
+			break;
 
-    case ID_WIN_FORE :
-    {
-      toggle_fgw();
-    } break;
-    case ID_WIN_BACK :
-    {
-      toggle_bgw();
-    } break;
-    case ID_WIN_OBJECTS :
-    {
-      toggle_omenu();
-    } break;
-    case ID_WIN_PALETTES :
-    {
-      toggle_pmenu();
-    } break;
-    case ID_WIN_LIGHTING :
-    {
-      toggle_light_window();
-    } break;
-    case ID_WIN_LAYERS :
-    {
-      toggle_show_menu();
-    } break;
-    case ID_WIN_CONSOLE :
-    {
-      if (dev_console) dev_console->toggle();
-    } break;
-    case ID_WIN_TOOLBAR :
-    {
-      toggle_toolbar();
-    } break;
+		case ID_TOGGLE_NAMES:
+			show_names = !show_names;
+			break;
+		case DEV_QUIT:
+			the_game->end_session();
+			break;
+		case DEV_EDIT_FG:
+			dev=1;
+			break;
+			//the_game->draw(); break;
+		case DEV_EDIT_BG:
+			dev=2;
+			break;
+			//the_game->draw(); break;
+		case DEV_EDIT_FGBG:
+			dev=3;
+			break;
+			//the_game->draw(); break;
+		case DEV_PLAY:
+			dev=0;
+			break;
+			//the_game->draw(); break;
+		case SHOW_FOREGROUND:
+			dev = dev^DRAW_FG_LAYER;
+			the_game->need_refresh();
+			break;
+		case SHOW_FOREGROUND_BOUND:
+			dev = dev^DRAW_FG_BOUND_LAYER;
+			the_game->need_refresh();
+			break;
+		case SHOW_BACKGROUND:
+			dev = dev^DRAW_BG_LAYER;
+			the_game->need_refresh();
+			break;
+		case SHOW_CHARACTERS:
+			dev = dev^DRAW_PEOPLE_LAYER;
+			the_game->need_refresh();
+			break;
+		case SHOW_LIGHT:
+			dev = dev^DRAW_LIGHTS;
+			the_game->need_refresh();
+			break;
+		case SHOW_LINKS:
+			dev = dev^DRAW_LINKS;
+			the_game->need_refresh();
+			break;
 
-    case DEV_AMBIENT :
-    { if (!ambw) make_ambient(); } break;
-    case DEV_AREA_OK :
-    { close_area_win(1); } break;
-    case DEV_AREA_DELETE :
-    { close_area_win(0);
-      if (current_area && current_level)
-      {
-        if (current_level->area_list==current_area)
-          current_level->area_list=current_level->area_list->next;
-        else
-        {
-          area_controller *a=current_level->area_list,*l=NULL;
-          for (; a!=current_area && a; a=a->next) { l=a; }
-          l->next=a->next;
-          delete a;
-        }
-        current_area=NULL;
-        the_game->need_refresh();
-      }
-    } break;
-    case DEV_AI_OK :
-      close_ai_window(); break;
-    case DEV_OEDIT_AI :
-      make_ai_window(edit_object); break;
-    case DEV_OBJECTS_DELETE :
-    {
-      if (edit_object)
-      {
-        for (int i=0; i<edit_object->total_objects(); i++)
-          edit_object->remove_object(edit_object->get_object(0));
-        the_game->need_refresh();
-      }
-    } break;
+		case DEV_CREATE:
+			{
+				int val=get_omenu_item(((pick_list *)ev.user.data1)->get_selection());
+				char cmd[100];
+				sprintf(cmd,"create %s",object_names[val]);
+				do_command(cmd,ev);
+				state=DEV_CREATE_OBJECT;
+				dev|=(EDIT_MODE | DRAW_PEOPLE_LAYER);
+			}
+			break;
 
-    case DEV_LIGHTS_DELETE :
-    {
-      if (edit_object)
-      {
-        for (int i=0; i<edit_object->total_lights(); i++)
-          edit_object->remove_light(edit_object->get_light(0));
-        the_game->need_refresh();
-      }
-    } break;
+		case DEV_PALETTE:
+			{
+				int val=((pick_list *)ev.user.data1)->get_selection();
+				pal_wins[val]->open_window();
+			}
+			break;
 
-    case DEV_LEDIT_DEL :
-    {
-      prop->setd("ledit x",ledit->m_pos.x);
-      prop->setd("ledit y",ledit->m_pos.y);
-      wm->close_window(ledit); ledit=NULL;
-      if (current_level)
-        current_level->remove_light(edit_light);
-      else
-        delete_light(edit_light);
-      edit_light=NULL;
-      the_game->need_refresh();
-    } break;
-    case DEV_LEDIT_OK :
-    {
-      edit_light->xshift=atoi(ledit->read(DEV_LEDIT_W));
-      edit_light->yshift=atoi(ledit->read(DEV_LEDIT_H));
-      edit_light->inner_radius=atoi(ledit->read(DEV_LEDIT_R1));
-      edit_light->outer_radius=atoi(ledit->read(DEV_LEDIT_R2));
-      if (edit_light->outer_radius<=edit_light->inner_radius)
-      {
-        edit_light->inner_radius=edit_light->outer_radius-1;
-        if (edit_light->inner_radius<1)
-        {
-          edit_light->inner_radius=1;
-          edit_light->outer_radius=2;
-        }
-      }
+		case DEV_MUSIC_PICKLIST:
+			/*{
+				int *val=((int *)((pick_list *)ev.user.data1)->read());
+				if (current_song) delete current_song;
+				current_song=new song(song_list[*val]);
+				current_song->play();
+			}*/
+			break;
 
-      edit_light->calc_range();
-      edit_light=NULL;
-      prop->setd("ledit x",ledit->m_pos.x);
-      prop->setd("ledit y",ledit->m_pos.y);
-      wm->close_window(ledit); ledit=NULL;
-      the_game->need_refresh();
-    } break;
-    case DEV_LEDIT_MOVE :
-    {
-      prop->setd("ledit x",ledit->m_pos.x);
-      prop->setd("ledit y",ledit->m_pos.y);
-      wm->close_window(ledit); ledit=NULL;
-      state=DEV_MOVE_LIGHT;
-    } break;
-    case DEV_LEDIT_COPY :
-    {
-      edit_light=edit_light->copy();
-      prop->setd("ledit x",ledit->m_pos.x);
-      prop->setd("ledit y",ledit->m_pos.y);
-      wm->close_window(ledit); ledit=NULL;
-      state=DEV_MOVE_LIGHT;
-    } break;
+		case DEV_OEDIT_OK:
+			close_oedit_window();
+			break;
 
+		case DEV_OEDIT_DELETE:
+			selected_object=edit_object;
+			do_command("delete",ev);
+			close_oedit_window();
+			break;
 
-    case DEV_LIGHT0 :
-    case DEV_LIGHT1 :
-    case DEV_LIGHT2 :
-    case DEV_LIGHT3 :
-    case DEV_LIGHT4 :
-    case DEV_LIGHT5 :
-    case DEV_LIGHT6 :
-    case DEV_LIGHT7 :
-    case DEV_LIGHT8 :
-    case DEV_LIGHT9 :
-    {
-      ivec2 pos = the_game->MouseToGame(last_demo_mpos);
-      edit_light = add_light_source(ev.message.id - DEV_LIGHT0,
-                                    snap_x(pos.x), snap_y(pos.y),
-                                    atoi(lightw->read(DEV_LIGHTR1)),
-                                    atoi(lightw->read(DEV_LIGHTR2)),
-                                    atoi(lightw->read(DEV_LIGHTW)),
-                                    atoi(lightw->read(DEV_LIGHTH)));
-      state=DEV_MOVE_LIGHT;
-    } break;
-    case ID_RAISE_ALL :
-    {
-      raise_all=!raise_all;
-      prop->setd("raise_all",raise_all);
-      if (raise_all)
-        the_game->show_help(symbol_str("fg_r"));
-      else
-        the_game->show_help(symbol_str("fg_l"));
-    } break;
-    case DEV_OEDIT_COPY :
-    {
-      game_object *use=copy_object;
-      if (!use) use=edit_object;
-      if (use)
-      {
-        game_object *old=use;
-        close_oedit_window();
-        if (use->controller())
-          the_game->show_help(symbol_str("no_clone"));
-        else
-        {
-          edit_object=old->copy();
+		case DEV_OEDIT_FRONT:
+			do_command("to_front",ev);
+			close_oedit_window();
+			break;
 
-          current_level->add_object(edit_object);
-          the_game->need_refresh();
-          state=DEV_MOVE_OBJECT;
+		case DEV_OEDIT_BACK:
+			do_command("to_back",ev);
+			close_oedit_window();
+			break;
 
-          close_oedit_window();
-          copy_object=NULL;
-        }
-      }
-    } break;
-    case DEV_OEDIT_LEFT :
-    {
-      if (edit_object)
-      {
-        the_game->need_refresh();
-        edit_object->direction=-1;
-      }
-    } break;
-    case DEV_OEDIT_RIGHT :
-    {
-      if (edit_object)
-      {
-        the_game->need_refresh();
-        edit_object->direction=1;
-      }
-    } break;
+		case DEV_OEDIT_MOVE:
+			{
+				game_object *o=edit_object;
+				close_oedit_window();
+				edit_object=o;
+				do_command("move",ev);
+			}
+			break;
+		}
+	}
+	else if (ev.type == ABUSE_EV_CLOSE_WINDOW)
+	{
+		Jwindow* window = wm->GetActiveWindow();
+		if (window != NULL)
+		{
+			if (window == commandw)
+			{
+				prop->setd("commandw x",commandw->m_pos.x);
+				prop->setd("commandw y",commandw->m_pos.y);
+				wm->close_window(commandw);
+				commandw=NULL;
+			}
+			else if (window==oedit)
+				close_oedit_window();
+			else if (window==ambw)
+			{
+				wm->close_window(ambw);
+				ambw=NULL;
+			}
+			else if (window == backw)
+				toggle_bgw();
+			else if (window == forew)
+				toggle_fgw();
+			else if (window==lightw)
+				toggle_light_window();
+			else if (window==show_menu)
+				toggle_show_menu();
+			else if (window==pmenu)
+				toggle_pmenu();
+			else if (window==tbw)
+				toggle_toolbar();
+			else if (window==omenu)
+				toggle_omenu();
+			else if (window==search_window)
+				toggle_search_window();
+			else if (profile_handle_event(ev))
+				profile_on=!profile_on;
+			else if (chat->chat_event(ev))
+				chat->toggle();
+		}
+	}
+	else if (ev.type == SDL_KEYUP)
+	{
+		if (ev.key.keysym.sym==SDLK_LCTRL)
+		{
+			if (!edit_object && link_object && selected_object && link_object!=selected_object)
+			{
+				link_object->add_object(selected_object);
+				if (S_LINK_SND>0)
+					cache.sfx(S_LINK_SND)->play(sfx_volume/2);
+				the_game->need_refresh();
+			}
+			link_object=NULL;
+		}
+	}
+	else if (ev.type == SDL_KEYDOWN)
+	{
+		bool shift = (ev.key.keysym.mod & KMOD_SHIFT) != 0;
+		Jwindow* window = wm->GetActiveWindow();
+		if (backw && window == backw)
+		{
+			if ((ev.key.keysym.sym == SDLK_MINUS && !shift) && bg_scale<the_game->btile_height()/2)
+			{
+				toggle_bgw();
+				bg_scale++;
+				toggle_bgw();
+			}
+			else if ((ev.key.keysym.sym == SDLK_EQUALS && shift) /* '+' */ && bg_scale>1)
+			{
+				toggle_bgw();
+				bg_scale--;
+				toggle_bgw();
+			}
+			else if (ev.key.keysym.sym == SDLK_b)
+			{
+				if (shift)
+				{
+					toggle_bgw();
+					bg_w++;
+					if (bg_w>6)
+						bg_w=1;
+					toggle_bgw();
+				}
+				else
+				{
+					toggle_bgw();
+				}
+			}
+		}
+		if (forew && window == forew)
+		{
+			if ((ev.key.keysym.sym == SDLK_MINUS && !shift) && fg_scale<the_game->ftile_height()/2)
+			{
+				toggle_fgw();
+				fg_scale++;
+				toggle_fgw();
+			}
+			else if ((ev.key.keysym.sym == SDLK_EQUALS && shift) /* '+' */ && fg_scale>1)
+			{
+				toggle_fgw();
+				fg_scale--;
+				toggle_fgw();
+			}
+			else if (ev.key.keysym.sym == SDLK_i && !shift)
+			{
+				toggle_fgw();
+				fg_reversed=!fg_reversed;
+				prop->setd("fg_reversed",fg_reversed);
+				toggle_fgw();
+			}
+			else if (ev.key.keysym.sym == SDLK_f && !shift)
+				toggle_fgw();
+			else if (ev.key.keysym.sym == SDLK_f && shift)
+			{
+				toggle_fgw();
+				fg_w++;
+				if (fg_w>6)
+					fg_w=1;
+				toggle_fgw();
+			}
+		}
+		if (window==NULL || window==pmenu || window == forew || is_pal_win(window))  // main window actions
+		{
+			switch (ev.key.keysym.sym)
+			{
+			case SDLK_LCTRL:
+				if (!edit_object && !link_object)
+				{
+					link_object = selected_object;
+				}
+				// FIXME: Should this be falling through?
+			case SDLK_n:
+				current_level->next_focus();
+				break;
+//      case SDLK_SLASH: /*'/'*/ if (dev_console) dev_console->toggle(); break;
+			case SDLK_t:
+				if (window == NULL || window == forew)
+				{
+					ivec2 tile = the_game->GetFgTile(last_demo_mpos);
+					fg_fill(cur_fg, tile.x, tile.y, NULL);
+				}
+				break;
+			case SDLK_f:
+				toggle_fgw();
+				break;
+			case SDLK_m:
+				if (shift)
+					toggle_music_window();
+				break;
 
-
-    case DEV_COMMAND_OK :
-    {
-      char cmd[100];
-      strcpy(cmd,commandw->inm->get(DEV_COMMAND)->read());
-      prop->setd("commandw x",commandw->m_pos.x);
-      prop->setd("commandw y",commandw->m_pos.y);
-      wm->close_window(commandw);
-      commandw=NULL;
-      do_command(cmd,ev);
-    } break;
-
-    case ID_SHOW_FPS :
-    { fps_on=!fps_on; } break;
-    case ID_PROFILE :
-    { profile_toggle();
-      profile_on=!profile_on;
-    } break;
-
-    case ID_TOGGLE_NAMES : { show_names=!show_names; } break;
-    case DEV_QUIT : the_game->end_session(); break;
-    case DEV_EDIT_FG : dev=1; break; //the_game->draw(); break;
-    case DEV_EDIT_BG : dev=2; break; //the_game->draw(); break;
-    case DEV_EDIT_FGBG : dev=3; break; //the_game->draw(); break;
-    case DEV_PLAY : dev=0; break; //the_game->draw(); break;
-    case SHOW_FOREGROUND :
-    { dev=dev^DRAW_FG_LAYER; the_game->need_refresh(); } break;
-    case SHOW_FOREGROUND_BOUND :
-    { dev=dev^DRAW_FG_BOUND_LAYER; the_game->need_refresh(); } break;
-    case SHOW_BACKGROUND :
-    { dev=dev^DRAW_BG_LAYER; the_game->need_refresh(); } break;
-    case SHOW_CHARACTERS :
-    { dev=dev^DRAW_PEOPLE_LAYER; the_game->need_refresh(); } break;
-    case SHOW_LIGHT :
-    { dev=dev^DRAW_LIGHTS; the_game->need_refresh(); } break;
-    case SHOW_LINKS :
-    { dev=dev^DRAW_LINKS;  the_game->need_refresh(); } break;
-
-
-    case DEV_CREATE :
-    {
-      int val=get_omenu_item(((pick_list *)ev.message.data)->get_selection());
-      char cmd[100];
-      sprintf(cmd,"create %s",object_names[val]);
-      do_command(cmd,ev);
-      state=DEV_CREATE_OBJECT;
-      dev|=(EDIT_MODE | DRAW_PEOPLE_LAYER);
-    }
-    break;
-
-    case DEV_PALETTE :
-    {
-      int val=((pick_list *)ev.message.data)->get_selection();
-      pal_wins[val]->open_window();
-    } break;
-
-    case DEV_MUSIC_PICKLIST :
-    {
-/*        int *val=((int *)((pick_list *)ev.message.data)->read());
-        if (current_song) delete current_song;
-        current_song=new song(song_list[*val]);
-        current_song->play();        */
-    }
-    break;
-
-    case DEV_OEDIT_OK :
-    { close_oedit_window(); } break;
-
-    case DEV_OEDIT_DELETE :
-    {
-      selected_object=edit_object;
-      do_command("delete",ev);
-      close_oedit_window();
-    }
-    break;
-
-    case DEV_OEDIT_FRONT :
-    {
-      do_command("to_front",ev);
-      close_oedit_window();
-    }
-    break;
-
-    case DEV_OEDIT_BACK :
-    {
-      do_command("to_back",ev);
-      close_oedit_window();
-    }
-    break;
-
-    case DEV_OEDIT_MOVE :
-    {
-      game_object *o=edit_object;
-      close_oedit_window();
-      edit_object=o;
-      do_command("move",ev);
-    }
-    break;
-      }
-    } break;
-
-
-    case EV_CLOSE_WINDOW :
-    {
-      if (ev.window)
-      {
-    if (ev.window==commandw)
-    {
-      prop->setd("commandw x",commandw->m_pos.x);
-      prop->setd("commandw y",commandw->m_pos.y);
-      wm->close_window(commandw);
-      commandw=NULL;
-    } else if (ev.window==oedit)
-      close_oedit_window();
-    else if (ev.window==ambw)
-    { wm->close_window(ambw); ambw=NULL; }
-    else if (ev.window==backw) toggle_bgw();
-    else if (ev.window==forew) toggle_fgw();
-    else if (ev.window==lightw) toggle_light_window();
-    else if (ev.window==show_menu) toggle_show_menu();
-    else if (ev.window==pmenu) toggle_pmenu();
-    else if (ev.window==tbw) toggle_toolbar();
-    else if (ev.window==omenu) toggle_omenu();
-    else if (ev.window==search_window) toggle_search_window();
-    else if (profile_handle_event(ev))  profile_on=!profile_on;
-    else if (chat->chat_event(ev)) chat->toggle();
-
-      }
-    }
-    break;
-    case EV_KEYRELEASE :
-    {
-      if (ev.key==JK_CTRL_L)
-      {
-        if (!edit_object && link_object && selected_object && link_object!=selected_object)
-    {
-      link_object->add_object(selected_object);
-      if (S_LINK_SND>0) cache.sfx(S_LINK_SND)->play(sfx_volume/2);
-      the_game->need_refresh();
-    }
-
-    link_object=NULL;
-      }
-    } break;
-    case EV_KEY :
-    {
-      if (backw && ev.window==backw)
-      { if (ev.key=='-' && bg_scale<the_game->btile_height()/2)
-    { toggle_bgw();
-      bg_scale++;
-      toggle_bgw();
-    } else if (ev.key=='+' && bg_scale>1)
-    { toggle_bgw();
-      bg_scale--;
-      toggle_bgw();
-    } else if (ev.key=='b') toggle_bgw();
-    else if (ev.key=='B') { toggle_bgw(); bg_w++; if (bg_w>6) bg_w=1; toggle_bgw(); }
-      }
-      if (forew && ev.window==forew)
-      { if (ev.key=='-' && fg_scale<the_game->ftile_height()/2)
-    { toggle_fgw();
-      fg_scale++;
-      toggle_fgw();
-    } else if (ev.key=='+' && fg_scale>1)
-    { toggle_fgw();
-      fg_scale--;
-      toggle_fgw();
-    } else if (ev.key=='i')
-    {
-      toggle_fgw();
-      fg_reversed=!fg_reversed;
-      prop->setd("fg_reversed",fg_reversed);
-      toggle_fgw();
-    } else if (ev.key=='f') toggle_fgw();
-
-    else if (ev.key=='F') { toggle_fgw(); fg_w++; if (fg_w>6) fg_w=1; toggle_fgw(); }
-      }
-      if (ev.window==NULL || ev.window==pmenu ||
-      ev.window==forew || is_pal_win(ev.window))  // main window actions
-      {
-    switch (ev.key)
-    {
-      case JK_CTRL_L : if (!edit_object && !link_object) { link_object=selected_object; }
-      case 'n' : current_level->next_focus(); break;
-//      case '/' : if (dev_console) dev_console->toggle(); break;
-      case 't' :
-      {
-        if (ev.window==NULL || ev.window==forew)
-        {
-          ivec2 tile = the_game->GetFgTile(last_demo_mpos);
-          fg_fill(cur_fg, tile.x, tile.y, NULL);
-        }
-      } break;
-      case 'f' : toggle_fgw(); break;
-      case 'M' : toggle_music_window(); break;
-
-      case 'b' : toggle_bgw(); break;
-      case 'a' : toggle_toolbar(); break;
-      case 'A' : { if (selected_object)
-               {
-             if (oedit) wm->Push(new Event(DEV_OEDIT_OK,NULL));
-             make_ai_window(selected_object);
-               }
-             } break;
-
-      case 'o' : toggle_omenu(); break;
-
-      case '<' : do_command("to_back",ev); break;
-
-      case '>' : do_command("to_front",ev); break;
-      case 'p' : toggle_pmenu(); break;
-      case 'P' : profile_toggle(); break;
-      case '.' :
-      {
-        if (last_created_type>=0)
-        {
-          int val=last_created_type;
-          char cmd[100];
-          sprintf(cmd,"create %s",object_names[val]);
-          do_command(cmd,ev);
-          state=DEV_CREATE_OBJECT;
-          dev|=(EDIT_MODE | DRAW_PEOPLE_LAYER);
-        }
-      }
-      break;
-
-
-      case 'd' : { do_command("delete",ev);  the_game->need_refresh(); } break;
-      case 'i' :
-      {
-        fg_reversed=!fg_reversed;
-        prop->setd("fg_reversed",fg_reversed);
-        if (forew)
-        {
-          toggle_fgw();
-          toggle_fgw();
-        }
-      } break;
-      case 'l' : toggle_light_window(); break;
-      case '!' :
-      case '@' :
-      case '#' :
-      case '$' :
-      case '%' :
-      case '^' :
-      case '&' :
-      case '*' :
-      case '(' :
-      case ')' :
-
-      case '0' :
-      case '1' :
-      case '2' :
-      case '3' :
-      case '4' :
-      case '5' :
-      case '6' :
-      case '7' :
-      case '8' :
-      case '9' : do_command("set_aitype",ev); break;
-      case 'c' : do_command("center",ev); break;
-      case 'C' :
-      if (selected_object && selected_object->controller()==NULL)
-      { copy_object=selected_object;
-            wm->Push(new Event(DEV_OEDIT_COPY,NULL)); } break;
-
-      case 'D' : the_game->toggle_delay(); break;
-      case 'L' : toggle_show_menu(); break;
-      case '`' : do_command("fg_select",ev); break;
-      case 'r' : { do_command("toggle_fg_raise",ev); the_game->need_refresh(); }  break;
-      case '[' : do_command("fg_add -1",ev); break;
-      case ']' : do_command("fg_add 1",ev); break;
-      case 'R' : do_command("reload",ev); break;
-      case 'w' :
-      {
-        ivec2 pos = the_game->MouseToGame(dlast);
-        char msg[100]; sprintf(msg, symbol_str("mouse_at"), pos.x, pos.y);
-        the_game->show_help(msg);
-        the_game->need_refresh();
-      } break;
-      case 'k' :
-      {
-        if (selected_object && selected_object->total_objects())
-          selected_object->remove_object(selected_object->get_object(0));
-        the_game->need_refresh();
-      } break;
-      case 'K' :
-      {
-        if (selected_object && selected_object->total_objects())
-          selected_object->remove_object(selected_object->get_object(selected_object->total_objects()-1));
-        the_game->need_refresh();
-      } break;
-      case 'j' :
-      {
-        if (current_level && player_list && player_list->m_focus)
-        {
-          ivec2 pos = the_game->MouseToGame(dlast);
-          player_list->m_focus->x = pos.x;
-          player_list->m_focus->y = pos.y;
-          do_command("center",ev);
-          the_game->need_refresh();
-        }
-      } break;
-      case 'z' : do_command("clear_weapons",ev); break;
-      case 'Z' : if (dev&EDIT_MODE)
-      { view *v = the_game->GetView(last_demo_mpos);
-        if (v)
-        {
-          v->god=!v->god;
-          sbar.redraw(main_screen);
-        }
-      } break;
-      case ' ' :
-      {
-        if (dev & EDIT_MODE)
-        {
-          if (selected_object)
-          {
-        if (oedit)
-          close_oedit_window();
-        edit_object=selected_object;
-        do_command("move",ev);
-          } else if (selected_light)
-          {
-        if (ledit)
-        {
-          wm->close_window(ledit);
-          ledit=NULL;
-        }
-        edit_light=selected_light;
-        do_command("move_light",ev);
-          }
-
-        } break;
-      }
-      case 'x' :
-      {
-        if (selected_object)
-        { if (selected_object->direction>0)
-          selected_object->direction=-1;
-        else selected_object->direction=1;
-        }
-      } break;
-
-    }
-      }
-    }
-  }
-
-
+			case SDLK_b:
+				if (!shift)
+					toggle_bgw();
+				break;
+			case SDLK_a:
+				if (shift)
+				{
+					if (selected_object)
+					{
+						if (oedit)
+							wm->PushUIEvent(DEV_OEDIT_OK,NULL);
+						make_ai_window(selected_object);
+					}
+				}
+				else
+				{
+					toggle_toolbar();
+				}
+				break;
+			case SDLK_o:
+				if (!shift)
+					toggle_omenu();
+				break;
+			case SDLK_COMMA:
+				if (shift)
+				{
+					// '<'
+					do_command("to_back",ev);
+				}
+				break;
+			case SDLK_PERIOD:
+				if (shift)
+				{
+					// '>'
+					do_command("to_front",ev);
+				}
+				else
+				{
+					if (last_created_type>=0)
+					{
+						int val=last_created_type;
+						char cmd[100];
+						sprintf(cmd,"create %s",object_names[val]);
+						do_command(cmd,ev);
+						state=DEV_CREATE_OBJECT;
+						dev|=(EDIT_MODE | DRAW_PEOPLE_LAYER);
+					}
+				}
+				break;
+			case SDLK_p:
+				if (shift)
+				{
+					profile_toggle();
+				}
+				else
+				{
+					toggle_pmenu();
+				}
+				break;
+			case SDLK_d:
+				if (shift)
+				{
+					the_game->toggle_delay();
+				}
+				else
+				{
+					do_command("delete",ev);
+					the_game->need_refresh();
+				}
+				break;
+			case SDLK_i:
+				if (!shift)
+				{
+					fg_reversed=!fg_reversed;
+					prop->setd("fg_reversed",fg_reversed);
+					if (forew)
+					{
+						toggle_fgw();
+						toggle_fgw();
+					}
+				}
+				break;
+			case SDLK_l:
+				if (shift)
+				{
+					toggle_show_menu();
+				}
+				else
+				{
+					toggle_light_window();
+				}
+				break;
+			case SDLK_0:
+			case SDLK_1:
+			case SDLK_2:
+			case SDLK_3:
+			case SDLK_4:
+			case SDLK_5:
+			case SDLK_6:
+			case SDLK_7:
+			case SDLK_8:
+			case SDLK_9:
+				do_command("set_aitype", ev);
+				break;
+			case SDLK_c:
+				if (shift)
+				{
+					if (selected_object && selected_object->controller()==NULL)
+					{
+						copy_object=selected_object;
+						wm->PushUIEvent(DEV_OEDIT_COPY, NULL);
+					}
+				}
+				else
+				{
+					do_command("center",ev);
+				}
+				break;
+			case SDLK_BACKQUOTE:
+				if (!shift)
+					do_command("fg_select",ev);
+				break;
+			case SDLK_r:
+				if (shift)
+				{
+					do_command("reload", ev);
+				}
+				else
+				{
+					do_command("toggle_fg_raise", ev);
+					the_game->need_refresh();
+				}
+				break;
+			case SDLK_LEFTBRACKET: // '['
+				do_command("fg_add -1",ev);
+				break;
+			case SDLK_RIGHTBRACKET: // ']'
+				do_command("fg_add 1",ev);
+				break;
+			case SDLK_w:
+				if (!shift)
+				{
+					ivec2 pos = the_game->MouseToGame(dlast);
+					char msg[100];
+					sprintf(msg, symbol_str("mouse_at"), pos.x, pos.y);
+					the_game->show_help(msg);
+					the_game->need_refresh();
+				}
+				break;
+			case SDLK_k:
+				if (shift)
+				{
+					if (selected_object && selected_object->total_objects())
+						selected_object->remove_object(selected_object->get_object(selected_object->total_objects()-1));
+					the_game->need_refresh();
+				}
+				else
+				{
+					if (selected_object && selected_object->total_objects())
+						selected_object->remove_object(selected_object->get_object(0));
+					the_game->need_refresh();
+				}
+				break;
+			case SDLK_j:
+				if (!shift)
+				{
+					if (current_level && player_list && player_list->m_focus)
+					{
+						ivec2 pos = the_game->MouseToGame(dlast);
+						player_list->m_focus->x = pos.x;
+						player_list->m_focus->y = pos.y;
+						do_command("center",ev);
+						the_game->need_refresh();
+					}
+				}
+				break;
+			case SDLK_z:
+				if (shift)
+				{
+					if (dev&EDIT_MODE)
+					{
+						view *v = the_game->GetView(last_demo_mpos);
+						if (v)
+						{
+							v->god=!v->god;
+							sbar.redraw(main_screen);
+						}
+					}
+				}
+				else
+				{
+					do_command("clear_weapons",ev);
+				}
+				break;
+			case SDLK_SPACE:
+				if (dev & EDIT_MODE)
+				{
+					if (selected_object)
+					{
+						if (oedit)
+							close_oedit_window();
+						edit_object=selected_object;
+						do_command("move",ev);
+					}
+					else if (selected_light)
+					{
+						if (ledit)
+						{
+							wm->close_window(ledit);
+							ledit=NULL;
+						}
+						edit_light=selected_light;
+						do_command("move_light",ev);
+					}
+				}
+				break;
+			case SDLK_x:
+				if (!shift)
+				{
+					if (selected_object)
+					{
+						if (selected_object->direction>0)
+							selected_object->direction=-1;
+						else
+							selected_object->direction=1;
+					}
+				}
+				break;
+			}
+		}
+	}
 }
-
 
 void dev_controll::add_palette(void *args)
 {
@@ -2997,7 +3141,7 @@ void pal_win::draw()
   }
 }
 
-void pal_win::handle_event(Event &ev)
+void pal_win::handle_event(SDL_Event &ev)
 {
   int d=cur_fg;
 
@@ -3013,113 +3157,124 @@ void pal_win::handle_event(Event &ev)
     last_selected=d;
   }
 
-  if (ev.window && ev.window==me)
-  {
-    switch (ev.type)
-    {
-      case EV_MOUSE_BUTTON :
-      {
-        if (ev.mouse_button==1)
-    {
-      int selx=(last_demo_mpos.x-me->m_pos.x-me->x1())/(the_game->ftile_width()/scale),
-          sely=(last_demo_mpos.y-me->m_pos.y-me->y1())/(the_game->ftile_height()/scale);
-      if (selx>=0 && sely>=0 && selx<w && sely<h)
-      {
-        cur_fg=pat[selx+sely*w];
-        if (dev_cont->forew)
-          ((tile_picker *)dev_cont->forew->
-           read(DEV_FG_PICKER))->recenter(dev_cont->forew->m_surf);
-      }
-    } else if (ev.mouse_button==2)
-    {
-      if (palettes_locked)
-        the_game->show_help(symbol_str("pal_lock"));
-      else
-      {
-        int selx=(last_demo_mpos.x-me->m_pos.x-me->x1())/(the_game->ftile_width()/scale),
-            sely=(last_demo_mpos.y-me->m_pos.y-me->y1())/(the_game->ftile_height()/scale);
-        if (selx>=0 && sely>=0 && selx<w && sely<h)
-        {
-          pat[selx+sely*w]=cur_fg;
-          draw();
-        }
-      }
-    }
-      } break;
+	if (me != NULL && wm->GetActiveWindow() == me)
+	{
+		switch (ev.type)
+		{
+		case SDL_MOUSEBUTTONDOWN:
+			if (ev.button.button == SDL_BUTTON_LEFT)
+			{
+				int selx=(last_demo_mpos.x-me->m_pos.x-me->x1())/(the_game->ftile_width()/scale),
+					sely=(last_demo_mpos.y-me->m_pos.y-me->y1())/(the_game->ftile_height()/scale);
+				if (selx>=0 && sely>=0 && selx<w && sely<h)
+				{
+					cur_fg=pat[selx+sely*w];
+					if (dev_cont->forew)
+						((tile_picker *)dev_cont->forew->
+							read(DEV_FG_PICKER))->recenter(dev_cont->forew->m_surf);
+				}
+			}
+			else if (ev.button.button == SDL_BUTTON_RIGHT)
+			{
+				if (palettes_locked)
+					the_game->show_help(symbol_str("pal_lock"));
+				else
+				{
+					int selx=(last_demo_mpos.x-me->m_pos.x-me->x1())/(the_game->ftile_width()/scale),
+						sely=(last_demo_mpos.y-me->m_pos.y-me->y1())/(the_game->ftile_height()/scale);
+					if (selx>=0 && sely>=0 && selx<w && sely<h)
+					{
+						pat[selx+sely*w]=cur_fg;
+						draw();
+					}
+				}
+			}
+			break;
 
-      case EV_KEY :
-      {
-        switch (ev.key)
-    {
-      case '+' :
-      { if (scale>1)
-        {
-          close_window();
-          scale--;
-          open_window();
-        }
-      } break;
-      case '-' :
-      { if (scale<the_game->ftile_height()/2)
-        {
-          close_window();
-          scale++;
-          open_window();
-        }
-      } break;
-      case JK_LEFT :
-      {
-        if (palettes_locked) the_game->show_help(symbol_str("pal_lock"));
-        else if (w>1) resize(-1,0);
-      } break;
-      case JK_RIGHT :
-      {
-        if (palettes_locked) the_game->show_help(symbol_str("pal_lock"));
-        else
-          resize(1,0);
-      } break;
-      case JK_UP :
-      {
-        if (palettes_locked) the_game->show_help(symbol_str("pal_lock"));
-        else if (h>1) resize(0,-1);
-      } break;
-      case JK_DOWN :
-      {
-        if (palettes_locked)
-          the_game->show_help(symbol_str("pal_lock"));
-        else
-          resize(0,1);
-      } break;
-      case JK_ESC : close_window();     break;
-      case ' ' :
-      {
-        int32_t xx, yy;
-        ivec2 tile = the_game->GetFgTile(me->m_pos);
+		case SDL_KEYDOWN:
+			{
+				bool shift = (ev.key.keysym.mod & KMOD_SHIFT) != 0;
+				switch (ev.key.keysym.sym)
+				{
+				case SDLK_EQUALS:
+					if (shift)
+					{
+						if (scale>1)
+						{
+							close_window();
+							scale--;
+							open_window();
+						}
+					}
+					break;
+				case SDLK_MINUS:
+					if (!shift)
+					{
+						if (scale<the_game->ftile_height()/2)
+						{
+							close_window();
+							scale++;
+							open_window();
+						}
+					}
+				case SDLK_LEFT:
+					if (palettes_locked)
+						the_game->show_help(symbol_str("pal_lock"));
+					else if (w > 1)
+						resize(-1,0);
+					break;
+				case SDLK_RIGHT:
+					if (palettes_locked)
+						the_game->show_help(symbol_str("pal_lock"));
+					else
+						resize(1,0);
+					break;
+				case SDLK_UP:
+					if (palettes_locked)
+						the_game->show_help(symbol_str("pal_lock"));
+					else if (h>1)
+						resize(0,-1);
+					break;
+				case SDLK_DOWN:
+					if (palettes_locked)
+						the_game->show_help(symbol_str("pal_lock"));
+					else
+						resize(0,1);
+					break;
+				case SDLK_ESCAPE:
+					close_window();
+					break;
+				case SDLK_SPACE:
+					{
+						int32_t xx, yy;
+						ivec2 tile = the_game->GetFgTile(me->m_pos);
 
-        for (xx=tile.x; xx<tile.x+w; xx++)
-        {
-          for (yy=tile.y; yy<tile.y+h; yy++)
-          {
-        if (xx>=0 && yy>=0 && xx<current_level->foreground_width() &&
-            yy<current_level->foreground_height())
-          the_game->PutFg(ivec2(xx, yy), raise_all ? make_above_tile(pat[xx-tile.x+(yy-tile.y)*w]) : pat[xx-tile.x+(yy-tile.y)*w] );
-          }
-        }
-      } break;
-      case 't' :
-      {
-        ivec2 tile = the_game->GetFgTile(me->m_pos);
-        dev_cont->fg_fill(-1, tile.x, tile.y, this);
-      } break;
-
-    }
-      } break;
-
-      case EV_CLOSE_WINDOW : close_window(); break;
-    }
-  }
-
-
+						for (xx=tile.x; xx<tile.x+w; xx++)
+						{
+							for (yy=tile.y; yy<tile.y+h; yy++)
+							{
+								if (xx>=0 && yy>=0 && xx<current_level->foreground_width() &&
+									yy<current_level->foreground_height())
+									the_game->PutFg(ivec2(xx, yy), raise_all ? make_above_tile(pat[xx-tile.x+(yy-tile.y)*w]) : pat[xx-tile.x+(yy-tile.y)*w] );
+							}
+						}
+					}
+					break;
+				case SDLK_t:
+					{
+						ivec2 tile = the_game->GetFgTile(me->m_pos);
+						dev_cont->fg_fill(-1, tile.x, tile.y, this);
+					}
+					break;
+				}
+			}
+			break;
+		}
+		// ABUSE_EV_CLOSE_WINDOW cannot be a constant and therefore can't be a
+		// switch label
+		if (ev.type == ABUSE_EV_CLOSE_WINDOW)
+			close_window();
+	}
 }
 
 

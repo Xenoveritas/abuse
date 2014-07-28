@@ -427,7 +427,7 @@ void view::get_input()
 void view::add_chat_key(int key)  // return string if buf is complete
 {
     int len = strlen(m_chat_buf);
-  if (key==JK_BACKSPACE)
+  if (key==SDLK_BACKSPACE)
   {
     if (len)
     {
@@ -435,7 +435,7 @@ void view::add_chat_key(int key)  // return string if buf is complete
       if (local_player() && chat)
         chat->draw_user(m_chat_buf);
     }
-  } else if (key!=JK_ENTER)
+  } else if (key!=SDLK_RETURN)
   {
     m_chat_buf[len]=key;
     m_chat_buf[len+1]=0;
@@ -443,7 +443,7 @@ void view::add_chat_key(int key)  // return string if buf is complete
       chat->draw_user(m_chat_buf);
   }
 
-  if (len>38 || key==JK_ENTER)
+  if (len>38 || key==SDLK_RETURN)
   {
     if (DEFINEDP(l_chat_input->GetFunction()))
     {
@@ -603,11 +603,12 @@ void view::last_weapon()
 
 }
 
-int view::handle_event(Event &ev)
+int view::handle_event(SDL_Event &ev)
 {
-    if( ev.type == EV_KEY )
+	// FIXME: I think this is where the bindings will be injected
+    if( ev.type == SDL_KEYDOWN )
     {
-        if( ev.key == (int)',' )
+        if( ev.key.keysym.sym == SDLK_COMMA )
         {
             if( total_weapons )
             {
@@ -615,7 +616,7 @@ int view::handle_event(Event &ev)
             }
             return 1;
         }
-        else if( ev.key == (int)'.' )
+        else if( ev.key.keysym.sym == SDLK_PERIOD )
         {
             if( total_weapons )
             {
@@ -623,7 +624,7 @@ int view::handle_event(Event &ev)
             }
             return 1;
         }
-        else if( ev.key == get_key_binding( "b3", 0 ) )
+        else if( ev.key.keysym.sym == get_key_binding( "b3", 0 ) )
         {
             if( total_weapons )
             {
@@ -631,7 +632,7 @@ int view::handle_event(Event &ev)
             }
             return 1;
         }
-        else if( ev.key == get_key_binding( "b4", 0 ) )
+		else if (ev.key.keysym.sym == get_key_binding("b4", 0))
         {
             if( total_weapons )
             {
@@ -640,26 +641,26 @@ int view::handle_event(Event &ev)
             return 1;
         }
 
-        switch( ev.key )
+		switch (ev.key.keysym.sym)
         {
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
+            case SDLK_1:
+			case SDLK_2:
+			case SDLK_3:
+			case SDLK_4:
+			case SDLK_5:
+			case SDLK_6:
+			case SDLK_7:
             {
-                if((( dev & EDIT_MODE ) == 0 ) && ( weapon_total( ev.key - '1' ) > 0 ))
+                if((( dev & EDIT_MODE ) == 0 ) && ( weapon_total( ev.key.keysym.sym - SDLK_1 ) > 0 ))
                 {
                     suggest.send_weapon_change = 1;
-                    suggest.new_weapon=ev.key - '1';
+					suggest.new_weapon = ev.key.keysym.sym - SDLK_1;
                 }
             } break;
 
-            case JK_HOME:
-            case JK_CTRL_L:
-            case JK_CTRL_R:
+            case SDLK_HOME:
+            case SDLK_LCTRL:
+            case SDLK_RCTRL:
             {
                 if( total_weapons )
                 {
@@ -667,8 +668,8 @@ int view::handle_event(Event &ev)
                 }
                 return 1;
             } break;
-            case JK_PAGEUP:
-            case JK_INSERT:
+            case SDLK_PAGEUP:
+            case SDLK_INSERT:
             {
                 if( total_weapons )
                 {

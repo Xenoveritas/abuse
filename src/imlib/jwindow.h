@@ -152,7 +152,6 @@ public:
     Jwindow *m_first, *m_grab;
     image *mouse_pic, *mouse_save;
     int hi, med, low, bk; // bright, medium, dark and black colors
-    int key_state[512];
     enum { inputing, dragging } state;
     int drag_mousex, drag_mousey, frame_suppress;
     Jwindow *drag_window;
@@ -178,7 +177,7 @@ public:
     void set_colors(int Hi, int Med, int Low) { hi=Hi; med=Med; low=Low; }
     JCFont *font() { return fnt; }
 
-    int key_pressed(int x) { return key_state[x]; }
+    int KeyPressed(SDL_Keycode keycode);
     void hide_windows();
     void show_windows();
     void hide_window(Jwindow *j);

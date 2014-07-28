@@ -39,7 +39,7 @@ extern void fade_in(image *im, int steps);
 extern void fade_out(int steps);
 
 void get_event(SDL_Event &ev)
-{ wm->get_event(ev);
+{ wm->GetEvent(ev);
   switch (ev.type)
   {
     case SDL_KEYDOWN:
@@ -217,7 +217,7 @@ int demo_manager::set_state(demo_state new_state, char *filename)
       { if (v->m_focus) { v->reset_player(); v->m_focus->set_aistate(0); } }
       delete current_level;
       current_level=NULL;
-      the_game->reset_keymap();
+      //the_game->reset_keymap();
       base->input_state=INPUT_PROCESSING;
 
 

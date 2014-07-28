@@ -23,7 +23,7 @@ class automap
 public :
   automap(level *l, int width, int height);
   void toggle_window();
-  void handle_event(Event &ev);
+  void handle_event(SDL_Event &ev);
   void draw();
   ~automap() { if (automap_window) toggle_window(); }
 } ;

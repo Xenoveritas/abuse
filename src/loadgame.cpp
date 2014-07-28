@@ -253,7 +253,7 @@ int load_game(int show_all, char const *title)   // return 0 if the player escap
             preview->m_surf->PutImage(thumbnails[draw_num], ivec2(preview->x1(), preview->y1()));
         }
 
-        if ((ev.type==ABUSE_EV_CLOSE_WINDOW) || (ev.type==SDL_KEYDOWN && ev.key.keysym.key==SDLK_ESCAPE))
+        if ((ev.type==ABUSE_EV_CLOSE_WINDOW) || (ev.type==SDL_KEYDOWN && ev.key.keysym.sym==SDLK_ESCAPE))
             quit=1;
     } while (!got_level && !quit);
 

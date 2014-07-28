@@ -870,7 +870,7 @@ void *l_caller(long number, void *args)
       char nm[50];
       sprintf(nm,"save%04d.pcx", load_game(1,symbol_str("LOAD")));
 //      get_savegame_name(nm);
-      the_game->reset_keymap();
+      //the_game->reset_keymap();
       return LString::Create(nm);
     } break;
     case 46 :
@@ -1216,7 +1216,7 @@ long c_caller(long number, void *args)
     } break;
     case 59 : return menu(args,big_font); break;
     case 60 :
-    { Event ev; dev_cont->do_command(lstring_value(CAR(args)),ev); return 1; } break;
+    { SDL_Event ev; dev_cont->do_command(lstring_value(CAR(args)),ev); return 1; } break;
     case 61 : the_game->set_state(lnumber_value(CAR(args))); break;
 
     case 62 :
@@ -2128,7 +2128,7 @@ long c_caller(long number, void *args)
     } break;
     case 263 :
     {
-      the_game->reset_keymap();
+      //the_game->reset_keymap();
       return load_game(1,symbol_str("SAVE")); //get_save_spot(); shit
     } break;
     case 264 :

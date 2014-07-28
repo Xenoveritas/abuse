@@ -106,6 +106,7 @@ char *men_str(void *arg)
 // This method is only used by the (menu) Lisp method, which was
 // never tested.
 //
+#if 0
 int menu(void *args, JCFont *font)             // reurns -1 on esc
 {
   main_menu();
@@ -154,7 +155,7 @@ int menu(void *args, JCFont *font)             // reurns -1 on esc
   }
 
   wm->flush_screen();
-  Event ev;
+  SDL_Event ev;
   int choice=0,done=0;
   int bh=font->Size().y+3;
   image *save = new image(ivec2(mw - 2,bh));
@@ -168,7 +169,7 @@ int menu(void *args, JCFont *font)             // reurns -1 on esc
     wm->flush_screen();
     if (wm->IsPending())
     {
-      wm->get_event(ev);
+      wm->GetEvent(ev);
       if (ev.type==EV_KEY)
       {
     switch (ev.key)
@@ -248,87 +249,88 @@ int menu(void *args, JCFont *font)             // reurns -1 on esc
   }
   return choice;
 }
+#endif
 
 static void create_volume_window()
 {
-    volume_window = new VolumeWindow();
-    volume_window->inm->allow_no_selections();
-    volume_window->inm->clear_current();
-    volume_window->show();
+	volume_window = new VolumeWindow();
+	volume_window->inm->allow_no_selections();
+	volume_window->inm->clear_current();
+	volume_window->show();
 
-    wm->grab_focus(volume_window);
-    wm->flush_screen();
+	wm->grab_focus(volume_window);
+	wm->flush_screen();
 
-    while(volume_window)
-    {
-        Event ev;
+	while(volume_window)
+	{
+		SDL_Event ev;
 
-        do
-        {
-            wm->get_event(ev);
-        }
-        while(ev.type == EV_MOUSE_MOVE && wm->IsPending());
+		do
+		{
+			wm->GetEvent(ev);
+		}
+		while(ev.type == SDL_MOUSEMOTION && wm->IsPending());
 
-        wm->flush_screen();
+		wm->flush_screen();
 
-        if(ev.type == EV_CLOSE_WINDOW
-                 || (ev.type == EV_KEY && ev.key == JK_ESC))
-        {
-            wm->close_window(volume_window);
-            volume_window = NULL;
-        }
+		if (ev.type == ABUSE_EV_CLOSE_WINDOW
+			|| (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE))
+		{
+			wm->close_window(volume_window);
+			volume_window = NULL;
+		}
 
-        if(!volume_window)
-            break;
+		if (!volume_window)
+			break;
 
-        if(ev.type == EV_MESSAGE)
-        {
-            char const *s;
+		if (ev.type == ABUSE_EV_MESSAGE)
+		{
+			const char* s;
 
-            switch(ev.message.id)
-            {
-            case ID_SFX_UP:
-                sfx_volume += 16;
-                if(sfx_volume > 127)
-                    sfx_volume = 127;
-                volume_window->draw_sfx_vol();
-                s = "sfx/ambtech1.wav";
-                if(sound_avail & SFX_INITIALIZED)
-                    cache.sfx(cache.reg(s, s, SPEC_EXTERN_SFX, 1))
-                        ->play(sfx_volume);
-                break;
-            case ID_SFX_DOWN:
-                sfx_volume -= 16;
-                if(sfx_volume < 0)
-                    sfx_volume = 0;
-                volume_window->draw_sfx_vol();
-                s = "sfx/ambtech1.wav";
-                if(sound_avail & SFX_INITIALIZED)
-                    cache.sfx(cache.reg(s, s, SPEC_EXTERN_SFX, 1))
-                        ->play(sfx_volume);
-                break;
+			switch(ev.user.code)
+			{
+			case ID_SFX_UP:
+				sfx_volume += 16;
+				if (sfx_volume > 127)
+					sfx_volume = 127;
+				volume_window->draw_sfx_vol();
+				s = "sfx/ambtech1.wav";
+				if (sound_avail & SFX_INITIALIZED)
+					cache.sfx(cache.reg(s, s, SPEC_EXTERN_SFX, 1))
+						->play(sfx_volume);
+				break;
+			case ID_SFX_DOWN:
+				sfx_volume -= 16;
+				if (sfx_volume < 0)
+					sfx_volume = 0;
+				volume_window->draw_sfx_vol();
+				s = "sfx/ambtech1.wav";
+				if(sound_avail & SFX_INITIALIZED)
+					cache.sfx(cache.reg(s, s, SPEC_EXTERN_SFX, 1))
+						->play(sfx_volume);
+				break;
 
-            case ID_MUSIC_UP:
-                music_volume += 16;
-                if(music_volume > 127)
-                    music_volume = 127;
-                volume_window->draw_music_vol();
-                if(current_song)
-                    current_song->set_volume(music_volume);
-                break;
-            case ID_MUSIC_DOWN:
-                music_volume -= 16;
-                if(music_volume < 0)
-                    music_volume = 0;
-                volume_window->draw_music_vol();
-                if(current_song)
-                    current_song->set_volume(music_volume);
-                break;
-            }
-        }
-    }
+			case ID_MUSIC_UP:
+				music_volume += 16;
+				if(music_volume > 127)
+					music_volume = 127;
+				volume_window->draw_music_vol();
+				if(current_song)
+					current_song->set_volume(music_volume);
+				break;
+			case ID_MUSIC_DOWN:
+				music_volume -= 16;
+				if(music_volume < 0)
+					music_volume = 0;
+				volume_window->draw_music_vol();
+				if(current_song)
+					current_song->set_volume(music_volume);
+				break;
+			}
+		}
+	}
 
-    wm->close_window(volume_window);
+	wm->close_window(volume_window);
 }
 
 void save_difficulty()
@@ -385,12 +387,12 @@ void show_sell(int abortable)
       int im=cache.reg_object("art/help.spe",CAR(tmp),SPEC_IMAGE,1);
       fade_in(cache.img(im),16);
 
-      Event ev;
+      SDL_Event ev;
       do
       { wm->flush_screen();
-    wm->get_event(ev);
-      } while (ev.type!=EV_KEY);
-      if (ev.key==JK_ESC && abortable)
+    wm->GetEvent(ev);
+	  } while (!wm->IsActiveUserEvent(ev));
+      if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym==SDLK_ESCAPE && abortable)
         quit=1;
       fade_out(16);
       tmp = (LObject *)CDR(tmp);
@@ -400,116 +402,121 @@ void show_sell(int abortable)
 }
 
 
-void menu_handler(Event &ev, InputManager *inm)
+void menu_handler(SDL_Event &ev, InputManager *inm)
 {
-  switch (ev.type)
-  {
-    case EV_MESSAGE :
-    {
-      switch (ev.message.id)
-      {
-    case ID_LIGHT_OFF :
-    if (!volume_window)
-    {
-      gamma_correct(pal,1);
-    } break;
-    case ID_RETURN :
-    if (!volume_window)
-    {
-      the_game->set_state(RUN_STATE);
-    } break;
-    case ID_START_GAME :
-    if (!volume_window)
-    {
-      the_game->load_level(level_file);
-      the_game->set_state(RUN_STATE);
-      view *v;
-      for (v=player_list; v; v=v->next)
-        if (v->m_focus)
-          v->reset_player();
+	if (ev.type == ABUSE_EV_MESSAGE)
+	{
+		switch (ev.user.code)
+		{
+		case ID_LIGHT_OFF:
+			if (!volume_window)
+			{
+				gamma_correct(pal, 1);
+			}
+			break;
+		case ID_RETURN:
+			if (!volume_window)
+			{
+				the_game->set_state(RUN_STATE);
+			}
+			break;
+		case ID_START_GAME:
+			if (!volume_window)
+			{
+				the_game->load_level(level_file);
+				the_game->set_state(RUN_STATE);
+				view *v;
+				for (v = player_list; v; v = v->next)
+					if (v->m_focus)
+						v->reset_player();
+			}
+			break;
 
-    } break;
+		case ID_LOAD_PLAYER_GAME:
+			if (!volume_window)
+			{
+				int got_level = load_game(0, symbol_str("LOAD"));
+				//the_game->reset_keymap();
+				if (got_level)
+				{
+					char name[255];
+					sprintf(name, "%ssave%04d.spe", get_save_filename_prefix(), got_level);
 
+					the_game->load_level(name);
+					the_game->set_state(RUN_STATE);
+				}
+			}
+			break;
 
-        case ID_LOAD_PLAYER_GAME :
-    if (!volume_window)
-    {
-      int got_level=load_game(0,symbol_str("LOAD"));
-      the_game->reset_keymap();
-      if (got_level)
-      {
-        char name[255];
-        sprintf(name,"%ssave%04d.spe", get_save_filename_prefix(), got_level);
+		case ID_VOLUME:
+			if (!volume_window)
+			{
+				create_volume_window();
+			}
+			break;
 
-        the_game->load_level(name);
-        the_game->set_state(RUN_STATE);
-      }
-    } break;
+		case ID_MEDIUM:
+			l_difficulty->SetValue(l_medium);
+			save_difficulty();
+			break;
+		case ID_HARD:
+			l_difficulty->SetValue(l_hard);
+			save_difficulty();
+			break;
+		case ID_EXTREME:
+			l_difficulty->SetValue(l_extreme);
+			save_difficulty();
+			break;
+		case ID_EASY:
+			l_difficulty->SetValue(l_easy);
+			save_difficulty();
+			break;
 
+		case ID_NETWORKING:
+			if (!volume_window)
+			{
+				net_configuration *cfg = new net_configuration;
+				if (cfg->input())
+				{
+					if (main_net_cfg)
+						delete main_net_cfg;
+					main_net_cfg = cfg;
+				}
+				else
+				{
+					delete cfg;
+				}
+				the_game->draw(0);
+				inm->redraw();
+			}
+			break;
 
-    case ID_VOLUME :
-    if (!volume_window)
-    { create_volume_window(); } break;
+		case ID_SHOW_SELL:
+			if (!volume_window)
+			{
+				show_sell(1);
+				main_screen->clear();
+				if (title_screen >= 0)
+				{
+					image *im = cache.img(title_screen);
+					main_screen->PutImage(im, main_screen->Size() / 2 - im->Size() / 2);
+				}
+				inm->redraw();
+				fade_in(NULL, 8);
+				wm->flush_screen();
 
-    case ID_MEDIUM :
-    {
-      l_difficulty->SetValue(l_medium);
-      save_difficulty();
-    } break;
-    case ID_HARD :
-    {
-      l_difficulty->SetValue(l_hard);
-      save_difficulty();
-    } break;
-    case ID_EXTREME :
-    {
-      l_difficulty->SetValue(l_extreme);
-      save_difficulty();
-    } break;
-    case ID_EASY :
-    {
-      l_difficulty->SetValue(l_easy);
-      save_difficulty();
-    } break;
-
-    case ID_NETWORKING :
-    {
-      if (!volume_window)
-      {
-        net_configuration *cfg=new net_configuration;
-        if (cfg->input())
-        {
-          if (main_net_cfg) delete main_net_cfg;
-          main_net_cfg=cfg;
-        } else delete cfg;
-        the_game->draw(0);
-        inm->redraw();
-      }
-    } break;
-
-    case ID_SHOW_SELL :
-    if (!volume_window)
-    {
-      show_sell(1);
-      main_screen->clear();
-      if (title_screen>=0)
-      {
-        image *im = cache.img(title_screen);
-        main_screen->PutImage(im, main_screen->Size() / 2 - im->Size() / 2);
-      }
-      inm->redraw();
-      fade_in(NULL,8);
-      wm->flush_screen();
-
-    } break;
-      } break;
-    } break;
-    case EV_CLOSE_WINDOW :
-    {
-      if (ev.window==volume_window)
-      { wm->close_window(volume_window); volume_window=NULL; }
-    } break;
-  }
+			}
+			break;
+		}
+	}
+	else if (ev.type == ABUSE_EV_CLOSE_WINDOW)
+	{
+		if (wm->GetActiveWindow() == volume_window)
+		{
+			wm->close_window(volume_window);
+			volume_window=NULL;
+		}
+	}
 }
 
 void *current_demo=NULL;
@@ -641,7 +648,7 @@ void main_menu()
 
     main_screen->AddDirty(ivec2(0), ivec2(320, 200));
 
-    Event ev;
+    SDL_Event ev;
 
     int stop_menu=0;
     time_marker start;
@@ -654,11 +661,11 @@ void main_menu()
         {
             do
             {
-                wm->get_event(ev);
-            } while (ev.type==EV_MOUSE_MOVE && wm->IsPending());
+                wm->GetEvent(ev);
+            } while (ev.type==SDL_MOUSEMOTION && wm->IsPending());
             inm->handle_event(ev,NULL);
-            if (ev.type==EV_KEY && ev.key==JK_ESC)
-                wm->Push(new Event(ID_QUIT,NULL));
+            if (ev.type==SDL_KEYDOWN && ev.key.keysym.sym==SDLK_ESCAPE)
+                wm->PushUIEvent(ID_QUIT,NULL);
 
             menu_handler(ev,inm);
             start.get_time();
@@ -695,17 +702,17 @@ void main_menu()
         if (volume_window) stop_menu=0;  // can't exit with volume window open
         else if (main_net_cfg && main_net_cfg->restart_state()) stop_menu=1;
         else if (the_game->state==RUN_STATE) stop_menu=1;
-        else if (ev.type==EV_MESSAGE)
+        else if (ev.type==ABUSE_EV_MESSAGE)
         {
-            if (ev.message.id==ID_START_GAME || ev.message.id==ID_RETURN)
+			if (ev.user.code == ID_START_GAME || ev.user.code == ID_RETURN)
                 stop_menu=1;
-            else if (ev.message.id==ID_QUIT)
+			else if (ev.user.code == ID_QUIT)
             {
                 if (confirm_quit())
                     stop_menu=1;
                 else
                 {
-                    ev.type=EV_SPURIOUS;
+                    ev.type=ABUSE_EV_SPURIOUS;
                     start.get_time();
                 }
             }
@@ -714,8 +721,6 @@ void main_menu()
 
     delete inm;
 
-    if (ev.type==EV_MESSAGE && ev.message.id==ID_QUIT)   // propogate the quit message
+	if (ev.type == ABUSE_EV_MESSAGE && ev.user.code == ID_QUIT)   // propogate the quit message
         the_game->end_session();
 }
-
-

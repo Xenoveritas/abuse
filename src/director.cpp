@@ -179,29 +179,29 @@ void director::wait(void *arg)
     wm->flush_screen();
     while (wm->IsPending())
     {
-      Event ev;
-      wm->get_event(ev);
-      if (ev.type==EV_KEY)
+      SDL_Event ev;
+      wm->GetEvent(ev);
+      if (ev.type==SDL_KEYDOWN)
       {
-    switch (ev.key)
+    switch (ev.key.keysym.sym)
     {
-      case JK_UP :
-      case JK_LEFT :
+      case SDLK_UP :
+      case SDLK_LEFT :
       {
         if (scroll_speed>=20)
         scroll_speed-=20;
           else text_step--;
       }
       break;
-      case JK_RIGHT :
-      case JK_DOWN :
+      case SDLK_RIGHT :
+      case SDLK_DOWN :
       {
         if (text_step<-2)
         text_step++;
         else if (scroll_speed<200) scroll_speed+=20;
         break;
-        case JK_ESC : set_abort(1); done=1; break;
-        case JK_ENTER : done=1; break;
+        case SDLK_ESCAPE : set_abort(1); done=1; break;
+        case SDLK_RETURN : done=1; break;
       }
     }
       }

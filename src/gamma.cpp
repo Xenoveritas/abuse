@@ -156,10 +156,10 @@ void gamma_correct(palette *&pal, int force_menu)
         {
             do
             {
-                wm->get_event(ev);
-            } while(ev.type == SDL_MOUSEMOTION && wm->IsPending());
+                wm->GetEvent(ev);
+            } while(!(wm->IsActiveUserEvent(ev)) && wm->IsPending());
             wm->flush_screen();
-            if(ev.type == EV_CLOSE_WINDOW)
+            if(ev.type == ABUSE_EV_CLOSE_WINDOW)
                 abort = 1;
             if(ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE)
                 abort = 1;
