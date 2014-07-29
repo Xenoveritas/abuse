@@ -54,8 +54,9 @@ void get_event(SDL_Event &ev)
     } break;
   }
 
-  last_demo_mpos = ev.mouse_move;
-  last_demo_mbut = ev.mouse_button;
+  last_demo_mpos = wm->GetMousePos();
+  // This is literally the only place last_demo_mbut is ever set.
+  last_demo_mbut = SDL_GetMouseState(NULL, NULL);
   idle_ticks=0;
 }
 

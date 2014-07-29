@@ -11,6 +11,7 @@
   - Completely rewrite event system to solely use SDL2 events
     - Adds game controller support using the SDL2 API
     - Allows multiple bindings to be specified for a single key
+    - Ditches the internal keymap for the SDL one
 
 # News for Abuse 0.8 (2011-05-09)
 

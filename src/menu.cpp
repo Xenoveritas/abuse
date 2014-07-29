@@ -106,6 +106,9 @@ char *men_str(void *arg)
 // This method is only used by the (menu) Lisp method, which was
 // never tested.
 //
+// (menu) is never used in the lisp code anyway. Rather that try and port
+// whatever this is supposed to do to SDL, I'm commenting it out.
+//
 #if 0
 int menu(void *args, JCFont *font)             // reurns -1 on esc
 {

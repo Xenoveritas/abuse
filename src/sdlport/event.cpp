@@ -128,7 +128,13 @@ ivec2 EventHandler::GetMousePos()
 	return pos;
 }
 
-void EventHandler::SysWarpMouse(ivec2 pos)
+void EventHandler::SetMouseShape(image *sprite, ivec2 hotspot)
+{
+	m_sprite = new Sprite(m_screen, sprite, m_pos);
+	m_center = hotspot;
+}
+
+void EventHandler::SetMousePos(ivec2 pos)
 {
 	// This should take into account mouse scaling.
 	pos.x = ((pos.x * mouse_xscale + 0x8000) >> 16) + mouse_xpad;

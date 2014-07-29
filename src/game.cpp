@@ -1572,11 +1572,10 @@ void Game::get_input()
 		// don't process repeated keys in the main window, it will slow down the game to handle such
 		// useless events. However in other windows it might be useful, such as in input windows
 		// where you want to repeatedly scroll down...
-		if(ev.type != SDL_KEYDOWN || !key_down(ev.key.keysym.sym) || wm->GetActiveWindow() != NULL || (dev & EDIT_MODE))
+		if(ev.type != SDL_KEYDOWN || (ev.type == SDL_KEYDOWN && ev.key.repeat == 0) || wm->GetActiveWindow() != NULL || (dev & EDIT_MODE))
 		{
 			if(ev.type == SDL_KEYDOWN)
 			{
-				set_key_down(ev.key, 1);
 				if(playing_state(state))
 				{
 					if(ev.key.keysym.sym < 256)
@@ -1597,7 +1596,6 @@ void Game::get_input()
 			}
 			else if(ev.type == SDL_KEYUP)
 			{
-				set_key_down(ev.key.keysym.sym, 0);
 				if(playing_state(state))
 				{
 					if (ev.key.keysym.sym < 256)
@@ -1893,10 +1891,11 @@ void Game::step()
     }
     else if(!(dev & EDIT_MODE))               // if edit mode, then don't step anything
     {
-      if(key_down(SDLK_ESCAPE))
+      if(wm->KeyPressed(SDLK_ESCAPE))
       {
     set_state(MENU_STATE);
-	set_key_down(SDLK_ESCAPE, 0);
+	// FIXME: We no longer keep a duplicate of the keyboard map, so this presumably means hitting escape will cause a rapid toggle?
+	//set_key_down(SDLK_ESCAPE, 0);
       }
       ambient_ramp = 0;
       view *v;
@@ -1915,8 +1914,8 @@ void Game::step()
   } else if(state == MENU_STATE)
     main_menu();
 
-  if((key_down(SDLK_x) || key_down(SDLK_F4))
-      && (key_down(SDLK_LALT) || key_down(SDLK_RALT))
+  if ((wm->KeyPressed(SDLK_x) || wm->KeyPressed(SDLK_F4))
+	  && (wm->KeyPressed(SDLK_LALT) || wm->KeyPressed(SDLK_RALT))
       && confirm_quit())
     finished = true;
 }

@@ -39,6 +39,27 @@ public:
     virtual void OnControlChange(bool state) = 0;
 };
 
+/**
+ * Parses a key definition to lookup a scancode. This goes through several
+ * steps before determining a final scancode. This method is not case sensitive
+ * (as neither SDL_GetScancodeFromName nor SDL_GetKeyFromName are case
+ * sensitive).
+ *
+ * If the string is a single character long, it's immediately passed off to
+ * SDL_GetKeyFromName to parse the key code and then converted to a scancode
+ * using SDL_GetScancodeFromKey.
+ *
+ * If the keyname can be parsed by strtol (using base 0, meaning the 0x and 0
+ * prefixes are allowed for hexidecimal and octal respectively), that's used
+ * immediately as a scancode and returned (assuming it's less than
+ * SDL_NUM_SCANCODES, if it's greater than or equal to, it returns
+ * SDL_SCANCODE_UNKNOWN).
+ *
+ * If the keyname starts with "scancode", it is taken as a
+ * scancode. It's parsed using the above method.
+ *
+ * If the no scancode can be determined, this returns SDL_SCANCODE_UNKNOWN.
+ */
 SDL_Scancode ParseKeyName(const char* keyname);
 
 /**

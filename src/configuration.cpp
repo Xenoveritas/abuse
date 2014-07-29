@@ -19,7 +19,6 @@
 #include "sdlport/joy.h"
 #include "game.h"
 
-#include "keys.h"
 #include "lisp.h"
 #include "jwindow.h"
 #include "configuration.h"
@@ -170,7 +169,7 @@ void get_key_bindings()
 }
 
 
-#define is_pressed(x) the_game->key_down(x)
+#define is_pressed(x) wm->KeyPressed(x)
 
 void get_movement(int player, int &x, int &y, int &b1, int &b2, int &b3, int &b4)
 {
@@ -261,40 +260,15 @@ void config_cleanup()
 // Get the keycode for the string 'str'
 // Returns -1 for an invalid key code
 //
-int get_keycode(char const *str)
+int get_keycode(const char *str)
 {
     if( !str[0] )
     {
         return -1;
     }
-    else if( !str[1] )
-    {
-        return str[0];
-    }
     else
     {
-        int j;
-        char buf[20];
-        for( j = 256; j < JK_MAX_KEY; j++ )
-        {
-            key_name( j, buf );
-            char *c = buf;
-            for( ; *c; c++ )
-            {
-                if( *c == ' ' )
-                {
-                    *c = '_';
-                }
-                else
-                {
-                    *c = tolower( *c );
-                }
-            }
-            if( strcmp( str, buf ) == 0 )
-            {
-                return j;
-            }
-        }
+		return SDL_GetKeyFromName(str);
     }
     return -1;
 }

@@ -265,7 +265,8 @@ void clisp_init()                            // call by lisp_init, defines symbo
 
   add_c_bool_fun("freeze_player",1,1,          58);   // freeze time
 
-  add_c_function("menu",1,-1,                  59);
+  // menu is never actually used and I broke it anyway
+  //add_c_function("menu",1,-1,                  59);
   add_c_bool_fun("do_command",1,1,             60);   // command string
   add_c_bool_fun("set_game_state",1,1,         61);
 
@@ -1072,7 +1073,7 @@ long c_caller(long number, void *args)
         } break;
         case 4:
         {
-            return the_game->key_down(lnumber_value(CAR(args)));
+			return wm->KeyPressed(lnumber_value(CAR(args)));
         } break;
         case 5:
         {
@@ -1214,7 +1215,8 @@ long c_caller(long number, void *args)
       { lbreak("set_freeze_time : object is not a focus\n"); }
       else current_object->controller()->freeze_time=x1; return 1;
     } break;
-    case 59 : return menu(args,big_font); break;
+    // Code 59 can never happen any more, menu has been removed
+    case 59 : break; //return menu(args,big_font); break;
     case 60 :
     { SDL_Event ev; dev_cont->do_command(lstring_value(CAR(args)),ev); return 1; } break;
     case 61 : the_game->set_state(lnumber_value(CAR(args))); break;
@@ -2340,5 +2342,3 @@ int get_lprop_number(void *symbol, int def)  // returns def if symbol undefined 
     }
   } else return def;
 }
-
-
