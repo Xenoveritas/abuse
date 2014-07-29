@@ -114,6 +114,13 @@ void createRCFile( char *rcfile )
     }
 }
 
+// Temporary method to convert a scancode back to a keycode. When the new
+// control bindings stuff lands, this will be replaced.
+int get_key_code(const char* name)
+{
+	return SDL_GetKeyFromScancode(ParseKeyName(name));
+}
+
 //
 // Read in the 'abuserc' file
 //
@@ -179,62 +186,62 @@ void readRCFile()
             else if( strcasecmp( result, "left" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-                keys.left = ParseKeyName( result );
+                keys.left = get_key_code( result );
             }
             else if( strcasecmp( result, "right" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.right = ParseKeyName(result);
+				keys.right = get_key_code(result);
             }
             else if( strcasecmp( result, "up" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.up = ParseKeyName(result);
+				keys.up = get_key_code(result);
             }
             else if( strcasecmp( result, "down" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.down = ParseKeyName(result);
+				keys.down = get_key_code(result);
             }
             else if( strcasecmp( result, "left2" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.left_2 = ParseKeyName(result);
+				keys.left_2 = get_key_code(result);
             }
             else if( strcasecmp( result, "right2" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.right_2 = ParseKeyName(result);
+				keys.right_2 = get_key_code(result);
             }
             else if( strcasecmp( result, "up2" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.up_2 = ParseKeyName(result);
+				keys.up_2 = get_key_code(result);
             }
             else if( strcasecmp( result, "down2" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.down_2 = ParseKeyName(result);
+				keys.down_2 = get_key_code(result);
             }
             else if( strcasecmp( result, "fire" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.b2 = ParseKeyName(result);
+				keys.b2 = get_key_code(result);
             }
             else if( strcasecmp( result, "special" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.b1 = ParseKeyName(result);
+				keys.b1 = get_key_code(result);
             }
             else if( strcasecmp( result, "weapprev" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.b3 = ParseKeyName(result);
+				keys.b3 = get_key_code(result);
             }
             else if( strcasecmp( result, "weapnext" ) == 0 )
             {
                 result = strtok( NULL,"\n" );
-				keys.b4 = ParseKeyName(result);
+				keys.b4 = get_key_code(result);
             }
         }
         fclose( fd );
@@ -344,16 +351,16 @@ void setup( int argc, char **argv )
     flags.xres = xres        = 320;  // Default window width
     flags.yres = yres        = 200;  // Default window height
     flags.antialias          = 0;    // Don't anti-alias
-    keys.up                  = ParseKeyName( "UP" );
-    keys.down                = ParseKeyName( "DOWN" );
-    keys.left                = ParseKeyName( "LEFT" );
-    keys.right               = ParseKeyName( "RIGHT" );
-    keys.up_2                = ParseKeyName( "w" );
-    keys.down_2              = ParseKeyName( "s" );
-    keys.left_2              = ParseKeyName( "a" );
-    keys.right_2             = ParseKeyName( "d" );
-    keys.b3                  = ParseKeyName( "CTRL_R" );
-    keys.b4                  = ParseKeyName( "INSERT" );
+    keys.up                  = get_key_code( "UP" );
+    keys.down                = get_key_code( "DOWN" );
+    keys.left                = get_key_code( "LEFT" );
+    keys.right               = get_key_code( "RIGHT" );
+    keys.up_2                = get_key_code( "w" );
+    keys.down_2              = get_key_code( "s" );
+    keys.left_2              = get_key_code( "a" );
+    keys.right_2             = get_key_code( "d" );
+    keys.b3                  = get_key_code( "CTRL_R" );
+    keys.b4                  = get_key_code( "INSERT" );
     scale                    = 2;    // Default scale amount
 
     // Display our name and version

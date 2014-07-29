@@ -95,27 +95,12 @@ int Bindings::BindKey(SDL_Scancode scancode, ControlBinding* binding)
 
 int Bindings::BindKeyByName(const char* keyname, ControlBinding* binding)
 {
-	// Ah, the complex one.
-	if (keyname[0] == '0' && keyname[1] == 'x')
+	SDL_Scancode scancode = ParseKeyName(keyname);
+	if (scancode == SDL_SCANCODE_UNKNOWN)
 	{
-		// Parse as hex
+		return 0;
 	}
-	else if (keyname[0] == 'S' && keyname[1] == 'C' && keyname[2] == 'A'
-		&& keyname[3] == 'N' && keyname[4] == '_')
-	{
-		// Parse as scancode
-	}
-	else if (keyname[0] == 'C' && keyname[1] == 'O' && keyname[2] == 'D'
-		&& keyname[3] == 'E' && keyname[4] == '_')
-	{
-		// Parse as decimal
-	}
-	else
-	{
-		// Treat directly as a key name.
-		return BindKeyByKeyName(keyname, binding);
-	}
-	return 0;
+	return BindKey(scancode, binding);
 }
 /**
 * Binds a key based on its name. Otherwise identical to BindKey.

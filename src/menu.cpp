@@ -652,6 +652,9 @@ void main_menu()
     main_screen->AddDirty(ivec2(0), ivec2(320, 200));
 
     SDL_Event ev;
+	// It is possible to never load an event, so just make is spurious so we'll
+	// ignore it
+	ev.type = ABUSE_EV_SPURIOUS;
 
     int stop_menu=0;
     time_marker start;

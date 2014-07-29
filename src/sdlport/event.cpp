@@ -137,8 +137,10 @@ void EventHandler::SetMouseShape(image *sprite, ivec2 hotspot)
 void EventHandler::SetMousePos(ivec2 pos)
 {
 	// This should take into account mouse scaling.
+	printf("Setting mouse position to (%d,%d)", pos.x, pos.y);
 	pos.x = ((pos.x * mouse_xscale + 0x8000) >> 16) + mouse_xpad;
 	pos.y = ((pos.y * mouse_yscale + 0x8000) >> 16) + mouse_ypad;
+	printf(", scaled to (%d,%d)\n", pos.x, pos.y);
 	SDL_WarpMouseInWindow(window, pos.x, pos.y);
 }
 
@@ -183,19 +185,24 @@ int EventHandler::PollEvent(SDL_Event &ev)
 
 	if (rv > 0)
 	{
-		// Sort the mouse out
-		// Always scale mouse events prior to letting them be handled elsewhere.
+		// SDL will scale the mouse according to our virtual resolution.
+		// Cool! Except we lied about it to maintain the correct 320x200 aspect
+		// ratio. Less cool. So we need to "fix" it for the real vertical
+		// resolution.
 		switch (ev.type)
 		{
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
-			ScaleMouse(ev.button.x, ev.button.y);
+			SDL_GetMouseState(&m_pos.x, &m_pos.y);
+			ScaleMouse(m_pos.x, m_pos.y);
+			ev.button.x = m_pos.x;
+			ev.button.y = m_pos.y;
 			break;
 		case SDL_MOUSEMOTION:
-			ScaleMouse(ev.motion.x, ev.motion.y);
-			break;
-		case SDL_MOUSEWHEEL:
-			ScaleMouse(ev.wheel.x, ev.wheel.y);
+			SDL_GetMouseState(&m_pos.x, &m_pos.y);
+			ScaleMouse(m_pos.x, m_pos.y);
+			ev.motion.x = m_pos.x;
+			ev.motion.y = m_pos.y;
 			break;
 		}
 	}

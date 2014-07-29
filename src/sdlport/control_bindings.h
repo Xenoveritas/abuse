@@ -28,7 +28,7 @@
 #define MAX_MOUSE_BUTTONS       32
 
 /**
- * Effectively an interface for accessing key bindings.
+ * Effectively an interface for receiving notifications of control changes.
  */
 class ControlBinding {
 public:
@@ -86,17 +86,7 @@ public:
      */
     int BindKey(SDL_Scancode scancode, ControlBinding* binding);
     /**
-     * Binds a key based on its name. This handles a variety of "special" names
-     * to allow for easier customization when dealing with a human source. If
-     * the key binding starts with "SCAN_" then the "SCAN_" prefix is stripped
-     * and the key is sent straight to BindKeyByScancodeName. If the key starts
-     * with 0x then it's parsed as a hex and that hex value is used directly
-     * as a keycode. If the code starts with "CODE_" then "CODE_" is stripped
-     * and the rest of the name is parsed as a decimal and that's used as a
-     * key binding.
-     *
-     * Returns 1 if the name is found and the control is successfully bound or
-     * 0 if the name cannot be found or the binding is out of range.
+     * Binds a key based on its name. Uses ParseKeyName to parse the key name.
      */
     int BindKeyByName(const char* keyname, ControlBinding* binding);
     /**
