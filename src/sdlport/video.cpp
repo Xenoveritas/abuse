@@ -78,7 +78,7 @@ void set_mode(int argc, char **argv)
         show_startup_error("Video : Unable to create window : %s", SDL_GetError());
         exit(1);
     }
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, -1, flags.software ? SDL_RENDERER_SOFTWARE : SDL_RENDERER_ACCELERATED);
     if (renderer == NULL)
     {
         show_startup_error("Video : Unable to create renderer : %s", SDL_GetError());
@@ -132,7 +132,10 @@ void set_mode(int argc, char **argv)
 
     SDL_DisplayMode mode;
     SDL_GetWindowDisplayMode(window, &mode);
-    printf("Video : %dx%d %dbpp\n", mode.w, mode.h, SDL_BITSPERPIXEL(mode.format));
+    SDL_RendererInfo rendererInfo;
+    SDL_GetRendererInfo(renderer, &rendererInfo);
+    printf("Video : %dx%d %dbpp (renderer: %s)\n", mode.w, mode.h,
+        SDL_BITSPERPIXEL(mode.format), rendererInfo.name);
 
     // Grab and hide the mouse cursor
     SDL_ShowCursor(0);

@@ -31,7 +31,7 @@ getting CMake and SDL/SDL_mixer is probably using [Homebrew](http://brew.sh/).
        git clone https://github.com/Xenoveritas/abuse.git
 
 2. Create a new directory for the build. CMake likes to build into directories
-   outside the source directory and its best not to fight it on this.
+   outside the source directory and it's best not to fight it on this.
 
    Within that directory, run CMake.
 
