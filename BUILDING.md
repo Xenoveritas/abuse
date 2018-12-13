@@ -4,8 +4,8 @@
 
 ### All Platforms
 
-- SDL 1.1.6 or higher <http://www.libsdl.org> (note that SDL2 will not work)
-- [SDL_mixer 1.2](http://www.libsdl.org/projects/SDL_mixer/release-1.2.html)
+- SDL2 2.0 or later <http://www.libsdl.org> (note that SDL 1 will not work)
+- [SDL2_mixer 2.0 or later](http://www.libsdl.org/projects/SDL_mixer/)
 - [CMake 2.8.9 or later](http://www.cmake.org/)
 - GL libraries and headers are required for OpenGL support.
 
