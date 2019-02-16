@@ -1,4 +1,4 @@
-add_library(net
+add_library(net STATIC
     gserver.cpp gserver.h
     gclient.cpp gclient.h
     fileman.cpp fileman.h
