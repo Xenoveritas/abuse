@@ -11,8 +11,7 @@
 
 ### Windows
 
-- [Visual Studio 2013](http://www.visualstudio.com/downloads/download-visual-studio-vs#d-express-windows-desktop)
-  (maybe earlier versions, haven't tried)
+- [Visual Studio 2019](https://visualstudio.microsoft.com/vs/)
 - CMake 2.8.11 or later for the WIX installer (tested with 3.0)
 
 ### Mac OS X
