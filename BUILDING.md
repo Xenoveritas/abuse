@@ -4,16 +4,37 @@
 
 ### All Platforms
 
-- SDL2 2.0 or later <http://www.libsdl.org> (note that SDL 1 will not work)
+- SDL2 2.0 or later <http://www.libsdl.org/> (note that SDL 1 will not work)
 - [SDL2_mixer 2.0 or later](http://www.libsdl.org/projects/SDL_mixer/)
 - [CMake 2.8.9 or later](http://www.cmake.org/)
 - GL libraries and headers are required for OpenGL support.
 
-### Windows
+#### Directory Structure
 
-- [Visual Studio 2013](http://www.visualstudio.com/downloads/download-visual-studio-vs#d-express-windows-desktop)
-  (maybe earlier versions, haven't tried)
-- CMake 2.8.11 or later for the WIX installer (tested with 3.0)
+It's best to have a root directory within which this source code exists, along with additional directories to place the game data (either the open source game data or the closed source game data if you have a valid Abuse license), build directrory, and installer files in. For example, on Windows, you might have a folder structure that looks something like:
+
+ - `Abuse` - the root directory
+     - `abuse` - cloned version of this repository
+     - `build` - build directory created for CMake
+     - `install` - a local directory to contain the final "installed" copy
+
+### Windows with Visual Studio
+
+- [Visual Studio 2019](https://visualstudio.microsoft.com/vs/)
+- CMake 2.8.9 or later
+- [WiX toolset](https://wixtoolset.org/) Optional, required to create an installer
+
+Building in Windows via the command line involves using the Visual Studio developer environment. Visual Studio should have installed a shortcut named "Developer Command Prompt for VS 2019" (or whatever version used - the latest is recommended) - this runs a CMD file that sets the necessary environment variables to use the Visual Studio command line tools. Commands need to be run within this environment for CMake to locate Visual Studio and for the development tools to be available.
+
+CMake and WiX can both be installed individually or via the [Chocolatey package manager](https://chocolatey.org/). Via Chocolatey, the command to install CMake and the WiX toolset is simply:
+
+    choco install cmake wixtoolset
+
+Installing SDL2 and SDL2_mixer is a bit more complicated on Windows because Windows and Visual Studio don't have a well defined "correct place" to place the development libraries and therefore don't have an easily packaged way to install them that CMake can autodetect.
+
+Instead you'll want to grab the "SDL2-devel-*version*-VC.zip" file from <http://www.libsdl.org/download-2.0.php> and the "SDL2_mixer-devel-*version*-VC.zip" file from <http://www.libsdl.org/projects/SDL_mixer/>. Extract these files somewhere you can find them again - within the root "Abuse" directory works. With these directories created, set the `SDL2DIR` environment variable to the "SDL2-*version*" directory that was extracted from the SDL2 devel ZIP file above and the `SDL2MIXERDIR` to the "SDL2_mixer-*version*" directory extracted from the SDL2_mixer devel ZIP file.
+
+With that set up, the CMake generation should succeed without any error.
 
 ### Mac OS X
 
@@ -31,7 +52,7 @@ getting CMake and SDL/SDL_mixer is probably using [Homebrew](http://brew.sh/).
        git clone https://github.com/Xenoveritas/abuse.git
 
 2. Create a new directory for the build. CMake likes to build into directories
-   outside the source directory and its best not to fight it on this.
+   outside the source directory and it's best not to fight it on this.
 
    Within that directory, run CMake.
 
@@ -43,21 +64,14 @@ getting CMake and SDL/SDL_mixer is probably using [Homebrew](http://brew.sh/).
        git clone https://github.com/Xenoveritas/abuse.git
        mkdir build
        cd build
-       cmake -DCMAKE_INSTALL_PREFIX:PATH=../final-binary ../abuse
-
-   Under Windows, this will probably fail because it can't find the SDL2 or
-   SDL2_mixer libraries. Two solutions to this:
-
-      1. Run `cmake-gui` and provide the paths that way
-      2. Set `SDL2DIR` and `SDL2MIXERDIR` to point to where you extracted the
-         Windows VC devel binaries for each library
+       cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
 
 3. Build the files
 
    Under Linux and Mac OS X, this is the familiar `make`.
 
    Under Windows, you'll want to use `MSBuild abuse.sln`. (Alternatively, open
-   the solution in Visual Studio and build it that way.)
+   the solution in Visual Studio and build it that way.) You can also just run `MSBuild ALL_BUILD.vcxproj` as `ALL_BUILD.vcxproj` is the default build target.
 
 4. Install the files
 

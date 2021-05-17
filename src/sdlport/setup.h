@@ -21,6 +21,7 @@ struct flags_struct
     short yres;
     short overlay;
     int antialias;
+    int software;
 };
 
 struct keys_struct

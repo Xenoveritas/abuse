@@ -68,7 +68,9 @@ void showHelp(const char* executableName)
     printf( "** Abuse-SDL Options **\n" );
     printf( "  -datadir <arg>    Set the location of the game data to <arg>\n" );
     printf( "  -fullscreen       Enable fullscreen mode\n" );
+    printf( "  -window           Enable windowed mode\n" );
     printf( "  -antialias        Enable anti-aliasing\n" );
+    printf( "  -software         Force software renderer (disable OpenGL)\n");
     printf( "  -h, --help        Display this text\n" );
     printf( "  -mono             Disable stereo sound\n" );
     printf( "  -nosound          Disable sound\n" );
@@ -91,6 +93,7 @@ void createRCFile( char *rcfile )
     {
         fputs( "; Abuse-SDL Configuration file\n\n", fd );
         fputs( "; Startup fullscreen\nfullscreen=1\n\n", fd );
+        fputs( "; Force software renderer\nsoftware=0\n\n", fd );
 #if defined ASSETDIR
         fputs( "; Location of the datafiles\ndatadir=", fd );
         fputs( ASSETDIR "\n\n", fd );
@@ -142,6 +145,11 @@ void readRCFile()
             {
                 result = strtok( NULL, "\n" );
                 flags.fullscreen = atoi( result );
+            }
+            else if( strcasecmp( result, "software" ) == 0 )
+            {
+                result = strtok( NULL, "\n" );
+                flags.software = atoi( result );
             }
             else if( strcasecmp( result, "mono" ) == 0 )
             {
@@ -303,6 +311,14 @@ void parseCommandLine( int argc, char **argv )
                 flags.yres = y;
             }
         }*/
+        else if( !strcasecmp( argv[ii], "-window" ) )
+        {
+            flags.fullscreen = 0;
+        }
+        else if( !strcasecmp( argv[ii], "-software" ) )
+        {
+            flags.software = 1;
+        }
         else if( !strcasecmp( argv[ii], "-nosound" ) )
         {
             flags.nosound = 1;
@@ -345,6 +361,7 @@ void setup( int argc, char **argv )
 {
     // Initialize default settings
     flags.fullscreen         = 1;    // Start fullscreen (actually windowed-fullscreen now)
+    flags.software           = 0;    // Don't use software renderer by default
     flags.mono               = 0;    // Enable stereo sound
     flags.nosound            = 0;    // Enable sound
     flags.grabmouse          = 0;    // Don't grab the mouse

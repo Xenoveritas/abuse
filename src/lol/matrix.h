@@ -74,7 +74,7 @@ namespace lol
         return ret; \
     }
 
-#define OPERATORS(elems) \
+#define OPERATORS_1(elems) \
     inline T& operator[](int n) { return *(&x + n); } \
     inline T const& operator[](int n) const { return *(&x + n); } \
     \
@@ -97,8 +97,9 @@ namespace lol
     \
     CAST_OP(elems, 2) \
     CAST_OP(elems, 3) \
-    CAST_OP(elems, 4) \
-    \
+    CAST_OP(elems, 4)
+
+#define OPERATORS_2(elems) \
     template<typename U> \
     inline operator Vec##elems<U>() const \
     { \
@@ -140,7 +141,8 @@ template <typename T> struct Vec2
     inline Vec2(T val) { x = y = val; }
     inline Vec2(T _x, T _y) { x = _x; y = _y; }
 
-    OPERATORS(2)
+    OPERATORS_1(2)
+    OPERATORS_2(2)
 
 #if !defined __ANDROID__
     template<typename U>
@@ -160,7 +162,8 @@ template <typename T> struct Vec3
     inline Vec3(T val) { x = y = z = val; }
     inline Vec3(T _x, T _y, T _z) { x = _x; y = _y; z = _z; }
 
-    OPERATORS(3)
+    OPERATORS_1(3)
+    OPERATORS_2(3)
 
 #if !defined __ANDROID__
     template<typename U>
@@ -181,7 +184,8 @@ template <typename T> struct Vec4
     inline Vec4(T val) { x = y = z = w = val; }
     inline Vec4(T _x, T _y, T _z, T _w) { x = _x; y = _y; z = _z; w = _w; }
 
-    OPERATORS(4)
+    OPERATORS_1(4)
+    OPERATORS_2(4)
 
 #if !defined __ANDROID__
     template<typename U>
