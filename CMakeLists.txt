@@ -34,7 +34,7 @@ if(WIN32)
     # For Windows, just use whatever CMake wants
     set(ASSETDIR ".")
 elseif(APPLE)
-    # Under Mac OS X, I actually want to redirect this to an app bundle,
+    # Under macOS, I actually want to redirect this to an app bundle,
     # which makes things weird.
     set(ASSETDIR "abuse.app/Contents/Resources/data")
 else()

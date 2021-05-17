@@ -6,6 +6,10 @@
 - [ ] Find any dead code and remove it
 - [ ] Rewrite event handling to allow multiple keybindings for the same actions
 - [ ] Update configuration system to deal with joysticks/gamepads
+- [ ] Change default control bindings to work on modern PCs:
+   - [ ] For trackpad users, add another key to activate special abilities
+   - [x] Enable WADS movement instead of arrow keys
+   - [ ] Add next/previous weapon keys closer to WADS
 - [ ] Strongly considering replacing the jFILE/bFILE stuff with SDL's SDL_RW API
 
 ## Original TODO

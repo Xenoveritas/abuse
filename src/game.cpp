@@ -27,7 +27,7 @@
 #endif
 
 #ifdef __APPLE__
-// SDL for OSX needs to override main()
+// SDL for macOS needs to override main()
 #   include "SDL.h"
 #endif
 

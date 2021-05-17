@@ -132,6 +132,6 @@ else()
     install(TARGETS abuse abuse-tool RUNTIME DESTINATION bin
     BUNDLE DESTINATION "${CMAKE_INSTALL_PREFIX}")
     if(APPLE)
-        install(FILES "../osx/abuse.icns" DESTINATION "${CMAKE_INSTALL_PREFIX}/abuse.app/Contents/Resources")
+        install(FILES "../macOS/abuse.icns" DESTINATION "${CMAKE_INSTALL_PREFIX}/abuse.app/Contents/Resources")
     endif()
 endif()

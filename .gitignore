@@ -1,4 +1,4 @@
-# Ignore Mac OS X junk
+# Ignore macOS junk
 .DS_Store
 
 # Ignore various backup files
