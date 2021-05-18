@@ -7,6 +7,9 @@ set(abuse_VERSION_MINOR 9)
 set(abuse_VERSION_PATCH 0)
 set(abuse_VERSION_TWEAK 0)
 
+# Enable test support
+include(CTest)
+
 # Detect the platform, as there's quite a bit of platform variation
 
 if (WIN32)
@@ -78,3 +81,6 @@ include(CPack)
 
 add_subdirectory(src)
 add_subdirectory(data)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()

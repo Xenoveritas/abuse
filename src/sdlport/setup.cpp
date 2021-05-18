@@ -38,10 +38,15 @@
 #include <signal.h>
 #include "SDL.h"
 
+#include <fstream>
+#include <iostream>
+#include <string>
+
 #include "specs.h"
 #include "setup.h"
 #include "errorui.h"
 #include "control_bindings.h"
+#include "conffile.h"
 
 flags_struct flags;
 keys_struct keys;
@@ -87,33 +92,47 @@ void showHelp(const char* executableName)
 //
 void createRCFile( char *rcfile )
 {
-    FILE *fd = NULL;
-
-    if( (fd = fopen( rcfile, "w" )) != NULL )
-    {
-        fputs( "; Abuse-SDL Configuration file\n\n", fd );
-        fputs( "; Startup fullscreen\nfullscreen=1\n\n", fd );
-        fputs( "; Force software renderer\nsoftware=0\n\n", fd );
+    std::ofstream fileStream(rcfile);
+    if (fileStream.is_open()) {
+        fileStream <<
+            "; Abuse-SDL Configuration File\n"
+            "; Startup fullscreen\n"
+            "fullscreen=1\n\n"
+            "; Force software renderer\n"
+            "software=0\n\n"
 #if defined ASSETDIR
-        fputs( "; Location of the datafiles\ndatadir=", fd );
-        fputs( ASSETDIR "\n\n", fd );
+            "; Location of the datafiles\n"
+            "datadir=" ASSETDIR "\n\n"
 #endif
-        fputs( "; Use mono audio only\nmono=0\n\n", fd );
-        fputs( "; Grab the mouse to the window\ngrabmouse=0\n\n", fd );
-        fputs( "; Set the scale factor\nscale=2\n\n", fd );
-        fputs( "; Use anti-aliasing\n; Looks horrible, never enable it\nantialias=0\n\n", fd );
-//        fputs( "; Set the width of the window\nx=320\n\n", fd );
-//        fputs( "; Set the height of the window\ny=200\n\n", fd );
-        fputs( "; Key mappings\n", fd );
-        fputs( "left=LEFT\nright=RIGHT\nup=UP\ndown=DOWN\n", fd );
-        fputs( "fire=SPACE\nweapprev=CTRL_R\nweapnext=INSERT\n", fd );
-        fputs( "; Alternative key bindings\n; Note: only the following keys can have two bindings\n", fd );
-        fputs( "left2=a\nright2=d\nup2=w\ndown2=s\n", fd );
-        fclose( fd );
-    }
-    else
-    {
-        printf( "Unable to create 'abuserc' file.\n" );
+            "; Use mono audio only\n"
+            "mono=0\n\n"
+            "; Grab the mouse to the window\n"
+            "grabmouse=0\n\n"
+            "; Set the scale factor\n"
+            "scale=2\n\n"
+            "; Use anti-aliasing\n"
+            "; Looks horrible, never enable it\n"
+            "antialias=0\n\n"
+            // "; Set the width of the window\n"
+            // "x=320\n\n"
+            // "; Set the height of the window\n"
+            // "y=200\n\n"
+            "; Key mappings\n"
+            "left=LEFT\n"
+            "right=RIGHT\n"
+            "up=UP\n"
+            "down=DOWN\n"
+            "fire=SPACE\n"
+            "weapprev=CTRL_R\n"
+            "weapnext=INSERT\n"
+            "; Alternative key bindings\n"
+            "; Note: only the following keys can have two bindings\n"
+            "left2=a\n"
+            "right2=d\n"
+            "up2=w\n"
+            "down2=s\n";
+    } else {
+        std::cerr << "Warning: unable to create abuserc file" << std::endl;
     }
 }
 
@@ -121,7 +140,130 @@ void createRCFile( char *rcfile )
 // control bindings stuff lands, this will be replaced.
 int get_key_code(const char* name)
 {
-	return SDL_GetKeyFromScancode(ParseKeyName(name));
+    SDL_Scancode scancode = ParseKeyName(name);
+    if (scancode == SDL_SCANCODE_UNKNOWN)
+    {
+        printf("Warning: Unable to parse key \"%s\"\n", name);
+    }
+    return SDL_GetKeyFromScancode(scancode);
+}
+
+// Implementation of ConfParser for the "abuserc" file
+class AbuseRCParser : public ConfParser {
+protected:
+    virtual void valueSet(const std::string& key, const std::string& value);
+    void parseBooleanValue(const std::string& key, const std::string& value, short* dest);
+    void parseBooleanValue(const std::string& key, const std::string& value, int* dest);
+    void parseIntValue(const std::string& key, const std::string& value, unsigned int* dest);
+    void invalidConfValue(const std::string& key, const std::string& value, const char* what);
+    bool valueTrue(const std::string& value);
+    bool valueFalse(const std::string& value);
+};
+
+void AbuseRCParser::invalidConfValue(const std::string& key, const std::string& value, const char* what) {
+    std::cerr << "Warning: invalid value \"" << value << "\" for " << key << ": " << what << std::endl;
+}
+
+void AbuseRCParser::parseBooleanValue(const std::string& key, const std::string& value, short* dest) {
+    if (valueTrue(value)) {
+        std::cout << "Set " << key << " to true" << std::endl;
+        *dest = 1;
+    } else if (valueFalse(value)) {
+        std::cout << "Set " << key << " to false" << std::endl;
+        *dest = 0;
+    } else {
+        invalidConfValue(key, value, "expected boolean");
+    }
+}
+
+void AbuseRCParser::parseBooleanValue(const std::string& key, const std::string& value, int* dest) {
+    if (valueTrue(value)) {
+        std::cout << "Set " << key << " to true" << std::endl;
+        *dest = 1;
+    } else if (valueFalse(value)) {
+        std::cout << "Set " << key << " to false" << std::endl;
+        *dest = 0;
+    } else {
+        invalidConfValue(key, value, "expected boolean");
+    }
+}
+
+bool AbuseRCParser::valueTrue(const std::string& value) {
+    return value == "yes" || value == "y" || value == "1" || value == "true";
+}
+
+bool AbuseRCParser::valueFalse(const std::string& value) {
+    return value == "no" || value == "n" || value == "0" || value == "false";
+}
+
+void AbuseRCParser::parseIntValue(const std::string& key, const std::string& value, unsigned int* dest) {
+    size_t sz;
+    try {
+        int result = std::stoi(value, &sz);
+        if (sz < value.size()) {
+            throw std::invalid_argument("whole string must be integer");
+        } else {
+            *dest = result;
+        }
+    } catch (std::invalid_argument& ex) {
+        invalidConfValue(key, value, "expected integer");
+    } catch (std::out_of_range& ex) {
+        invalidConfValue(key, value, "out of range");
+    }
+}
+
+void AbuseRCParser::valueSet(const std::string& key, const std::string& value) {
+    if (value.length() == 0) {
+        // Blank values are never OK
+        return;
+    }
+    if (key == "fullscreen") {
+        parseBooleanValue(key, value, &flags.fullscreen);
+    } else if (key == "software") {
+        parseBooleanValue(key, value, &flags.software);
+    } else if (key == "mono") {
+        parseBooleanValue(key, value, &flags.mono);
+    } else if (key == "grabmouse") {
+        parseBooleanValue(key, value, &flags.grabmouse);
+    } else if (key == "scale") {
+        parseIntValue(key, value, &scale);
+    //    flags.xres = xres * atoi( result );
+    //    flags.yres = yres * atoi( result );
+    // } else if (key == "x") {
+    //     flags.xres = std::stoi(value);
+    // } else if (key == "y") {
+    //     flags.yres = std::stoi(value);
+    } else if (key == "antialias") {
+        if (std::stoi(value)) {
+            flags.antialias = 1;
+        }
+    } else if (key == "datadir") {
+        set_filename_prefix(value.c_str());
+    } else if (key == "left") {
+        keys.left = get_key_code(value.c_str());
+    } else if (key == "right") {
+        keys.right = get_key_code(value.c_str());
+    } else if (key == "up") {
+        keys.up = get_key_code(value.c_str());
+    } else if (key == "down") {
+        keys.down = get_key_code(value.c_str());
+    } else if (key == "left2") {
+        keys.left_2 = get_key_code(value.c_str());
+    } else if (key == "right2") {
+        keys.right_2 = get_key_code(value.c_str());
+    } else if (key == "up2") {
+        keys.up_2 = get_key_code(value.c_str());
+    } else if (key == "down2") {
+        keys.down_2 = get_key_code(value.c_str());
+    } else if (key == "fire") {
+        keys.b2 = get_key_code(value.c_str());
+    } else if (key == "special") {
+        keys.b1 = get_key_code(value.c_str());
+    } else if (key == "weapprev") {
+        keys.b3 = get_key_code(value.c_str());
+    } else if (key == "weapnext") {
+        keys.b4 = get_key_code(value.c_str());
+    }
 }
 
 //
@@ -133,131 +275,17 @@ void readRCFile()
     char *rcfile;
     char buf[255];
     char *result;
+    AbuseRCParser parser;
 
     rcfile = (char *)malloc( strlen( get_save_filename_prefix() ) + 9 );
     sprintf( rcfile, "%s/abuserc", get_save_filename_prefix() );
-    if( (fd = fopen( rcfile, "r" )) != NULL )
-    {
-        while( fgets( buf, sizeof( buf ), fd ) != NULL )
-        {
-            result = strtok( buf, "=" );
-            if( strcasecmp( result, "fullscreen" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                flags.fullscreen = atoi( result );
-            }
-            else if( strcasecmp( result, "software" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                flags.software = atoi( result );
-            }
-            else if( strcasecmp( result, "mono" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                flags.mono = atoi( result );
-            }
-            else if( strcasecmp( result, "grabmouse" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                flags.grabmouse = atoi( result );
-            }
-            else if( strcasecmp( result, "scale" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                scale = atoi( result );
-//                flags.xres = xres * atoi( result );
-//                flags.yres = yres * atoi( result );
-            }
-/*            else if( strcasecmp( result, "x" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                flags.xres = atoi( result );
-            }
-            else if( strcasecmp( result, "y" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                flags.yres = atoi( result );
-            }*/
-            else if( strcasecmp( result, "antialias" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                if( atoi( result ) )
-                {
-                    flags.antialias = 1;
-                }
-            }
-            else if( strcasecmp( result, "datadir" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                set_filename_prefix( result );
-            }
-            else if( strcasecmp( result, "left" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-                keys.left = get_key_code( result );
-            }
-            else if( strcasecmp( result, "right" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.right = get_key_code(result);
-            }
-            else if( strcasecmp( result, "up" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.up = get_key_code(result);
-            }
-            else if( strcasecmp( result, "down" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.down = get_key_code(result);
-            }
-            else if( strcasecmp( result, "left2" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.left_2 = get_key_code(result);
-            }
-            else if( strcasecmp( result, "right2" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.right_2 = get_key_code(result);
-            }
-            else if( strcasecmp( result, "up2" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.up_2 = get_key_code(result);
-            }
-            else if( strcasecmp( result, "down2" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.down_2 = get_key_code(result);
-            }
-            else if( strcasecmp( result, "fire" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.b2 = get_key_code(result);
-            }
-            else if( strcasecmp( result, "special" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.b1 = get_key_code(result);
-            }
-            else if( strcasecmp( result, "weapprev" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.b3 = get_key_code(result);
-            }
-            else if( strcasecmp( result, "weapnext" ) == 0 )
-            {
-                result = strtok( NULL,"\n" );
-				keys.b4 = get_key_code(result);
-            }
+    try {
+        if (!parser.parseFile(rcfile)) {
+            // This indicates the file probably doesn't exist, in which case we can try to create a new one
+            createRCFile(rcfile);
         }
-        fclose( fd );
-    }
-    else
-    {
-        // Couldn't open the abuserc file so let's create a default one
-        createRCFile( rcfile );
+    } catch (std::ifstream::failure ex) {
+        std::cerr << "Unable to read abuserc file (error " << ex.code() << "): " << ex.what() << std::endl;
     }
     free( rcfile );
 }

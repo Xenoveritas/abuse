@@ -652,9 +652,9 @@ void main_menu()
     main_screen->AddDirty(ivec2(0), ivec2(320, 200));
 
     SDL_Event ev;
-	// It is possible to never load an event, so just make is spurious so we'll
-	// ignore it
-	ev.type = ABUSE_EV_SPURIOUS;
+    // It is possible to never load an event, so just make it spurious so we'll
+    // ignore it
+    ev.type = ABUSE_EV_SPURIOUS;
 
     int stop_menu=0;
     time_marker start;
@@ -710,9 +710,9 @@ void main_menu()
         else if (the_game->state==RUN_STATE) stop_menu=1;
         else if (ev.type==ABUSE_EV_MESSAGE)
         {
-			if (ev.user.code == ID_START_GAME || ev.user.code == ID_RETURN)
+            if (ev.user.code == ID_START_GAME || ev.user.code == ID_RETURN)
                 stop_menu=1;
-			else if (ev.user.code == ID_QUIT)
+            else if (ev.user.code == ID_QUIT)
             {
                 if (confirm_quit())
                     stop_menu=1;
@@ -727,6 +727,6 @@ void main_menu()
 
     delete inm;
 
-	if (ev.type == ABUSE_EV_MESSAGE && ev.user.code == ID_QUIT)   // propogate the quit message
+    if (ev.type == ABUSE_EV_MESSAGE && ev.user.code == ID_QUIT)   // propogate the quit message
         the_game->end_session();
 }
