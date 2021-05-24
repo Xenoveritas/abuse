@@ -1,6 +1,6 @@
 /*
  *  Abuse - dark 2D side-scrolling platform game
- *  Copyright (c) 2014 Daniel Potter <dmpotter44@gmail.com>
+ *  Copyright (c) 2014, 2021 Daniel Potter <dmpotter44@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,12 +42,10 @@ public:
 /**
  * Parses a key definition to lookup a scancode. This goes through several
  * steps before determining a final scancode. This method is not case sensitive
- * (as neither SDL_GetScancodeFromName nor SDL_GetKeyFromName are case
- * sensitive).
+ * (as SDL_GetScancodeFromName is not case sensitive).
  *
  * If the string is a single character long, it's immediately passed off to
- * SDL_GetKeyFromName to parse the key code and then converted to a scancode
- * using SDL_GetScancodeFromKey.
+ * SDL_GetScancodeFromName to determine the key.
  *
  * If the keyname can be parsed by strtol (using base 0, meaning the 0x and 0
  * prefixes are allowed for hexidecimal and octal respectively), that's used
@@ -55,12 +53,17 @@ public:
  * SDL_NUM_SCANCODES, if it's greater than or equal to, it returns
  * SDL_SCANCODE_UNKNOWN).
  *
- * If the keyname starts with "scancode", it is taken as a
- * scancode. It's parsed using the above method.
+ * If the keyname starts with "scancode", it is taken as a scancode. (This
+ * is primarily to allow scancode 0-9, which otherwise would become keys
+ * 0-9.) It's parsed using the above method. (As an example of why you could
+ * want to do this, to target WASD controls that remain WASD regardless of
+ * layout, you can use "scancode 4" for A and "scancode 7" for D.)
  *
- * If the no scancode can be determined, this returns SDL_SCANCODE_UNKNOWN.
+ * Otherwise, the keyname is passed to SDL_GetScancodeFromName as-is to
+ * determine a final scancode, which will result in SDL_SCANCODE_UNKNOWN if
+ * it cannot parse the keycode name.
  */
-SDL_Scancode ParseKeyName(const char* keyname);
+SDL_Scancode ParseScancode(const char* keyname);
 
 /**
  * Control bindings. Deals with directing SDL events to bound controls.

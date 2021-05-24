@@ -89,7 +89,7 @@ void showHelp(const char* executableName)
 // control bindings stuff lands, this will be replaced.
 int get_key_code(const char* name)
 {
-    SDL_Scancode scancode = ParseKeyName(name);
+    SDL_Scancode scancode = ParseScancode(name);
     if (scancode == SDL_SCANCODE_UNKNOWN)
     {
         printf("Warning: Unable to parse key \"%s\"\n", name);

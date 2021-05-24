@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <cctype>
 #include "control_bindings.h"
 
 //
@@ -95,7 +95,7 @@ int Bindings::BindKey(SDL_Scancode scancode, ControlBinding* binding)
 
 int Bindings::BindKeyByName(const char* keyname, ControlBinding* binding)
 {
-	SDL_Scancode scancode = ParseKeyName(keyname);
+	SDL_Scancode scancode = ParseScancode(keyname);
 	if (scancode == SDL_SCANCODE_UNKNOWN)
 	{
 		return 0;
@@ -192,7 +192,7 @@ bool prefix_matches(const char* prefix, const char* against)
 
 #define is_keyname_separator(x) (x == ':' || x == '_' || x == '-' || x == ' ')
 
-SDL_Scancode ParseKeyName(const char* keyname)
+SDL_Scancode ParseScancode(const char* keyname)
 {
 	SDL_Scancode result = SDL_SCANCODE_UNKNOWN;
 	char *local = NULL;
@@ -210,7 +210,7 @@ SDL_Scancode ParseKeyName(const char* keyname)
 		// parsed as codes, while any keys larger to be handled as codes.
 		// Note that the 00 and 000 keys are always "Keypad 00" and "Keypad 000"
 		// as far as SDL cares.
-		return SDL_GetScancodeFromKey(SDL_GetKeyFromName(keyname));
+		return SDL_GetScancodeFromName(keyname);
 	}
 	// OK, now that we're here, first fob off to strtol and see if it comes up
 	// with something.
@@ -236,22 +236,19 @@ SDL_Scancode ParseKeyName(const char* keyname)
 			return code < SDL_NUM_SCANCODES && code >= 0 ?
 				((SDL_Scancode) code) : SDL_SCANCODE_UNKNOWN;
 		}
-		// Munge the remainder...
-		local = parse_scancode_munge(keyname);
-		printf("parse munged scancode \"%s\"\n", local == NULL ? keyname : local);
-		// ...and parse as a scancode
-		result = SDL_GetScancodeFromName(local == NULL ? keyname : local);
+		// Otherwise assume it failed
+		return SDL_SCANCODE_UNKNOWN;
 	}
 	else
 	{
 		// Treat directly as a key name.
 		local = parse_scancode_munge(keyname);
 		printf("parse munged keycode \"%s\"\n", local == NULL ? keyname : local);
-		result = SDL_GetScancodeFromKey(SDL_GetKeyFromName(local == NULL ? keyname : local));
+		result = SDL_GetScancodeFromName(local == NULL ? keyname : local);
+		if (local != NULL)
+		{
+			free(local);
+		}
+		return result;
 	}
-	if (local != NULL)
-	{
-		free(local);
-	}
-	return result;
 }
