@@ -46,94 +46,43 @@
 #include "setup.h"
 #include "errorui.h"
 #include "control_bindings.h"
-#include "conffile.h"
+#include "abuserc.h"
 
 flags_struct flags;
 keys_struct keys;
 
 extern int xres, yres;
-static unsigned int scale;
 
 //
 // Display help
 //
 void showHelp(const char* executableName)
 {
-    printf( "\n" );
-    printf( "Usage: %s [options]\n", executableName );
-    printf( "Options:\n\n" );
-    printf( "** Abuse Options **\n" );
-    printf( "  -size <arg>       Set the size of the screen\n" );
-    printf( "  -edit             Startup in editor mode\n" );
-    printf( "  -a <arg>          Use addon named <arg>\n" );
-    printf( "  -f <arg>          Load map file named <arg>\n" );
-    printf( "  -lisp             Startup in lisp interpreter mode\n" );
-    printf( "  -nodelay          Run at maximum speed\n" );
-    printf( "\n" );
-    printf( "** Abuse-SDL Options **\n" );
-    printf( "  -datadir <arg>    Set the location of the game data to <arg>\n" );
-    printf( "  -fullscreen       Enable fullscreen mode\n" );
-    printf( "  -window           Enable windowed mode\n" );
-    printf( "  -antialias        Enable anti-aliasing\n" );
-    printf( "  -software         Force software renderer (disable OpenGL)\n");
-    printf( "  -h, --help        Display this text\n" );
-    printf( "  -mono             Disable stereo sound\n" );
-    printf( "  -nosound          Disable sound\n" );
-    printf( "  -scale <arg>      Scale to <arg>\n" );
-//    printf( "  -x <arg>          Set the width to <arg>\n" );
-//    printf( "  -y <arg>          Set the height to <arg>\n" );
-    printf( "\n" );
-    printf( "Anthony Kruize <trandor@labyrinth.net.au>\n" );
-    printf( "\n" );
-}
-
-//
-// Create a default 'abuserc' file
-//
-void createRCFile( char *rcfile )
-{
-    std::ofstream fileStream(rcfile);
-    if (fileStream.is_open()) {
-        fileStream <<
-            "; Abuse-SDL Configuration File\n"
-            "; Startup fullscreen\n"
-            "fullscreen=1\n\n"
-            "; Force software renderer\n"
-            "software=0\n\n"
-#if defined ASSETDIR
-            "; Location of the datafiles\n"
-            "datadir=" ASSETDIR "\n\n"
-#endif
-            "; Use mono audio only\n"
-            "mono=0\n\n"
-            "; Grab the mouse to the window\n"
-            "grabmouse=0\n\n"
-            "; Set the scale factor\n"
-            "scale=2\n\n"
-            "; Use anti-aliasing\n"
-            "; Looks horrible, never enable it\n"
-            "antialias=0\n\n"
-            // "; Set the width of the window\n"
-            // "x=320\n\n"
-            // "; Set the height of the window\n"
-            // "y=200\n\n"
-            "; Key mappings\n"
-            "left=LEFT\n"
-            "right=RIGHT\n"
-            "up=UP\n"
-            "down=DOWN\n"
-            "fire=SPACE\n"
-            "weapprev=CTRL_R\n"
-            "weapnext=INSERT\n"
-            "; Alternative key bindings\n"
-            "; Note: only the following keys can have two bindings\n"
-            "left2=a\n"
-            "right2=d\n"
-            "up2=w\n"
-            "down2=s\n";
-    } else {
-        std::cerr << "Warning: unable to create abuserc file" << std::endl;
-    }
+    printf( "\nUsage: %s [options]\n", executableName );
+    printf( "Options:\n\n"
+        "** Abuse Options **\n"
+        "  -size <arg>       Set the size of the screen\n"
+        "  -edit             Startup in editor mode\n"
+        "  -a <arg>          Use addon named <arg>\n"
+        "  -f <arg>          Load map file named <arg>\n"
+        "  -lisp             Startup in lisp interpreter mode\n"
+        "  -nodelay          Run at maximum speed\n"
+        "\n"
+        "** Abuse-SDL Options **\n"
+        "  -datadir <arg>    Set the location of the game data to <arg>\n"
+        "  -fullscreen       Enable fullscreen mode\n"
+        "  -borderless       Enable borderless fullscreen mode\n"
+        "  -window           Enable windowed mode\n"
+        "  -antialias        Enable anti-aliasing\n"
+        "  -software         Force software renderer (disable OpenGL)\n"
+        "  -h, --help        Display this text\n"
+        "  -mono             Disable stereo sound\n"
+        "  -nosound          Disable sound\n"
+        "  -x <arg>          Set the width to <arg>\n"
+        "  -y <arg>          Set the height to <arg>\n"
+        "\n"
+        "Anthony Kruize <trandor@labyrinth.net.au>\n"
+        "\n" );
 }
 
 // Temporary method to convert a scancode back to a keycode. When the new
@@ -148,145 +97,46 @@ int get_key_code(const char* name)
     return SDL_GetKeyFromScancode(scancode);
 }
 
-// Implementation of ConfParser for the "abuserc" file
-class AbuseRCParser : public ConfParser {
-protected:
-    virtual void valueSet(const std::string& key, const std::string& value);
-    void parseBooleanValue(const std::string& key, const std::string& value, short* dest);
-    void parseBooleanValue(const std::string& key, const std::string& value, int* dest);
-    void parseIntValue(const std::string& key, const std::string& value, unsigned int* dest);
-    void invalidConfValue(const std::string& key, const std::string& value, const char* what);
-    bool valueTrue(const std::string& value);
-    bool valueFalse(const std::string& value);
-};
-
-void AbuseRCParser::invalidConfValue(const std::string& key, const std::string& value, const char* what) {
-    std::cerr << "Warning: invalid value \"" << value << "\" for " << key << ": " << what << std::endl;
-}
-
-void AbuseRCParser::parseBooleanValue(const std::string& key, const std::string& value, short* dest) {
-    if (valueTrue(value)) {
-        std::cout << "Set " << key << " to true" << std::endl;
-        *dest = 1;
-    } else if (valueFalse(value)) {
-        std::cout << "Set " << key << " to false" << std::endl;
-        *dest = 0;
-    } else {
-        invalidConfValue(key, value, "expected boolean");
-    }
-}
-
-void AbuseRCParser::parseBooleanValue(const std::string& key, const std::string& value, int* dest) {
-    if (valueTrue(value)) {
-        std::cout << "Set " << key << " to true" << std::endl;
-        *dest = 1;
-    } else if (valueFalse(value)) {
-        std::cout << "Set " << key << " to false" << std::endl;
-        *dest = 0;
-    } else {
-        invalidConfValue(key, value, "expected boolean");
-    }
-}
-
-bool AbuseRCParser::valueTrue(const std::string& value) {
-    return value == "yes" || value == "y" || value == "1" || value == "true";
-}
-
-bool AbuseRCParser::valueFalse(const std::string& value) {
-    return value == "no" || value == "n" || value == "0" || value == "false";
-}
-
-void AbuseRCParser::parseIntValue(const std::string& key, const std::string& value, unsigned int* dest) {
-    size_t sz;
-    try {
-        int result = std::stoi(value, &sz);
-        if (sz < value.size()) {
-            throw std::invalid_argument("whole string must be integer");
-        } else {
-            *dest = result;
-        }
-    } catch (std::invalid_argument& ex) {
-        invalidConfValue(key, value, "expected integer");
-    } catch (std::out_of_range& ex) {
-        invalidConfValue(key, value, "out of range");
-    }
-}
-
-void AbuseRCParser::valueSet(const std::string& key, const std::string& value) {
-    if (value.length() == 0) {
-        // Blank values are never OK
-        return;
-    }
-    if (key == "fullscreen") {
-        parseBooleanValue(key, value, &flags.fullscreen);
-    } else if (key == "software") {
-        parseBooleanValue(key, value, &flags.software);
-    } else if (key == "mono") {
-        parseBooleanValue(key, value, &flags.mono);
-    } else if (key == "grabmouse") {
-        parseBooleanValue(key, value, &flags.grabmouse);
-    } else if (key == "scale") {
-        parseIntValue(key, value, &scale);
-    //    flags.xres = xres * atoi( result );
-    //    flags.yres = yres * atoi( result );
-    // } else if (key == "x") {
-    //     flags.xres = std::stoi(value);
-    // } else if (key == "y") {
-    //     flags.yres = std::stoi(value);
-    } else if (key == "antialias") {
-        if (std::stoi(value)) {
-            flags.antialias = 1;
-        }
-    } else if (key == "datadir") {
-        set_filename_prefix(value.c_str());
-    } else if (key == "left") {
-        keys.left = get_key_code(value.c_str());
-    } else if (key == "right") {
-        keys.right = get_key_code(value.c_str());
-    } else if (key == "up") {
-        keys.up = get_key_code(value.c_str());
-    } else if (key == "down") {
-        keys.down = get_key_code(value.c_str());
-    } else if (key == "left2") {
-        keys.left_2 = get_key_code(value.c_str());
-    } else if (key == "right2") {
-        keys.right_2 = get_key_code(value.c_str());
-    } else if (key == "up2") {
-        keys.up_2 = get_key_code(value.c_str());
-    } else if (key == "down2") {
-        keys.down_2 = get_key_code(value.c_str());
-    } else if (key == "fire") {
-        keys.b2 = get_key_code(value.c_str());
-    } else if (key == "special") {
-        keys.b1 = get_key_code(value.c_str());
-    } else if (key == "weapprev") {
-        keys.b3 = get_key_code(value.c_str());
-    } else if (key == "weapnext") {
-        keys.b4 = get_key_code(value.c_str());
-    }
-}
-
 //
 // Read in the 'abuserc' file
 //
-void readRCFile()
+void readRCFile( int argc, char **argv )
 {
     FILE *fd = NULL;
     char *rcfile;
     char buf[255];
     char *result;
     AbuseRCParser parser;
+    bool edit = false;
+
+    // Do a quick check to see if "-edit" was set
+    for (int i = 1; i < argc; i++) {
+        if (!strcasecmp(argv[i], "-edit")) {
+            edit = true;
+            break;
+        }
+    }
+
+    if (edit) {
+        parser.setDefaultMode("edit");
+    }
 
     rcfile = (char *)malloc( strlen( get_save_filename_prefix() ) + 9 );
     sprintf( rcfile, "%s/abuserc", get_save_filename_prefix() );
     try {
         if (!parser.parseFile(rcfile)) {
             // This indicates the file probably doesn't exist, in which case we can try to create a new one
-            createRCFile(rcfile);
+            try {
+                parser.writeDefaults(std::ofstream(rcfile), "; Abuse-SDL Configuration File\n");
+            } catch (std::ofstream::failure ex) {
+                std::cerr << "Warning: unable to create abuserc file: " << ex.what() << std::endl;
+            }
         }
     } catch (std::ifstream::failure ex) {
         std::cerr << "Unable to read abuserc file (error " << ex.code() << "): " << ex.what() << std::endl;
     }
+    // Even if the parser failed to read, let it set defaults
+    parser.setFlags(flags, edit);
     free( rcfile );
 }
 
@@ -299,7 +149,15 @@ void parseCommandLine( int argc, char **argv )
     {
         if( !strcasecmp( argv[ii], "-fullscreen" ) )
         {
-            flags.fullscreen = 1;
+            flags.window_mode = WINDOW_MODE_FULLSCREEN;
+        }
+        else if( !strcasecmp( argv[ii], "-borderless" ) )
+        {
+            flags.window_mode = WINDOW_MODE_BORDERLESS_FULLSCREEN;
+        }
+        else if( !strcasecmp( argv[ii], "-window" ) )
+        {
+            flags.window_mode = WINDOW_MODE_WINDOWED;
         }
         else if( !strcasecmp( argv[ii], "-size" ) )
         {
@@ -310,17 +168,6 @@ void parseCommandLine( int argc, char **argv )
             if( ii + 1 < argc && !sscanf( argv[++ii], "%d", &yres ) )
             {
                 yres = 200;
-            }
-        }
-        else if( !strcasecmp( argv[ii], "-scale" ) )
-        {
-            // FIXME: Pretty sure scale does nothing now
-            int result;
-            if( sscanf( argv[++ii], "%d", &result ) )
-            {
-                scale = result;
-/*                flags.xres = xres * scale;
-                flags.yres = yres * scale; */
             }
         }
 /*        else if( !strcasecmp( argv[ii], "-x" ) )
@@ -339,10 +186,6 @@ void parseCommandLine( int argc, char **argv )
                 flags.yres = y;
             }
         }*/
-        else if( !strcasecmp( argv[ii], "-window" ) )
-        {
-            flags.fullscreen = 0;
-        }
         else if( !strcasecmp( argv[ii], "-software" ) )
         {
             flags.software = 1;
@@ -388,25 +231,28 @@ void parseCommandLine( int argc, char **argv )
 void setup( int argc, char **argv )
 {
     // Initialize default settings
-    flags.fullscreen         = 1;    // Start fullscreen (actually windowed-fullscreen now)
-    flags.software           = 0;    // Don't use software renderer by default
-    flags.mono               = 0;    // Enable stereo sound
-    flags.nosound            = 0;    // Enable sound
-    flags.grabmouse          = 0;    // Don't grab the mouse
-    flags.xres = xres        = 320;  // Default window width
-    flags.yres = yres        = 200;  // Default window height
-    flags.antialias          = 0;    // Don't anti-alias
-    keys.up                  = get_key_code( "UP" );
-    keys.down                = get_key_code( "DOWN" );
-    keys.left                = get_key_code( "LEFT" );
-    keys.right               = get_key_code( "RIGHT" );
-    keys.up_2                = get_key_code( "w" );
-    keys.down_2              = get_key_code( "s" );
-    keys.left_2              = get_key_code( "a" );
-    keys.right_2             = get_key_code( "d" );
-    keys.b3                  = get_key_code( "CTRL_R" );
-    keys.b4                  = get_key_code( "INSERT" );
-    scale                    = 2;    // Default scale amount
+    // These are ultimately overwritten by the defaults in abuserc.cpp
+    // Default to borderless windowed
+    flags.window_mode        = WINDOW_MODE_BORDERLESS_FULLSCREEN;
+    flags.software           = false; // Don't use software renderer by default
+    flags.mono               = false; // Enable stereo sound
+    flags.nosound            = false; // Enable sound
+    flags.grabmouse          = false; // Don't grab the mouse
+    flags.game_width = xres  = 320;   // Default game display width
+    flags.game_height = yres = 200;   // Default game display height
+    flags.window_width       = 640;
+    flags.window_height      = 480;
+    flags.antialias          = false; // Don't anti-alias
+    keys.up                  = SDLK_UP;
+    keys.down                = SDLK_DOWN;
+    keys.left                = SDLK_LEFT;
+    keys.right               = SDLK_RIGHT;
+    keys.up_2                = SDLK_w;
+    keys.down_2              = SDLK_s;
+    keys.left_2              = SDLK_a;
+    keys.right_2             = SDLK_d;
+    keys.b3                  = SDLK_RCTRL;
+    keys.b4                  = SDLK_INSERT;
 
     // Display our name and version
     printf( "%s %s\n", PACKAGE_NAME, PACKAGE_VERSION );
@@ -510,14 +356,10 @@ void setup( int argc, char **argv )
 #endif
 
     // Load the users configuration
-    readRCFile();
+    readRCFile( argc, argv );
 
     // Handle command-line parameters
     parseCommandLine( argc, argv );
-
-    // Calculate the scaled window size.
-    flags.xres = xres * scale;
-    flags.yres = yres * scale;
 }
 
 //

@@ -186,9 +186,8 @@ int EventHandler::PollEvent(SDL_Event &ev)
 	if (rv > 0)
 	{
 		// SDL will scale the mouse according to our virtual resolution.
-		// Cool! Except we lied about it to maintain the correct 320x200 aspect
-		// ratio. Less cool. So we need to "fix" it for the real vertical
-		// resolution.
+		// Cool! Except we (may have) lied about it to maintain the correct
+		// 320x200 aspect ratio. Less cool. So may need to rescale it.
 		switch (ev.type)
 		{
 		case SDL_MOUSEBUTTONDOWN:

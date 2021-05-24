@@ -2,9 +2,11 @@
 ;; See licensing information for more details on usage rights
 ;;(setf player1 'joystick)
 
-;; NOTE: This file is, at present, entirely ignored. The game handles key
-;; bindings internally. Even if it didn't, the new control binding system would
-;; ignore this file anyway.
+;; NOTE: The function get_local_input is, at present, never called. The game
+;; handles key bindings internally. Eventually the new control binding system
+;; will be set up to allow lisp functions to be bound to control inputs, at
+;; which point this file will be updated to contain the default bindings,
+;; which will be capable of being overridden in a user lisp file.
 
 ;; note : this function is called by the game when it collects input from
 ;; the local player (the machine you are playing on in net games)

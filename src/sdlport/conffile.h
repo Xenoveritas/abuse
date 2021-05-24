@@ -17,6 +17,10 @@
  *  Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  */
 
+#ifndef __CONF_FILE_H_
+
+#define __CONF_FILE_H_
+
 #include <istream>
 
 class ConfParser {
@@ -33,6 +37,12 @@ public:
     void parse(std::istream& stream);
 
 protected:
+    // Called when a stream is being parsed initially. The default
+    // implementation does nothing.
+    virtual void parseStart();
+    // Called when a file is done being parsed. The default
+    // implementation does nothing.
+    virtual void parseEnd();
     virtual void sectionStart(const std::string& section);
     virtual void valueSet(const std::string& key, const std::string& value) = 0;
     // Indicates a blank value - that is, a value with no = and nothing set beyond it.
@@ -47,3 +57,5 @@ private:
     void sendSectionStart(const char* buf, size_t start, size_t end);
     void sendValueSet(const char* buf, size_t key_start, size_t key_end, size_t value_start, size_t value_end);
 };
+
+#endif

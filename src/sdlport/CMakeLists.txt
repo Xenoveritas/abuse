@@ -10,6 +10,7 @@ add_library(sdlport
     errorui.cpp errorui.h
     control_bindings.cpp control_bindings.h
     conffile.cpp conffile.h
+    abuserc.cpp abuserc.h
 )
 
 include_directories(

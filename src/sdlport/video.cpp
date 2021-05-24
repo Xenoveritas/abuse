@@ -39,6 +39,7 @@ SDL_Surface *screen = NULL;
 SDL_Texture *texture = NULL;
 image *main_screen = NULL;
 int mouse_xpad, mouse_ypad, mouse_xscale, mouse_yscale;
+// xres and yres are the "internal", unscaled window size.
 int xres, yres;
 
 extern palette *lastl;
@@ -52,32 +53,55 @@ void calculate_mouse_scaling();
 //
 void set_mode(int argc, char **argv)
 {
-    int win_width = xres;
-    int win_height = yres;
-    if (win_width < 640)
-        win_width *= 2;
-    if (win_height < 400)
-        win_height *= 2;
-    if (xres == 320 && yres == 200)
-    {
-        // Correct for the weird 320x200 aspect ratio
-        win_width = 640;
-        win_height = 480;
+    // Most of the "special parsing" for desired window width/height is done
+    // elsewhere so assume that whatever they are is in fact what the user
+    // wanted.
+    int win_x = SDL_WINDOWPOS_UNDEFINED, win_y = SDL_WINDOWPOS_UNDEFINED;
+    int win_width = flags.window_width;
+    int win_height = flags.window_height;
+    xres = flags.game_width;
+    yres = flags.game_height;
+    Uint32 sdl_cw_flags = 0;
+    SDL_Rect display_bounds;
+    switch (flags.window_mode) {
+    case WINDOW_MODE_BORDERLESS_FULLSCREEN:
+        // In this case, we want a window that covers whatever monitor
+        // the user requested.
+        if (flags.monitor < 0) {
+            flags.monitor = 0;
+        }
+        if (SDL_GetDisplayBounds(flags.monitor, &display_bounds) == 0) {
+            win_x = display_bounds.x;
+            win_y = display_bounds.y;
+            win_width = display_bounds.w;
+            win_height = display_bounds.h;
+            sdl_cw_flags = SDL_WINDOW_BORDERLESS;
+        } else {
+            // Mostly likely cause of failure is an invalid monitor
+            printf("Video : Error getting display bounds for display %d: %s", flags.monitor, SDL_GetError());
+        }
+        break;
+    case WINDOW_MODE_FULLSCREEN:
+        sdl_cw_flags = SDL_WINDOW_FULLSCREEN;
+        break;
+        // Default is 0 which is a regular ol' window
     }
 
-    // FIXME: Set the icon for this window.  Looks nice on taskbars etc.
-    //SDL_WM_SetIcon(SDL_LoadBMP("abuse.bmp"), NULL);
-
     window = SDL_CreateWindow("Abuse",
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
+        win_x, win_y,
         win_width, win_height,
-        flags.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+        sdl_cw_flags);
     if(window == NULL)
     {
         show_startup_error("Video : Unable to create window : %s", SDL_GetError());
         exit(1);
     }
+
+    // Set the icon for this window.  Looks nice on taskbars etc.
+    // FIXME: Ignores data path, probably not necessary on Windows/macOS, maybe
+    // useful on some Linux distros?
+    // SDL_SetWindowIcon(window, SDL_LoadBMP("abuse.bmp"));
+
     renderer = SDL_CreateRenderer(window, -1, flags.software ? SDL_RENDERER_SOFTWARE : SDL_RENDERER_ACCELERATED);
     if (renderer == NULL)
     {
@@ -134,14 +158,13 @@ void set_mode(int argc, char **argv)
     SDL_GetWindowDisplayMode(window, &mode);
     SDL_RendererInfo rendererInfo;
     SDL_GetRendererInfo(renderer, &rendererInfo);
-    printf("Video : %dx%d %dbpp (renderer: %s)\n", mode.w, mode.h,
+    printf("Video : Game %dx%d display in %dx%d %dbpp (renderer: %s)\n", xres, yres, mode.w, mode.h,
         SDL_BITSPERPIXEL(mode.format), rendererInfo.name);
 
     // Grab and hide the mouse cursor
     SDL_ShowCursor(0);
-    // I think grabbing was removed in SDL2
-    //if(flags.grabmouse)
-    //    SDL_WM_GrabInput(SDL_GRAB_ON);
+    if (flags.grabmouse)
+       SDL_SetWindowGrab(window, SDL_TRUE);
 
     update_dirty(main_screen);
 }

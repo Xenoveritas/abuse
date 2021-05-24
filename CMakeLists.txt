@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 project(abuse C CXX)
-set(abuse_VERSION 0.9)
+set(abuse_VERSION 0.10)
 set(abuse_VERSION_MAJOR 0)
-set(abuse_VERSION_MINOR 9)
+set(abuse_VERSION_MINOR 10)
 set(abuse_VERSION_PATCH 0)
 set(abuse_VERSION_TWEAK 0)
 

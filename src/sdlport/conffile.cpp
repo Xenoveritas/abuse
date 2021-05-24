@@ -21,6 +21,7 @@
 # include "config.h"
 #endif
 
+#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -67,7 +68,6 @@ typedef enum ConfParserState {
     INVALID
 } ConfParserState;
 
-#define IS_WHITESPACE(c) (c == ' ' || c == '\t')
 #define IS_NEWLINE(c) (c == '\r' || c == '\n')
 
 // Actual parse implementation. Works via a simple state machine.
@@ -81,6 +81,7 @@ void ConfParser::parse(std::istream& stream) {
     size_t key_start = 0, key_end = 0, value_start = 0, value_end = 0;
     // Line count starts at 1
     size_t line_count = 1;
+    parseStart();
     while (stream.good()) {
         stream.get(c);
         if (stream.eof() || stream.fail()) {
@@ -143,7 +144,7 @@ void ConfParser::parse(std::istream& stream) {
             line.push_back(c);
             switch(state) {
             case INIT_WHITESPACE:
-                if (IS_WHITESPACE(c)) {
+                if (isspace(c)) {
                     // stay in this state
                 } else if (c == '[') {
                     // Start of a section
@@ -167,7 +168,7 @@ void ConfParser::parse(std::istream& stream) {
                     sendBlankValue(line.data(), key_start, key_end);
                 } else if (c == '=') {
                     state = AFTER_EQUALS;
-                } else if (IS_WHITESPACE(c)) {
+                } else if (isspace(c)) {
                     // For whitespace, do nothing - we may be skipping past it
                 } else {
                     // Otherwise, we move the key end marker up
@@ -179,7 +180,7 @@ void ConfParser::parse(std::istream& stream) {
                     // Empty section e.g. "[]"
                     key_start = key_end = 0;
                     state = AFTER_SECTION;
-                } else if (IS_WHITESPACE(c)) {
+                } else if (isspace(c)) {
                     // Do nothing
                 } else {
                     // Found the start of the actual key
@@ -194,7 +195,7 @@ void ConfParser::parse(std::istream& stream) {
                 } else if (c == ';') {
                     // Invalid line
                     state = INVALID;
-                } else if (IS_WHITESPACE(c)) {
+                } else if (isspace(c)) {
                     // do nothing
                 } else {
                     // Move end up
@@ -206,7 +207,7 @@ void ConfParser::parse(std::istream& stream) {
                     state = COMMENT;
                     // But also send the section start now
                     sendSectionStart(line.data(), key_start, key_end);
-                } else if (IS_WHITESPACE(c)) {
+                } else if (isspace(c)) {
                     // do nothing
                 } else {
                     // Invalid
@@ -214,7 +215,7 @@ void ConfParser::parse(std::istream& stream) {
                 }
                 break;
             case AFTER_EQUALS:
-                if (IS_WHITESPACE(c)) {
+                if (isspace(c)) {
                     // Do nothing
                 } else if (c == ';') {
                     // Blank value (eg "foo = ; blank")
@@ -227,7 +228,7 @@ void ConfParser::parse(std::istream& stream) {
                 }
                 break;
             case VALUE:
-                if (IS_WHITESPACE(c)) {
+                if (isspace(c)) {
                     // Do nothing
                 } else if (c == ';') {
                     // Start of a comment (eg "foo = value; comment")
@@ -245,9 +246,13 @@ void ConfParser::parse(std::istream& stream) {
             }
         }
     }
+    parseEnd();
 }
 
-// Default implementation: does nothing
+// Default implementations: do nothing
+
+void ConfParser::parseStart() {}
+void ConfParser::parseEnd() {}
 void ConfParser::sectionStart(const std::string& section) {}
 
 void ConfParser::blankValue(const std::string& key) {
