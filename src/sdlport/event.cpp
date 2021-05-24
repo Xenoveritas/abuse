@@ -192,16 +192,18 @@ int EventHandler::PollEvent(SDL_Event &ev)
 		{
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
+		case SDL_MOUSEMOTION:
+			// Note: Even though the button events and the motion events have
+			// different structs, the x/y pos is the same for both.
 			SDL_GetMouseState(&m_pos.x, &m_pos.y);
 			ScaleMouse(m_pos.x, m_pos.y);
 			ev.button.x = m_pos.x;
 			ev.button.y = m_pos.y;
 			break;
-		case SDL_MOUSEMOTION:
-			SDL_GetMouseState(&m_pos.x, &m_pos.y);
-			ScaleMouse(m_pos.x, m_pos.y);
-			ev.motion.x = m_pos.x;
-			ev.motion.y = m_pos.y;
+		case SDL_QUIT:
+			// Remap quit events to an internal Abuse quit even
+			ev.type = ABUSE_EV_MESSAGE;
+			ev.user.code = ID_QUIT;
 			break;
 		}
 	}
