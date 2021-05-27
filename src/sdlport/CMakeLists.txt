@@ -1,6 +1,6 @@
 #DEFS = @DEFS@
 
-add_library(sdlport
+add_library(sdlport STATIC
     video.cpp
     event.cpp
     sound.cpp sound.h

@@ -1,4 +1,4 @@
-add_library(imlib
+add_library(imlib STATIC
     filter.cpp filter.h
     image.cpp image.h
     transimage.cpp transimage.h

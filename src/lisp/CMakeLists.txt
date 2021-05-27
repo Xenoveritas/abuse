@@ -1,4 +1,4 @@
-add_library(lisp
+add_library(lisp STATIC
     lisp.cpp lisp.h
     lisp_opt.cpp lisp_opt.h
     lisp_gc.cpp lisp_gc.h
