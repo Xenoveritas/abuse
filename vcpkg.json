@@ -1,0 +1,8 @@
+{
+    "name": "abuse",
+    "version": "0.9.0",
+    "dependencies": [
+        "sdl2",
+        "sdl2-mixer"
+    ]
+}

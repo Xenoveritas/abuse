@@ -9,9 +9,9 @@ add_library(lisp STATIC
 include_directories(
     ${abuse_SOURCE_DIR}/src
     ${abuse_SOURCE_DIR}/src/imlib
-    ${SDL2_INCLUDE_DIR}
-    ${SDL2_MIXER_INCLUDE_DIR}
 )
+
+target_link_libraries(lisp SDL2::SDL2_mixer)
 #INCLUDES = -I$(srcdir) -I$(srcdir)/../ -I$(srcdir)/../imlib $(SDL2_CFLAGS)
 
 #CPPFLAGS = @CPPFLAGS@ -DNO_CHECK
