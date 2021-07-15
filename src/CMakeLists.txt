@@ -93,6 +93,11 @@ if(OPENGL_FOUND)
     target_link_libraries(abuse ${OPENGL_LIBRARIES})
 endif(OPENGL_FOUND)
 
+if(APPLE)
+    # Link CoreFoundation
+    target_link_libraries(abuse "-framework CoreFoundation")
+endif()
+
 add_executable(abuse-tool tool/abuse-tool.cpp crc.cpp crc.h)
 
 target_link_libraries(abuse-tool imlib)
@@ -118,6 +123,7 @@ else()
     BUNDLE DESTINATION "${CMAKE_INSTALL_PREFIX}")
     if(APPLE)
         # macOS should probably include SDL rather than dynamically link them like Linux does
+        # Add icon
         install(FILES "../macOS/abuse.icns" DESTINATION "${CMAKE_INSTALL_PREFIX}/abuse.app/Contents/Resources")
     endif()
 endif()

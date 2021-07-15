@@ -14,9 +14,19 @@ if (WIN32)
     enable_language(RC)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-find_package(SDL2 CONFIG REQUIRED)
-find_package(SDL2-mixer CONFIG REQUIRED)
+if (VCPKG_TARGET_TRIPLET)
+    # If using vcpkg, don't specify versions, they're in the manifest
+    find_package(SDL2 CONFIG REQUIRED)
+    find_package(SDL2-mixer CONFIG REQUIRED)
+else()
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+    find_package(SDL2 2.0.0 REQUIRED)
+    find_package(SDL2_mixer 2.0.0 REQUIRED)
+    # For compatibility with vcpkg, configure SDL2_mixer as an imported shared library
+    add_library(SDL2::SDL2_mixer SHARED IMPORTED)
+    set_property(TARGET SDL2::SDL2_mixer PROPERTY IMPORTED_LOCATION "${SDL2_MIXER_LIBRARY}")
+    set_property(TARGET SDL2::SDL2_mixer PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${SDL2_MIXER_INCLUDE_DIRS}")
+endif()
 
 include(CheckIncludeFiles)
 
