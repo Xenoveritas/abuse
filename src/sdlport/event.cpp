@@ -254,6 +254,8 @@ void EventHandler::SysEvent(Event &ev)
         case SDLK_RIGHT:        ev.key = JK_RIGHT; break;
         case SDLK_LCTRL:        ev.key = JK_CTRL_L; break;
         case SDLK_RCTRL:        ev.key = JK_CTRL_R; break;
+        case SDLK_LGUI:         ev.key = JK_COMMAND; break;
+        case SDLK_RGUI:         ev.key = JK_COMMAND; break;
         case SDLK_LALT:         ev.key = JK_ALT_L; break;
         case SDLK_RALT:         ev.key = JK_ALT_R; break;
         case SDLK_LSHIFT:       ev.key = JK_SHIFT_L; break;
