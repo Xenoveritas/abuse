@@ -331,7 +331,10 @@ INSTALL(FILES
 DESTINATION ${ASSETDIR})
 
 # Check if we have the non-free data
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/music)
+set(IGNORE_NONFREE off CACHE BOOL "ignore non-free music/SFX even if it exists")
+if(IGNORE_NONFREE)
+    message(WARNING "Skipping non-free music (set to ignore)")
+elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/music)
     message(WARNING "Non-free music found. Build will include non-free data!")
     INSTALL(FILES
         music/intro.hmi music/victory.hmi
@@ -343,7 +346,9 @@ else()
     message(WARNING "Non-free music not found, it will not be included.")
 endif()
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sfx)
+if(IGNORE_NONFREE)
+    message(WARNING "Skipping non-free SFX (set to ignore)")
+elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sfx)
     message(WARNING "Non-free sound effects found. Build will include non-free data!")
     INSTALL(FILES
         sfx/adie02.wav sfx/adie03.wav sfx/adie05.wav sfx/ahit01.wav
