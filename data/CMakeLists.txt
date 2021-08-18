@@ -147,18 +147,6 @@ INSTALL(FILES
 DESTINATION ${ASSETDIR}/levels)
 
 INSTALL(FILES
-    levels/frabs00.spe levels/frabs01.spe levels/frabs02.spe
-    levels/frabs03.spe levels/frabs04.spe levels/frabs05.spe
-    levels/frabs06.spe levels/frabs07.spe levels/frabs08.spe
-    levels/frabs09.spe levels/frabs10.spe levels/frabs11.spe
-    levels/frabs12.spe levels/frabs13.spe levels/frabs14.spe
-    levels/frabs15.spe levels/frabs17.spe levels/frabs18.spe
-    levels/frabs19.spe levels/frabs20.spe levels/frabs21.spe
-    levels/frabs30.spe levels/frabs70.spe levels/frabs71.spe
-    levels/frabs72.spe levels/frabs73.spe levels/frabs74.spe
-DESTINATION ${ASSETDIR}/levels)
-
-INSTALL(FILES
     levels/mac/demo1.spe levels/mac/demo2.spe levels/mac/demo4.spe
     levels/mac/demo5.spe levels/mac/end.spe levels/mac/flevel12.spe
     levels/mac/level00.spe levels/mac/level01.spe levels/mac/level02.spe
