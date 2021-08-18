@@ -78,50 +78,6 @@
 (setq noclip 0)
 
 (defun get_local_input ()
-  ;; fRaBs Twist extension input logic
-  (if (eq godmode 1)
-      (progn
-        (with_object (bg) (set_hp 100))
-        (if (or (eq (with_object (bg) (state)) flinch_up)
-                (eq (with_object (bg) (state)) flinch_down))
-            (with_object (bg) (set_state stopped)))))
-  (if (eq noclip 1)
-      (progn
-        (with_object (bg) (set_gravity 0))
-        (if (local_key_pressed up-key)
-            (with_object (bg) (set_y (- (y) run_top_speed))))
-        (if (local_key_pressed down-key)
-            (with_object (bg) (set_y (+ (y) run_top_speed))))
-        (if (local_key_pressed left-key)
-            (with_object (bg) (set_x (- (x) run_top_speed))))
-        (if (local_key_pressed right-key)
-            (with_object (bg) (set_x (+ (x) run_top_speed))))
-        (with_object (bg) (set_gravity 0))))
-  (if (and (eq (mod (game_tick) 15) 0)
-           (eq dray_has_fired 1))
-      (setq dray_has_fired 0))
-  (if (local_key_pressed key-shiftr)
-      (save_game (concatenate 'string "save"
-                              (digstr (get_save_slot) 4) ".spe")))
-  (if (and (eq (third (mouse_stat)) 1)
-           (with_object (bg) (eq (current_weapon_type) 7)))
-      (if (and (eq dray_has_fired 0)
-               (<= (ammo_total 7) 1)
-               (not (or (<= (with_object (bg) (hp)) 0)
-                        (eq (with_object (bg) (state)) dieing)
-                        (eq (with_object (bg) (state)) dead)
-                        (eq (with_object (bg) (state)) flinch_up)
-                        (eq (with_object (bg) (state)) flinch_down)
-                        (eq (with_object (bg) (state)) climbing)
-                        (eq (with_object (bg) (state)) climb_off)
-                        (eq (with_object (bg) (state)) climb_on))))
-          (progn
-            (setq dray_has_fired 1)
-            (play_sound DEATH_RAY_SND 127 (x) (y))
-            (with_object (bg) (add_object DEATH_RAY (x) (- (y)
-                                          (/ (picture_height) 2))))
-            (with_object (bg) (add_ammo 7 -1)))))
-  ;; Original Abuse logic
   (let ((mstat (mouse_stat)))
     (list (if (local_key_pressed left-key) -1
 	      (if (local_key_pressed right-key) 1 0))  ;; xv

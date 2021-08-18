@@ -4,7 +4,7 @@ project(abuse C CXX)
 set(abuse_VERSION 0.9)
 set(abuse_VERSION_MAJOR 0)
 set(abuse_VERSION_MINOR 9)
-set(abuse_VERSION_PATCH 0)
+set(abuse_VERSION_PATCH 1)
 set(abuse_VERSION_TWEAK 0)
 
 # Detect the platform, as there's quite a bit of platform variation
