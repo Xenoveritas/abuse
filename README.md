@@ -65,12 +65,14 @@ The following command-line switches can be used:
     -edit             Start in editor mode
     -f <arg>          Load the map file named <arg>
     -fullscreen       Enable fullscreen mode
+    -window           Enable windowed mode
+    -software         Force software renderer (disable OpenGL/Direct3D)
     -antialias        Enable anti-aliasing
     -lisp             Start in lisp interpreter mode
+    -h, --help        Display this text
     -mono             Disable stereo sound
     -nodelay          Run at maximum speed
     -nosound          Disable sound
-    -scale <arg>      Scale by <arg> amount
 
 ## 5. CONFIGURATION
 

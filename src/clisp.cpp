@@ -22,6 +22,7 @@
 
 #include "common.h"
 
+#include "sdlport/lisp_binding.h"
 #include "sdlport/joy.h"
 
 #include "ant.h"
@@ -109,7 +110,7 @@ extern int get_option(char const *name);
 extern void set_login(char const *name);
 
 void clisp_init()                            // call by lisp_init, defines symbols and functions
-                                             // to irnterface with c
+                                             // to interface with c
 {
   l_easy = LSymbol::FindOrCreate("easy");
   l_medium = LSymbol::FindOrCreate("medium");
@@ -570,6 +571,11 @@ void clisp_init()                            // call by lisp_init, defines symbo
   add_lisp_function("show_kills",0,0,           62);
   add_lisp_function("mkptr",1,1,                63);
   add_lisp_function("seq",3,3,                  64);
+
+  // Binding Lisp functions (because they don't want the arguments evaled)
+  add_lisp_function("add_control",2,2,          2001);
+  add_lisp_function("bind_control",2,2,         2002);
+  add_lisp_function("get_bindings",1,1,         2003);
 }
 
 
@@ -807,14 +813,18 @@ void *l_caller(long number, void *args)
     } break;
     case 25 :
     {
-#ifdef __linux__
+#if defined(__linux__)
       return LSymbol::FindOrCreate("LINUX");
-#endif
-#ifdef __sgi
+#elif defined(__sgi)
       return LSymbol::FindOrCreate("IRIX");
-#endif
-#ifdef __WIN32
+#elif defined(__WIN32) || defined(WIN32)
       return LSymbol::FindOrCreate("WIN32");
+#elif defined(__APPLE__)
+      // Almost want to go with "MACOS" but arguably Abuse ran on Mac OS before it was OS X before it was macOS
+      return LSymbol::FindOrCreate("MACOSX");
+#else
+      #warning Undefined platform in clip.cpp: (platform) will return UNKNOWN
+      return LSymbol::FindOrCreate("UNKNOWN");
 #endif
     } break;
     case 26 :
@@ -1040,6 +1050,47 @@ void *l_caller(long number, void *args)
       }
       return ret;
     }
+    case 2001:
+    {
+      // Make sure types are correct
+      LObject* name = CAR(args);
+      LObject* func = CAR(CDR(args));
+      if (name->m_type != L_STRING) {
+        dprintf("add_control : ");
+        name->Print();
+        lbreak(" is not a string");
+      }
+      if (func->m_type != L_SYMBOL) {
+        dprintf("add_control : ");
+        func->Print();
+        lbreak(" is not a symbol");
+      }
+
+      return bind_lisp_function_to_control((LString*)name, (LSymbol*)func);
+    }
+    case 2002:
+    {
+      // This one is somewhat more complicated
+      LObject* inputs = CAR(args);
+      LObject* name = CAR(CDR(args));
+      if (name->m_type != L_STRING) {
+        dprintf("bind_control : ");
+        name->Print();
+        lbreak(" is not a string");
+      }
+      return bind_inputs_to_control(inputs, (LString*)name);
+    }
+    case 2003:
+      {
+        LObject* name = CAR(args);
+        if (name->m_type != L_STRING) {
+          dprintf("get_bindings : ");
+          name->Print();
+          lbreak(" is not a string");
+        }
+        // Get the named bindings if we can
+        return get_bound_controls_description((LString*) name);
+      }
   }
   return NULL;
 }
@@ -1073,7 +1124,7 @@ long c_caller(long number, void *args)
         } break;
         case 4:
         {
-			return wm->KeyPressed(lnumber_value(CAR(args)));
+            return wm->KeyPressed(lnumber_value(CAR(args)));
         } break;
         case 5:
         {

@@ -51,6 +51,10 @@
 flags_struct flags;
 keys_struct keys;
 
+// Global control bindings
+// (declared here for no really good reason other than that's where flags_struct is)
+Bindings control_bindings;
+
 extern int xres, yres;
 
 //

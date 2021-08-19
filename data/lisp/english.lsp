@@ -223,28 +223,30 @@
          (setq gamma_msg "Select the darkest grey visible on your\nmonitor then click the check mark")
 	 (setq telep_msg "Press down to teleport")
 
-	 (defun get_train_msg (message_num)
-	   (select message_num
-                   ;   0123456789012345678901234567890123456789012345678901234567890123456789
-		   ;  "--------------------------------------------------------------------"  ; V-A
-		   ; Please keep all strings below shorter than the above line.               ; V-A
-		   (0 "Aim gun with mouse, fire with left mouse button")
-		   ;(0 "Aim gun with mouse, fire with left mouse button") XXX: Mac Abuse
-		   (1 "Collect ammo to increase firing speed")
-                   (2 "Press the down key to activate objects. This is a switch.")
-		   (3 "This console saves the state of the game, press down")
-		   (4 "Press down to activate platform")
-		   (5 "Hold down the right mouse button to use special powers")
-		   (6 "Use the CTRL & INS keys to select weapons")
-		   ;(5 "You can now use the special key to use your special powers") XXX: Mac Abuse
-		   ;(6 "You can now select weapons with the selection keys") XXX: Mac Abuse
-		   (7 "Press the up key to climb ladders")
-		   (8 "Press the down key to start!")
+; Thankfully this is a function so it can invoke binding info
+; NOTE: get_bindings binding message returns localized names based on libsdl (probably)
+(defun get_train_msg (message_num)
+    (select message_num
+        ;   0123456789012345678901234567890123456789012345678901234567890123456789
+        ;   "--------------------------------------------------------------------"  ; V-A
+        ;   Please keep all strings below shorter than the above line.              ; V-A
+        (0 (concatenate 'string "Aim gun with mouse, fire with " (get_bindings "fire")))
+        ;(0 "Aim gun with mouse, fire with left mouse button") XXX: Mac Abuse
+        (1 "Collect ammo to increase firing speed")
+        (2 (concatenate 'string "Press " (get_bindings "use") " to activate objects. This is a switch."))
+        (3 (concatenate 'string "This console saves the state of the game, press " (get_bindings "use")))
+        (4 (concatenate 'string "Press " (get_bindings "use") " to activate platform"))
+        (5 (concatenate 'string "Hold down " (get_bindings "special") " to use special powers"))
+        (6 (concatenate 'string "Use the " (get_bindings "prev_weapon") " & " (get_bindings "next_weapon") " keys to select weapons"))
+        ;(5 "You can now use the special key to use your special powers") XXX: Mac Abuse
+        ;(6 "You can now select weapons with the selection keys") XXX: Mac Abuse
+        (7 "Press the up key to climb ladders")
+        (8 "Press the down key to start!")
 
-		   (9 "Shoot hidden walls to destroy them")
-		   (10 "Shoot switch ball to activate")
-		   (11 "Press down to teleport")
-		   ))
+        (9 "Shoot hidden walls to destroy them")
+        (10 "Shoot switch ball to activate")
+        (11 "Press down to teleport")
+))
 
 	 (setq not_there       "This game has stopped running")
 	 (setq max_error       "Max players should be greater than or equal to Min players") ; V-C changed

@@ -9,6 +9,7 @@ add_library(sdlport
     hmi.cpp hmi.h
     errorui.cpp errorui.h
     control_bindings.cpp control_bindings.h
+    lisp_binding.cpp lisp_binding.h
     conffile.cpp conffile.h
     abuserc.cpp abuserc.h
 )

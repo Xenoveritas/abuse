@@ -8,6 +8,67 @@
 ;; which point this file will be updated to contain the default bindings,
 ;; which will be capable of being overridden in a user lisp file.
 
+;; DEFAULT BINDINGS
+;; These are the default binds, set internally via code.
+
+; First up, set our callbacks - they mostly set variables that are checked
+; every frame
+(setq player-movement 0)
+(setq player-jumping 0)
+(setq player-using 0)
+(setq player-firing 0)
+(setq player-switch-weapon 0)
+
+; The callbacks themselves
+(defun player-move-left (keydown) (setq player-movement (if keydown -1 0)))
+(defun player-move-right (keydown) (setq player-movement (if keydown 1 0)))
+(defun player-jump (keydown) (setq player-jumping (if keydown 1 0)))
+(defun player-use (keydown) (setq player-using (if keydown 1 0)))
+; Player switch weapon is reset to 0 whenever it's processed - this allows these
+; to be properly "event based"
+(defun player-fire-weapon (keydown) (if keydown (setq player-firing 1)))
+(defun player-next-weapon (keydown) (if keydown (setq player-switch-weapon 1)))
+(defun player-prev-weapon (keydown) (if keydown (setq player-switch-weapon -1)))
+
+; Register them with the events system
+(add_control "left" player-move-left)
+(add_control "right" player-move-right)
+(add_control "jump" player-jump)
+(add_control "use" player-use)
+(add_control "fire" player-fire-weapon)
+(add_control "next_weapon" player-next-weapon)
+(add_control "prev_weapon" player-prev-weapon)
+
+; Now the actual default bindings - these can also be configured via the
+; configuration system
+; (bind_control) takes a list (or if not a list, a single string) of controls
+; and then a name to bind them to as defined by add_control
+;
+; Valid input types are:
+;   - a number: a keyboard scancode (see http://wiki.libsdl.org/SDLScancodeLookup)
+;   - a string: a keyboard key name (see http://wiki.libsdl.org/SDL_Scancode)
+;               OR "scancode (number)" to define a scancode as if it were a number
+;               OR "mouse button (left|middle|right|number)" for a mouse button
+;               OR "mouse wheel (up|left|right|down)" for mouse wheel scrolling
+;               OR "controller (button)" for a controller button
+; Bind arrow keys and the WASD keys (via scancode) to movement/jump
+(bind_control ("left" 4) "left")
+(bind_control ("right" 7) "right")
+(bind_control ("up" 26 44) "jump")
+(bind_control ("down" 22) "use")
+(bind_control ("right ctrl" 20 "mouse wheel up" "mouse wheel left") "prev_weapon")
+(bind_control ("insert" 8 "mouse wheel down" "mouse wheel right") "next_weapon")
+
+(bind_control "mouse button left" "fire")
+(bind_control "mouse button right" "special")
+
+(bind_control "controller A" "jump")
+(bind_control "controller X" "special")
+(bind_control "controller B" "use")
+(bind_control "controller LB" "prev_weapon")
+(bind_control "controller RB" "next_weapon")
+;(bind_controller_axis_as_button "left" "x" 0.25 'player-move-left 'player-move-right)
+
 ;; note : this function is called by the game when it collects input from
 ;; the local player (the machine you are playing on in net games)
 ;; because it is only executed locally it should not change any global varible
