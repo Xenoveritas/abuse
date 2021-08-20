@@ -41,8 +41,8 @@ bool ci_compare_strings(const std::string& s1, const std::string& s2) {
 }
 
 // Checks if the string is prefixed with the given string
-bool ci_string_prefixed_with(const std::string& str, const std::string& prefix) {
-    return str.length() >= prefix.length() && std::equal(prefix.begin(), prefix.end(), str.begin(), ci_compare_chars);
+bool ci_string_prefixed_with(const std::string& str, const std::string& prefix, std::string::size_type start_pos=0) {
+    return str.length() - start_pos >= prefix.length() && std::equal(prefix.begin(), prefix.end(), str.begin() + start_pos, ci_compare_chars);
 }
 
 const char* WHITESPACE_CHARACTERS = " \t\r\n\v";
@@ -61,18 +61,21 @@ Input::Input(const std::string& input) {
     m_type = INPUT_TYPE_INVALID;
     m_value = 0;
     // Now to actually parse the input
+    // First, trim whitespace from the beginning and end
+    std::string::size_type start_pos = find_non_whitespace(input);
     // Inputs are in the form:
     // ("scancode" | "scan" | "sc") [:whitespace:]* "0x"? [:digit:]+ - a scancode
+    // "mouse" [:whitespace:]* "button" [:whitespace:]* ("left" | "middle" | "right" | [:digit:]+) - a mouse button
     // This could be done more optimally but whatever
-    if (ci_string_prefixed_with(input, "scancode")) {
-        parseScancode(input, 8);
-    } else if (ci_string_prefixed_with(input, "scan")) {
-        parseScancode(input, 4);
-    } else if (ci_string_prefixed_with(input, "sc")) {
-        parseScancode(input, 2);
-    } else if (ci_string_prefixed_with(input, "mouse")) {
-        // parse mouse
-    } else if (ci_string_prefixed_with(input, "control")) {
+    if (ci_string_prefixed_with(input, "scancode", start_pos)) {
+        parseScancode(input, start_pos + 8);
+    } else if (ci_string_prefixed_with(input, "scan", start_pos)) {
+        parseScancode(input, start_pos + 4);
+    } else if (ci_string_prefixed_with(input, "sc", start_pos)) {
+        parseScancode(input, start_pos + 2);
+    } else if (ci_string_prefixed_with(input, "mouse", start_pos)) {
+        parseMouse(input, start_pos + 5);
+    } else if (ci_string_prefixed_with(input, "control", start_pos)) {
         // parse controller
     } else {
         // Otherwise, pass off to SDL_GetScancodeFromName
@@ -110,6 +113,51 @@ void Input::parseScancode(const std::string& input, std::string::size_type pos) 
         // If here, we parsed a valid scancode, so set the input type to
         // keyboard, otherwise we leave it as invalid
         m_type = INPUT_TYPE_KEYBOARD;
+    }
+}
+
+void Input::parseMouse(const std::string& input, std::string::size_type pos) {
+    // At this point we know it starts with "mouse"
+    // Right now the only things we support are mouse buttons and either
+    // "left", "middle", "right", or a number that indicates which button to use
+    // Skip past any whitespace
+    pos = find_non_whitespace(input, pos);
+    // Next bit of the string should be button
+    if (ci_string_prefixed_with(input, "button", pos)) {
+        // Next part should be the button
+        pos = find_non_whitespace(input, pos + 6);
+        // Note that this doesn't set the type to mouse button yet, that's done
+        // later to ensure there is no junk after the start of the input
+        if (ci_string_prefixed_with(input, "left", pos)) {
+            m_value = SDL_BUTTON_LEFT;
+            pos += 4;
+        } else if (ci_string_prefixed_with(input, "right", pos)) {
+            m_value = SDL_BUTTON_RIGHT;
+            pos += 5;
+        } else if (ci_string_prefixed_with(input, "middle", pos)) {
+            m_value = SDL_BUTTON_MIDDLE;
+            pos += 6;
+        } else {
+            // otherwise, treat whatever's next as a number
+            char* endptr;
+            m_value = strtol(input.data() + pos, &endptr, 0);
+            // Check to see where endptr wound up
+            if (endptr == input.data()) {
+                // Couldn't parse anything, leave as invalid
+                return;
+            }
+            pos = endptr - input.data();
+        }
+        // Check to ensure the remainder is whitespace
+        if (pos < input.length()) {
+            // See if the rest is just whitespace
+            pos = find_non_whitespace(input, pos);
+            if (pos != std::string::npos) {
+                return;
+            }
+        }
+        // If here, it's valid
+        m_type = INPUT_TYPE_MOUSE_BUTTON;
     }
 }
 
@@ -326,25 +374,6 @@ bool Bindings::createBindingDescription(std::string& name, std::string& result) 
             return createKeyboardMouseBindingDescription(*control, result);
         }
     }
-}
-
-// Really this should do something to localize but for now just join with commas
-const char* join_strings(std::vector<const char*>& strings) {
-    if (strings.size() == 0) {
-        // If empty, return NULL (this is captured upstream to indicate "nothing")
-        return NULL;
-    } else if (strings.size() == 1) {
-        return strings[0];
-    }
-    auto iter = strings.begin();
-    std::ostringstream stream(*iter);
-    iter++;
-    for (; iter != strings.end(); iter++) {
-        // Because we always insert the first item we can always safely add the
-        // separator at the start of each loop
-        stream << *iter;
-    }
-    return stream.str().c_str();
 }
 
 /**

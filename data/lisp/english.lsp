@@ -223,29 +223,29 @@
          (setq gamma_msg "Select the darkest grey visible on your\nmonitor then click the check mark")
 	 (setq telep_msg "Press down to teleport")
 
-; Thankfully this is a function so it can invoke binding info
-; NOTE: get_bindings binding message returns localized names based on libsdl (probably)
+; This function appears to get invoked every frame
+; For now, use <control> which will eventually be replaced by the actual binding
 (defun get_train_msg (message_num)
     (select message_num
         ;   0123456789012345678901234567890123456789012345678901234567890123456789
         ;   "--------------------------------------------------------------------"  ; V-A
         ;   Please keep all strings below shorter than the above line.              ; V-A
-        (0 (concatenate 'string "Aim gun with mouse, fire with " (get_bindings "fire")))
+        (0 "Aim gun with mouse, fire with <fire>")
         ;(0 "Aim gun with mouse, fire with left mouse button") XXX: Mac Abuse
         (1 "Collect ammo to increase firing speed")
-        (2 (concatenate 'string "Press " (get_bindings "use") " to activate objects. This is a switch."))
-        (3 (concatenate 'string "This console saves the state of the game, press " (get_bindings "use")))
-        (4 (concatenate 'string "Press " (get_bindings "use") " to activate platform"))
-        (5 (concatenate 'string "Hold down " (get_bindings "special") " to use special powers"))
-        (6 (concatenate 'string "Use the " (get_bindings "prev_weapon") " & " (get_bindings "next_weapon") " keys to select weapons"))
+        (2 "Press <use> to activate objects. This is a switch.")
+        (3 "This console saves the state of the game, press <use>")
+        (4 "Press <use> to activate platform")
+        (5 "Hold <special> to use special powers")
+        (6 "Use <prev_weapon> & <next_weapon> keys to select weapons")
         ;(5 "You can now use the special key to use your special powers") XXX: Mac Abuse
         ;(6 "You can now select weapons with the selection keys") XXX: Mac Abuse
-        (7 "Press the up key to climb ladders")
-        (8 "Press the down key to start!")
+        (7 "Press <jump> to climb ladders")
+        (8 "Press <use> to start!")
 
         (9 "Shoot hidden walls to destroy them")
         (10 "Shoot switch ball to activate")
-        (11 "Press down to teleport")
+        (11 "Press <use> to teleport")
 ))
 
 	 (setq not_there       "This game has stopped running")

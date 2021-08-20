@@ -92,6 +92,7 @@ public:
     std::string describe();
 private:
     void parseScancode(const std::string& input, std::string::size_type pos);
+    void parseMouse(const std::string& input, std::string::size_type pos);
     InputType m_type;
     Uint32 m_value;
 };

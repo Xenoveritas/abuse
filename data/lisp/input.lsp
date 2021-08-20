@@ -1,29 +1,27 @@
 ;; Copyright 1995 Crack dot Com,  All Rights reserved
 ;; See licensing information for more details on usage rights
+
+;; This file has been heavily rewritten to support the new binding system that
+;; allows much more customization and the usage of far more keys.
 ;;(setf player1 'joystick)
 
-;; NOTE: The function get_local_input is, at present, never called. The game
-;; handles key bindings internally. Eventually the new control binding system
-;; will be set up to allow lisp functions to be bound to control inputs, at
-;; which point this file will be updated to contain the default bindings,
-;; which will be capable of being overridden in a user lisp file.
-
 ;; DEFAULT BINDINGS
-;; These are the default binds, set internally via code.
 
 ; First up, set our callbacks - they mostly set variables that are checked
 ; every frame
 (setq player-movement 0)
 (setq player-jumping 0)
-(setq player-using 0)
+(setq player-activating-obj 0)
 (setq player-firing 0)
+(setq player-using-special 0)
 (setq player-switch-weapon 0)
 
 ; The callbacks themselves
 (defun player-move-left (keydown) (setq player-movement (if keydown -1 0)))
 (defun player-move-right (keydown) (setq player-movement (if keydown 1 0)))
 (defun player-jump (keydown) (setq player-jumping (if keydown 1 0)))
-(defun player-use (keydown) (setq player-using (if keydown 1 0)))
+(defun player-use (keydown) (setq player-activating-obj (if keydown 1 0)))
+(defun player-special (keydown) (setq player-using-special (if keydown 1 0)))
 ; Player switch weapon is reset to 0 whenever it's processed - this allows these
 ; to be properly "event based"
 (defun player-fire-weapon (keydown) (if keydown (setq player-firing 1)))
@@ -36,6 +34,7 @@
 (add_control "jump" player-jump)
 (add_control "use" player-use)
 (add_control "fire" player-fire-weapon)
+(add_control "special" player-special)
 (add_control "next_weapon" player-next-weapon)
 (add_control "prev_weapon" player-prev-weapon)
 
