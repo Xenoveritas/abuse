@@ -37,27 +37,12 @@
 (load "lisp/ladder.lsp")
 (load "lisp/switch.lsp")
 
-;; From the fRaBs addons. This is required in case we load a save file
-;; from a fRaBs install, it will miss graphic tiles.
-(load "addon/twist/f2chars.lsp")
-(load "addon/twist/f2ai.lsp")
-(load "addon/aliens/astartup.lsp")
-(load "addon/claudio/claudio.lsp")
-(load "addon/twist/lisp/dray.lsp")
-(load "addon/twist/lisp/mario.lsp")
-(load "addon/leon/4frabs.lsp")
-(load "addon/newart/newart.lsp")
-
 (setq bad_guy_list
   (list DARNEL ANT_ROOF TRACK_GUN SPRAY_GUN JUGGER ROB1 WHO ROCKET FLYER
-        GREEN_FLYER BOSS_ANT DROID_JUGGER DROID DEATH_SKULL DEATH_UMBRELLA
-        ANT_SHIP WALK_ROB T_REX FACE_HUGGER ALIEN_DRONE ALIEN_WARRIOR ANT
-        ANT_JUMPER ANT_PRED ANT_GREATER2 WALK_ROB2 WALK_ROBHEAD))
+        GREEN_FLYER BOSS_ANT))
 (setq object_destroyable_list
   (list DARNEL ANT_ROOF TRACK_GUN SPRAY_GUN JUGGER ROB1 WHO ROCKET FLYER
-        GREEN_FLYER BOSS_ANT DROID_JUGGER DROID DEATH_SKULL DEATH_UMBRELLA
-        ANT_SHIP WALK_ROB T_REX FACE_HUGGER ALIEN_DRONE ALIEN_WARRIOR ANT
-        ANT_JUMPER ANT_PRED ANT_GREATER2 WALK_ROB2 WALK_ROBHEAD))
+        GREEN_FLYER BOSS_ANT))
 
 (gc)              ;; garbage collection perm space
 (tmp-space)       ;; execute game code in tmp space which is not GC'ed

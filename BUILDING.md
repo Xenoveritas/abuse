@@ -6,7 +6,8 @@
 
 - SDL2 2.0 or later <http://www.libsdl.org/> (note that SDL 1 will not work)
 - [SDL2_mixer 2.0 or later](http://www.libsdl.org/projects/SDL_mixer/)
-- [CMake 2.8.9 or later](http://www.cmake.org/)
+- [CMake 3.16 or later](http://www.cmake.org/)
+- (Optional) [vcpgk](https://vcpkg.io/en/index.html) (for automating install of SDL2/SDL2_mixer dependencies, should work on all supported platforms)
 - GL libraries and headers are required for OpenGL support.
 
 #### Directory Structure
@@ -21,7 +22,7 @@ It's best to have a root directory within which this source code exists, along w
 ### Windows with Visual Studio
 
 - [Visual Studio 2019](https://visualstudio.microsoft.com/vs/)
-- CMake 2.8.9 or later
+- CMake 3.16 or later
 - [WiX toolset](https://wixtoolset.org/) Optional, required to create an installer
 
 Building in Windows via the command line involves using the Visual Studio developer environment. Visual Studio should have installed a shortcut named "Developer Command Prompt for VS 2019" (or whatever version used - the latest is recommended) - this runs a CMD file that sets the necessary environment variables to use the Visual Studio command line tools. Commands need to be run within this environment for CMake to locate Visual Studio and for the development tools to be available.
@@ -30,20 +31,17 @@ CMake and WiX can both be installed individually or via the [Chocolatey package 
 
     choco install cmake wixtoolset
 
-Installing SDL2 and SDL2_mixer is a bit more complicated on Windows because Windows and Visual Studio don't have a well defined "correct place" to place the development libraries and therefore don't have an easily packaged way to install them that CMake can autodetect.
-
-Instead you'll want to grab the "SDL2-devel-*version*-VC.zip" file from <http://www.libsdl.org/download-2.0.php> and the "SDL2_mixer-devel-*version*-VC.zip" file from <http://www.libsdl.org/projects/SDL_mixer/>. Extract these files somewhere you can find them again - within the root "Abuse" directory works. With these directories created, set the `SDL2DIR` environment variable to the "SDL2-*version*" directory that was extracted from the SDL2 devel ZIP file above and the `SDL2MIXERDIR` to the "SDL2_mixer-*version*" directory extracted from the SDL2_mixer devel ZIP file.
+For Windows, the easiest way to get SDL2 and SDL2_mixer installed is via [vcpkg](https://vcpkg.io/en/index.html). Follow the [getting started instructions](https://vcpkg.io/en/getting-started.html). With it installed there should be nothing else to do, the `vcpkg.json` file indicates the required SDL2 and SDL2-mixer dependencies.
 
 With that set up, the CMake generation should succeed without any error.
 
-### Mac OS X
+### macOS
 
-Mac OS X should have most of the stuff you need already. The easiest method for
-getting CMake and SDL/SDL_mixer is probably using [Homebrew](http://brew.sh/).
+macOS should have most of the stuff you need already assuming you have XCode installed. The easiest method for getting CMake and SDL2/SDL2_mixer is probably using [Homebrew](http://brew.sh/).
 
     brew install cmake
-    brew install sdl
-    brew install sdl_mixer
+    brew install sdl2
+    brew install sdl2_mixer
 
 # Compiling
 
@@ -66,9 +64,15 @@ getting CMake and SDL/SDL_mixer is probably using [Homebrew](http://brew.sh/).
        cd build
        cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
 
+   On Windows, the CMake command is likely to require a few extra options, such as pointing to vcpkg, and make end up looking more like:
+
+       cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_PATH%\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+
+   Note that `%VCPKG_PATH%` should be where vcpkg is installed. (Either set the variable or replace it in the command line.)
+
 3. Build the files
 
-   Under Linux and Mac OS X, this is the familiar `make`.
+   Under Linux and macOS, this is the familiar `make`.
 
    Under Windows, you'll want to use `MSBuild abuse.sln`. (Alternatively, open
    the solution in Visual Studio and build it that way.) You can also just run `MSBuild ALL_BUILD.vcxproj` as `ALL_BUILD.vcxproj` is the default build target.
@@ -84,8 +88,8 @@ getting CMake and SDL/SDL_mixer is probably using [Homebrew](http://brew.sh/).
 
 The CMake package includes some CPack stuff to enable building installers. Under
 Windows, this will attempt to create a [WIX](http://wixtoolset.org/) installer
-and a ZIP file. Under Mac OS X, it attempts to create a DMG and TGZ.
+and a ZIP file. Under macOS, it attempts to create a DMG and TGZ.
 
-To build them under Linux and Mac OS X, it's just `make package`.
+To build them under Linux and macOS, it's just `make package`.
 
 Under Windows, build `PROJECT.vcxproj`.

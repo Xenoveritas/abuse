@@ -87,11 +87,16 @@ target_link_libraries(abuse lisp)
 target_link_libraries(abuse sdlport)
 target_link_libraries(abuse imlib)
 target_link_libraries(abuse net)
-target_link_libraries(abuse ${SDL2_LIBRARY})
-target_link_libraries(abuse ${SDL2_MIXER_LIBRARIES})
+target_link_libraries(abuse SDL2::SDL2)
+target_link_libraries(abuse SDL2::SDL2_mixer)
 if(OPENGL_FOUND)
     target_link_libraries(abuse ${OPENGL_LIBRARIES})
 endif(OPENGL_FOUND)
+
+if(APPLE)
+    # Link CoreFoundation
+    target_link_libraries(abuse "-framework CoreFoundation")
+endif()
 
 add_executable(abuse-tool tool/abuse-tool.cpp crc.cpp crc.h)
 
@@ -110,28 +115,15 @@ if(WIN32)
     install(TARGETS abuse abuse-tool
         RUNTIME DESTINATION "."
         LIBRARY DESTINATION ".")
-    # We also need to include the SDL DLLs or nothing will work
-    string(FIND "${SDL2_LIBRARY}" ";" INDEX)
-    if (${INDEX} GREATER -1)
-        string(SUBSTRING "${SDL2_LIBRARY}" 0 ${INDEX} SDL2_DLL_PATH)
-    else()
-        set(SDL2_DLL_PATH "${SDL2_LIBRARY}")
-    endif()
-    get_filename_component(SDL2_DLL_PATH "${SDL2_DLL_PATH}" DIRECTORY)
-    install(FILES ${SDL2_DLL_PATH}/SDL2.dll DESTINATION ".")
-    string(FIND "${SDL2_MIXER_LIBRARIES}" ";" INDEX)
-    if (${INDEX} GREATER -1)
-        string(SUBSTRING "${SDL2_MIXER_LIBRARIES}" 0 ${INDEX} SDL2MIXER_DLL_PATH)
-    else()
-        set(SDL2MIXER_DLL_PATH "${SDL2_MIXER_LIBRARIES}")
-    endif()
-    get_filename_component(SDL2MIXER_DLL_PATH "${SDL2MIXER_DLL_PATH}" DIRECTORY)
-    install(FILES ${SDL2MIXER_DLL_PATH}/SDL2_mixer.dll DESTINATION ".")
+    install(FILES $<TARGET_FILE:SDL2::SDL2> DESTINATION ".")
+    install(FILES $<TARGET_FILE:SDL2::SDL2_mixer> DESTINATION ".")
 else()
     # Under Linux, we want the tools in bin
     install(TARGETS abuse abuse-tool RUNTIME DESTINATION bin
     BUNDLE DESTINATION "${CMAKE_INSTALL_PREFIX}")
     if(APPLE)
-        install(FILES "../osx/abuse.icns" DESTINATION "${CMAKE_INSTALL_PREFIX}/abuse.app/Contents/Resources")
+        # macOS should probably include SDL rather than dynamically link them like Linux does
+        # Add icon
+        install(FILES "../macOS/abuse.icns" DESTINATION "${CMAKE_INSTALL_PREFIX}/abuse.app/Contents/Resources")
     endif()
 endif()

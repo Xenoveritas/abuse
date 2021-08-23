@@ -126,7 +126,7 @@ void tile_picker::scroll_event(int newx, image *screen)
       {
         if (backtiles[i]<0) blank=1;
         else
-          scale_put(the_game->get_bg(i)->im,screen,m_pos.x,m_pos.y,xw,ya);
+          scale_put(the_game->get_bg(i)->im,screen,xyo.x,xyo.y,xw,ya);
 
       } break;
       case SPEC_CHARACTER :
@@ -138,7 +138,7 @@ void tile_picker::scroll_event(int newx, image *screen)
       } else blank=1;
 
       if (i==c)
-        screen->Rectangle(m_pos, m_pos + ivec2(xw - 1, ya - 1),
+        screen->Rectangle(xyo, xyo + ivec2(xw - 1, ya - 1),
                           wm->bright_color());
 
 

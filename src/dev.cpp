@@ -778,7 +778,7 @@ void dev_controll::toggle_bgw()
     /* FIXME: previous code had 1 instead of 0, investigate */
     tile_picker *f_tp = new tile_picker(0, 0, DEV_BG_PICKER, SPEC_BACKTILE,
                                         bg_scale, maxh, bg_w, NULL);
-    forew = wm->CreateWindow(ivec2(prop->getd("back x", -30),
+    backw = wm->CreateWindow(ivec2(prop->getd("back x", -30),
                                    prop->getd("back y", 0)),
                              ivec2(-1), f_tp,symbol_str("l_bg"));
 }

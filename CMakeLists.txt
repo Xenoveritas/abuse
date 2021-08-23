@@ -17,9 +17,19 @@ if (WIN32)
     enable_language(RC)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-find_package(SDL2 2.0.0 REQUIRED)
-find_package(SDL2_mixer 2.0.0 REQUIRED)
+if (VCPKG_TARGET_TRIPLET)
+    # If using vcpkg, don't specify versions, they're in the manifest
+    find_package(SDL2 CONFIG REQUIRED)
+    find_package(SDL2-mixer CONFIG REQUIRED)
+else()
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+    find_package(SDL2 2.0.0 REQUIRED)
+    find_package(SDL2_mixer 2.0.0 REQUIRED)
+    # For compatibility with vcpkg, configure SDL2_mixer as an imported shared library
+    add_library(SDL2::SDL2_mixer SHARED IMPORTED)
+    set_property(TARGET SDL2::SDL2_mixer PROPERTY IMPORTED_LOCATION "${SDL2_MIXER_LIBRARY}")
+    set_property(TARGET SDL2::SDL2_mixer PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${SDL2_MIXER_INCLUDE_DIRS}")
+endif()
 
 include(CheckIncludeFiles)
 
@@ -37,7 +47,7 @@ if(WIN32)
     # For Windows, just use whatever CMake wants
     set(ASSETDIR ".")
 elseif(APPLE)
-    # Under Mac OS X, I actually want to redirect this to an app bundle,
+    # Under macOS, I actually want to redirect this to an app bundle,
     # which makes things weird.
     set(ASSETDIR "abuse.app/Contents/Resources/data")
 else()
@@ -66,6 +76,8 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 set(CPACK_PACKAGE_EXECUTABLES "abuse;Abuse")
 if (WIN32)
     set(CPACK_GENERATOR "WIX;ZIP")
+    # This doesn't make sense for a Windows archive
+    set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY off)
 elseif(APPLE)
     set(CPACK_GENERATOR "DragNDrop;TGZ")
 else()
@@ -73,7 +85,7 @@ else()
 endif()
 # WIX-specific
 set(CPACK_WIX_UPGRADE_GUID "3A89DEB1-B520-4DF5-B44D-96A0EBB27DC0")
-set(CPACK_WIX_LICENSE_RTF "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+set(CPACK_WIX_LICENSE_RTF "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.rtf")
 set(CPACK_WIX_PRODUCT_ICON "${CMAKE_CURRENT_SOURCE_DIR}/doc/icon.ico")
 set(CPACK_WIX_PROGRAM_MENU_FOLDER "Abuse")
 

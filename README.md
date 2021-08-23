@@ -28,7 +28,7 @@ that it only ran on an 8-bit display, and only in a window.
 
 The version of Abuse will run at any color depth and supports fullscreen mode,
 as well as many other new features. It should also be more portable and
-hopefully run on a variety of *nix variants, as well as Windows and Mac OS X.
+hopefully run on a variety of *nix variants, as well as Windows and macOS.
 
 ## 2. ADDITIONAL FEATURES
 
@@ -124,7 +124,7 @@ public domain.
 You can still grab them off of <http://abuse.zoy.org/> and extract them into
 the data directory, and they will be used by the build script.
 
-Under Windows and Mac OS X, Abuse looks for the data files in a path relative to
+Under Windows and macOS, Abuse looks for the data files in a path relative to
 the executable. Using the CMake `install` and `publish` targets will set up
 the directory in the correct way. (See BUILDING.md for more information about
 that.)

@@ -46,7 +46,6 @@
 (setf fly_image (def_image "art/misc.spe" "fly_image"))
 (setf sneaky_image (def_image "art/misc.spe" "sneaky_image"))
 (setf health_image (def_image "art/misc.spe" "b_check_image"))
-(setf shlamp_image (def_image "addon/aliens/aliens.spe" "slmp_img"))
 
 
 

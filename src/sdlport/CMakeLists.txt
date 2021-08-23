@@ -1,4 +1,6 @@
-add_library(sdlport
+#DEFS = @DEFS@
+
+add_library(sdlport STATIC
     video.cpp
     event.cpp event.h
     sound.cpp sound.h
@@ -17,9 +19,9 @@ add_library(sdlport
 include_directories(
     ${abuse_SOURCE_DIR}/src
     ${abuse_SOURCE_DIR}/src/imlib
-    ${SDL2_INCLUDE_DIR}
-    ${SDL2_MIXER_INCLUDE_DIR}
 )
 
 # TODO (maybe): add -DNO_CHECK
+target_link_libraries(sdlport SDL2::SDL2 SDL2::SDL2_mixer)
+#
 #CPPFLAGS = @CPPFLAGS@ -DNO_CHECK -DASSETDIR=\"$(assetdir)\"

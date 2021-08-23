@@ -27,12 +27,6 @@
 (load "lisp/ladder.lsp")
 (load "lisp/switch.lsp")
 
-;; Artwork from fRaBs
-(load "addon/claudio/claudio.lsp")
-(load "addon/aliens/astartup.lsp")
-(load "addon/newart/newart.lsp")
-(load "addon/leon/4frabsdm.lsp")
-
 (setq bad_guy_list (list DARNEL ANT_ROOF TRACK_GUN SPRAY_GUN JUGGER ROB1 WHO ROCKET FLYER GREEN_FLYER BOSS_ANT))
 
 (gc)              ;; garbage collection perm space

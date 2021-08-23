@@ -1,4 +1,4 @@
-add_library(net
+add_library(net STATIC
     gserver.cpp gserver.h
     gclient.cpp gclient.h
     fileman.cpp fileman.h
@@ -10,9 +10,9 @@ add_library(net
 include_directories(
     ${abuse_SOURCE_DIR}/src
     ${abuse_SOURCE_DIR}/src/imlib
-    ${SDL2_INCLUDE_DIR}
-    ${SDL2_MIXER_INCLUDE_DIR}
 )
+
+target_link_libraries(net SDL2::SDL2_mixer)
 
 add_definitions(-DNO_CHECK)
 

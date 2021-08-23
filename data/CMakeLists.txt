@@ -5,6 +5,7 @@ INSTALL(FILES
 DESTINATION ${ASSETDIR})
 
 # No idea what this was for
+# (note that while it could likely be included, it references a file that doesn't exist anyway)
 #INSTALL(FILES music/playhmp.lsp DESTINATION ${ASSETDIR}/music)
 
 INSTALL(FILES
@@ -41,21 +42,14 @@ INSTALL(FILES
     lisp/weapons.lsp
 DESTINATION ${ASSETDIR}/lisp)
 
-INSTALL(FILES
-    addon/aliens/alichars.lsp addon/aliens/aliens.lsp
-    addon/aliens/astartup.lsp addon/aliens/objects.lsp
-    addon/aliens/powerold.lsp addon/aliens/powerups.lsp
-    addon/aliens/sfx.lsp addon/aliens/tiles.lsp
-DESTINATION ${ASSETDIR}/addon/aliens)
-
+# bong - example from crack.com
 INSTALL(FILES
     addon/bong/bong.lsp
+    addon/bong/bong01.lvl
+    addon/bong/bong.spe
 DESTINATION ${ASSETDIR}/addon/bong)
 
-INSTALL(FILES
-    addon/claudio/claudio.lsp addon/claudio/oldclaud.lsp
-DESTINATION ${ASSETDIR}/addon/claudio)
-
+# deathmatch mode by crack.com
 INSTALL(FILES
     addon/deathmat/cur_lev.lsp addon/deathmat/deathmat.lsp
     addon/deathmat/dstartup.lsp addon/deathmat/gamename.lsp
@@ -64,47 +58,28 @@ INSTALL(FILES
     addon/deathmat/username.lsp addon/deathmat/version.lsp
 DESTINATION ${ASSETDIR}/addon/deathmat)
 
+# example - example addon by crack.com
 INSTALL(FILES
     addon/example/example.lsp
+    addon/example/example.lvl
+    addon/example/example.spe
 DESTINATION ${ASSETDIR}/addon/example)
 
-INSTALL(FILES
-    addon/leon/4frabsdm.lsp addon/leon/4frabs.lsp addon/leon/leon.lsp
-DESTINATION ${ASSETDIR}/addon/leon)
-
-INSTALL(FILES
-    addon/leon/lisp/deco.lsp addon/leon/lisp/grenade.lsp
-    addon/leon/lisp/lmisc.lsp addon/leon/lisp/lnant.lsp
-    addon/leon/lisp/nextlev3.lsp addon/leon/lisp/nguns.lsp
-    addon/leon/lisp/njug.lsp addon/leon/lisp/rain.lsp
-    addon/leon/lisp/slavesw.lsp addon/leon/lisp/text.lsp
-DESTINATION ${ASSETDIR}/addon/leon/lisp)
-
-INSTALL(FILES
-    addon/newart/newart.lsp
-DESTINATION ${ASSETDIR}/addon/newart)
-
+# example game from crack.com
 INSTALL(FILES
     addon/pong/common.lsp addon/pong/pong.lsp addon/pong/userfuns.lsp
+    addon/pong/pong01.lvl
+    addon/pong/pong.spe
+    addon/pong/pong.txt
 DESTINATION ${ASSETDIR}/addon/pong)
 
 INSTALL(FILES
-    addon/twist/f2ai.lsp addon/twist/f2chars.lsp
-    addon/twist/twist.lsp
-DESTINATION ${ASSETDIR}/addon/twist)
-
-INSTALL(FILES
-    addon/twist/lisp/ai.lsp
-    addon/twist/lisp/chars.lsp addon/twist/lisp/chat.lsp
-    addon/twist/lisp/dray.lsp addon/twist/lisp/english.lsp
-    addon/twist/lisp/f2ai.lsp addon/twist/lisp/f2chars.lsp
-    addon/twist/lisp/light.lsp addon/twist/lisp/mario.lsp
-    addon/twist/lisp/objects.lsp addon/twist/lisp/options.lsp
-    addon/twist/lisp/players.lsp addon/twist/lisp/sfx.lsp
-    addon/twist/lisp/startup.lsp addon/twist/lisp/tiles.lsp
-    addon/twist/lisp/tints.lsp addon/twist/lisp/title.lsp
-    addon/twist/lisp/userfuns.lsp addon/twist/lisp/weapons.lsp
-DESTINATION ${ASSETDIR}/addon/twist/lisp)
+    addon/pong/levels/pongx01.spe addon/pong/levels/pongx02.spe
+    addon/pong/levels/pongx03.spe addon/pong/levels/pongx04.spe
+    addon/pong/levels/pongx05.spe addon/pong/levels/pongx06.spe
+    addon/pong/levels/pongx07.spe addon/pong/levels/pongx08.spe
+    addon/pong/levels/pongx09.spe addon/pong/levels/pongx10.spe
+DESTINATION ${ASSETDIR}/addon/pong/levels)
 
 INSTALL(FILES
     art/ant.spe art/ball.spe art/blowups.spe art/bold.spe art/boss.spe
@@ -161,70 +136,6 @@ INSTALL(FILES
 DESTINATION ${ASSETDIR}/art/tints/guns)
 
 INSTALL(FILES
-    addon/aliens/aliens.spe addon/aliens/bactiles.spe
-    addon/aliens/fortiles.spe
-DESTINATION ${ASSETDIR}/addon/aliens)
-
-INSTALL(FILES
-    addon/bong/bong.spe
-DESTINATION ${ASSETDIR}/addon/bong)
-
-INSTALL(FILES
-    addon/claudio/antship.spe addon/claudio/bigexp.spe
-    addon/claudio/deepw1.spe addon/claudio/deepw2.spe addon/claudio/droid.spe
-    addon/claudio/extiles.spe addon/claudio/fire.spe addon/claudio/lamp.spe
-    addon/claudio/lava2.spe addon/claudio/mypanels.spe
-    addon/claudio/nplatfor.spe addon/claudio/pal21.spe addon/claudio/pal2.spe
-    addon/claudio/pal5.spe addon/claudio/pal81f.spe addon/claudio/pal81.spe
-    addon/claudio/pal82f.spe addon/claudio/pal82.spe addon/claudio/pal90.spe
-    addon/claudio/rob2.spe addon/claudio/skull.spe addon/claudio/spaced.spe
-    addon/claudio/spaceh.spe addon/claudio/spacymed.spe
-    addon/claudio/spacytdm.spe addon/claudio/sswitch.spe
-    addon/claudio/t_lamp.spe addon/claudio/trex1.spe
-    addon/claudio/t_skull.spe addon/claudio/t_space.spe
-    addon/claudio/t_trex.spe addon/claudio/t_water.spe
-    addon/claudio/umbrel3.spe addon/claudio/watem.spe
-DESTINATION ${ASSETDIR}/addon/claudio)
-
-INSTALL(FILES
-    addon/example/example.spe
-DESTINATION ${ASSETDIR}/addon/example)
-
-INSTALL(FILES
-    addon/leon/gray.spe addon/leon/level00.spe addon/leon/level01.spe
-    addon/leon/level02.spe addon/leon/lmisc.spe addon/leon/lnant.spe
-    addon/leon/lnewft2.spe addon/leon/lnewft.spe addon/leon/rain-old.spe
-    addon/leon/rain.spe
-DESTINATION ${ASSETDIR}/addon/leon)
-
-INSTALL(FILES
-    addon/newart/blcave.spe addon/newart/final.spe addon/newart/frabs_1.spe
-    addon/newart/frabs_2.spe addon/newart/frbsblue.spe addon/newart/mtile.spe
-    addon/newart/space.spe addon/newart/stones.spe
-DESTINATION ${ASSETDIR}/addon/newart)
-
-INSTALL(FILES
-    addon/pong/levels/pongx01.spe addon/pong/levels/pongx02.spe
-    addon/pong/levels/pongx03.spe addon/pong/levels/pongx04.spe
-    addon/pong/levels/pongx05.spe addon/pong/levels/pongx06.spe
-    addon/pong/levels/pongx07.spe addon/pong/levels/pongx08.spe
-    addon/pong/levels/pongx09.spe addon/pong/levels/pongx10.spe
-DESTINATION ${ASSETDIR}/addon/pong/levels)
-
-INSTALL(FILES
-    addon/pong/pong.spe
-DESTINATION ${ASSETDIR}/addon/pong)
-
-INSTALL(FILES
-    addon/twist/art/cgc.spe addon/twist/art/dray.spe addon/twist/art/fire.spe
-    addon/twist/art/lavap.spe addon/twist/art/legs.spe
-    addon/twist/art/mario.spe addon/twist/art/mtile.spe
-    addon/twist/art/obj.spe addon/twist/art/palette.spe
-    addon/twist/art/robs.spe addon/twist/art/title.spe
-    addon/twist/art/weapons.spe
-DESTINATION ${ASSETDIR}/addon/twist/art)
-
-INSTALL(FILES
     levels/level00.spe levels/level01.spe levels/level02.spe
     levels/level03.spe levels/level04.spe levels/level05.spe
     levels/level06.spe levels/level07.spe levels/level08.spe
@@ -233,18 +144,6 @@ INSTALL(FILES
     levels/level15.spe levels/level16.spe levels/level17.spe
     levels/level18.spe levels/level19.spe levels/level20.spe
     levels/level21.spe
-DESTINATION ${ASSETDIR}/levels)
-
-INSTALL(FILES
-    levels/frabs00.spe levels/frabs01.spe levels/frabs02.spe
-    levels/frabs03.spe levels/frabs04.spe levels/frabs05.spe
-    levels/frabs06.spe levels/frabs07.spe levels/frabs08.spe
-    levels/frabs09.spe levels/frabs10.spe levels/frabs11.spe
-    levels/frabs12.spe levels/frabs13.spe levels/frabs14.spe
-    levels/frabs15.spe levels/frabs17.spe levels/frabs18.spe
-    levels/frabs19.spe levels/frabs20.spe levels/frabs21.spe
-    levels/frabs30.spe levels/frabs70.spe levels/frabs71.spe
-    levels/frabs72.spe levels/frabs73.spe levels/frabs74.spe
 DESTINATION ${ASSETDIR}/levels)
 
 INSTALL(FILES
@@ -277,23 +176,6 @@ INSTALL(FILES
 DESTINATION ${ASSETDIR}/levels/mac)
 
 INSTALL(FILES
-    addon/bong/bong01.lvl
-DESTINATION ${ASSETDIR}/addon/bong)
-
-INSTALL(FILES
-    addon/example/example.lvl
-DESTINATION ${ASSETDIR}/addon/example)
-
-INSTALL(FILES
-    addon/pong/pong01.lvl
-DESTINATION ${ASSETDIR}/addon/pong)
-
-INSTALL(FILES
-    addon/twist/levels/l01s01.lvl addon/twist/levels/l01s02.lvl
-    addon/twist/levels/l01s03.lvl addon/twist/levels/l01s04.lvl
-DESTINATION ${ASSETDIR}/addon/twist/levels)
-
-INSTALL(FILES
     levels/demo1.dat
 DESTINATION ${ASSETDIR}/levels)
 
@@ -302,36 +184,14 @@ INSTALL(FILES levels/mac/demo1.dat levels/mac/demo2.dat
 DESTINATION ${ASSETDIR}/levels/mac)
 
 INSTALL(FILES
-    addon/aliens/aliens.txt
-    addon/aliens/readme.txt
-DESTINATION ${ASSETDIR}/addon/aliens)
-
-INSTALL(FILES
-    addon/claudio/palettes.txt
-DESTINATION ${ASSETDIR}/addon/claudio)
-
-INSTALL(FILES
-    addon/leon/leon.txt
-DESTINATION ${ASSETDIR}/addon/leon)
-
-INSTALL(FILES
-    addon/newart/tiledoc.txt
-DESTINATION ${ASSETDIR}/addon/newart)
-
-INSTALL(FILES
-    addon/pong/pong.txt
-DESTINATION ${ASSETDIR}/addon/pong)
-
-INSTALL(FILES
-    addon/twist/readme.txt
-DESTINATION ${ASSETDIR}/addon/twist)
-
-INSTALL(FILES
     defaults.prp
 DESTINATION ${ASSETDIR})
 
 # Check if we have the non-free data
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/music)
+set(IGNORE_NONFREE off CACHE BOOL "ignore non-free music/SFX even if it exists")
+if(IGNORE_NONFREE)
+    message(WARNING "Skipping non-free music (set to ignore)")
+elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/music)
     message(WARNING "Non-free music found. Build will include non-free data!")
     INSTALL(FILES
         music/intro.hmi music/victory.hmi
@@ -343,7 +203,9 @@ else()
     message(WARNING "Non-free music not found, it will not be included.")
 endif()
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sfx)
+if(IGNORE_NONFREE)
+    message(WARNING "Skipping non-free SFX (set to ignore)")
+elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sfx)
     message(WARNING "Non-free sound effects found. Build will include non-free data!")
     INSTALL(FILES
         sfx/adie02.wav sfx/adie03.wav sfx/adie05.wav sfx/ahit01.wav
@@ -377,37 +239,6 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sfx)
         sfx/voice/switch_1.wav sfx/voice/switch_2.wav sfx/voice/telepo_1.wav
         sfx/voice/wallss_1.wav sfx/voice/weapon_1.wav
     DESTINATION ${ASSETDIR}/sfx/voice)
-
-    # The rest are in the free-only repository but by missing the SFX,
-    # the sound engine will be deactivated anyway. C'est la vie.
-
-    INSTALL(FILES
-        addon/aliens/adie01.wav addon/aliens/adie02.wav addon/aliens/adie03.wav
-        addon/aliens/adie05.wav addon/aliens/ahit01.wav addon/aliens/alien01.wav
-        addon/aliens/altaunt.wav addon/aliens/aslash01.wav
-        addon/aliens/egghatch.wav addon/aliens/jarbreak.wav
-    DESTINATION ${ASSETDIR}/addon/aliens)
-
-    INSTALL(FILES
-        addon/claudio/aship.wav addon/claudio/drill.wav addon/claudio/fire.wav
-        addon/claudio/glass1.wav addon/claudio/sewers.wav addon/claudio/skull.wav
-        addon/claudio/spaceo.wav addon/claudio/trex1.wav addon/claudio/trex2.wav
-        addon/claudio/unhealth.wav addon/claudio/wfall.wav
-    DESTINATION ${ASSETDIR}/addon/claudio)
-
-    INSTALL(FILES
-        addon/leon/sfx/ambship1.wav addon/leon/sfx/ambship2.wav
-        addon/leon/sfx/gren5.wav addon/leon/sfx/gren6.wav
-        addon/leon/sfx/rain2.wav addon/leon/sfx/rain3.wav
-        addon/leon/sfx/rain4.wav addon/leon/sfx/rain.wav
-        addon/leon/sfx/thunder2.wav addon/leon/sfx/thunder3.wav
-        addon/leon/sfx/thunder4.wav addon/leon/sfx/thunder5.wav
-        addon/leon/sfx/thunder.wav
-    DESTINATION ${ASSETDIR}/addon/leon/sfx)
-
-    INSTALL(FILES
-        addon/twist/sfx/dray.wav
-    DESTINATION ${ASSETDIR}/addon/twist/sfx)
 else()
     message(WARNING "Non-free sound effects not found, sound will not be enabled.")
 endif()
