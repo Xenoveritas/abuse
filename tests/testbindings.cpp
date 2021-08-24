@@ -7,6 +7,9 @@
 
 #include "../src/sdlport/control_bindings.h"
 
+// Control bindings includes SDL which causes main to blow up
+#undef main
+
 bool tests_failed = false;
 
 void expect_invalid_input(const char* str) {

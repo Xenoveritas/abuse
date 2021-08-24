@@ -69,6 +69,11 @@
 #include "demo.h"
 #include "netcfg.h"
 
+#ifdef WIN32
+// Something is including SDL which is breaking main under Windows
+#undef  main
+#endif
+
 #define SHIFT_RIGHT_DEFAULT 0
 #define SHIFT_DOWN_DEFAULT 30
 

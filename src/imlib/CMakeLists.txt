@@ -25,6 +25,8 @@ add_library(imlib STATIC
 )
 
 include_directories(${abuse_SOURCE_DIR}/src ${SDL2_INCLUDE_DIR})
+target_link_libraries(imlib SDL2::SDL2)
+
 add_definitions(-DNO_CHECK)
 #INCLUDES = -I$(srcdir) -I$(srcdir)/.. $(SDL2_CFLAGS)
 

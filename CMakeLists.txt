@@ -18,10 +18,12 @@ if (WIN32)
 endif()
 
 if (VCPKG_TARGET_TRIPLET)
+    message("Using vcpkg for SDL2 and SDL2 mixer")
     # If using vcpkg, don't specify versions, they're in the manifest
     find_package(SDL2 CONFIG REQUIRED)
     find_package(SDL2-mixer CONFIG REQUIRED)
 else()
+    message("Using CMake find_package for SDL2 and SDL2 mixer")
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
     find_package(SDL2 2.0.0 REQUIRED)
     find_package(SDL2_mixer 2.0.0 REQUIRED)

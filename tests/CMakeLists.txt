@@ -18,10 +18,7 @@ add_executable(testbindings
     ../src/sdlport/control_bindings.cpp ../src/sdlport/control_bindings.h
 )
 
-include_directories(
-    ${SDL2_INCLUDE_DIR}
-)
-target_link_libraries(testbindings ${SDL2_LIBRARY})
+target_link_libraries(testbindings SDL2::SDL2)
 
 add_test(NAME bindingconf COMMAND testbindings)
 
