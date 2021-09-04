@@ -562,7 +562,6 @@ int need_delay = 1;
 
 void Game::dev_scroll()
 {
-  need_delay = 0;
   if(dev)
   {
     int xmargin, ymargin;
@@ -598,7 +597,6 @@ void Game::dev_scroll()
 
     if(xs || ys)
     {
-      need_delay = 1;
       if(dev & MAP_MODE)
       {
     map_xoff += xs / 2;
