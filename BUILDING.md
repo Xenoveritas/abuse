@@ -70,19 +70,17 @@ macOS should have most of the stuff you need already assuming you have XCode ins
 
    Note that `%VCPKG_PATH%` should be where vcpkg is installed. (Either set the variable or replace it in the command line.)
 
-3. Build the files
+3. Build the files:
 
-   Under Linux and macOS, this is the familiar `make`.
+   Under Linux, this is the familiar `make`.
 
-   Under Windows, you'll want to use `MSBuild abuse.sln`. (Alternatively, open
-   the solution in Visual Studio and build it that way.) You can also just run `MSBuild ALL_BUILD.vcxproj` as `ALL_BUILD.vcxproj` is the default build target.
+   macOS builds through Xcode, so either open the `abuse.xcodeproj` in Xcode, or build it via the command line using `xcodebuild -project abuse.xcodeproj`. Targets are specified via the `-target` command line option to `xcodebuild`. Configurations in macOS are case-sensitive and can be set via `-configuration`, i.e., `-configuration Debug` or `-configuration Release`.
 
-4. Install the files
+   Under Windows, the build is done through Visual Studio, so either open `abuse.sln` in Visual Studio, or build via the command line using `MSBuild abuse.sln`. Unlike Linux and macOS, individual targets are `.vcxproj` files. `ALL_BUILD.vcxproj` is the default build target, and the other `.vcxproj` files are the other build targets.
 
-   Note that you can skip this step if you're planning on building an installer.
-   This is simply `make install` or building `INSTALL.vcxproj` under Windows.
-   (Again, either `MSBuild INSTALL.vcxproj` or just build it directly within
-   Visual Studio.)
+4. Install the files:
+
+   Note that you can skip this step if you're planning on building an installer. For Linux, this is simply `make install`. On macOS, it's the more verbose `xcodebuild -project abuse.xcodeproj -target install`. On Windows, build `INSTALL.vcxproj` with either `MSBuild` or inside Visual Studio.
 
 # Installers (Packages)
 
@@ -90,6 +88,8 @@ The CMake package includes some CPack stuff to enable building installers. Under
 Windows, this will attempt to create a [WIX](http://wixtoolset.org/) installer
 and a ZIP file. Under macOS, it attempts to create a DMG and TGZ.
 
-To build them under Linux and macOS, it's just `make package`.
+To build them under Linux, it's just `make package`.
+
+For macOS, `xcodebuild -project abuse.xcodeproj -target package`.
 
 Under Windows, build `PROJECT.vcxproj`.
