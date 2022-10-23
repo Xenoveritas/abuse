@@ -93,3 +93,51 @@ To build them under Linux, it's just `make package`.
 For macOS, `xcodebuild -project abuse.xcodeproj -target package`.
 
 Under Windows, build `PROJECT.vcxproj`.
+
+# Quickstart
+
+These provide a basic list of commands to check out and build for Linux, macOS, and Windows.
+
+## Quickstart: Linux
+
+```sh
+mkdir abuse
+cd abuse
+git clone https://github.com/Xenoveritas/abuse.git
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+make
+make install
+../install/abuse
+```
+
+## Quickstart: macOS
+
+```sh
+mkdir abuse
+cd abuse
+git clone https://github.com/Xenoveritas/abuse.git
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+xcodebuild -project abuse.xcodeproj
+xcodebuild -project abuse.xcodeproj -target install
+../install/abuse.app/Contents/MacOS/abuse
+```
+
+## Quickstart: Windows
+
+Note that you'll need to use one of the shortcuts Visual Studio provides with the dev environment variables set to use this, otherwise, MSBuild won't work.
+
+```bat
+md abuse
+cd abuse
+git clone https://github.com/Xenoveritas/abuse.git
+md build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX:PATH=..\install ..\abuse
+MSBuild ALL_BUILD.vcxproj
+MSBuild INSTALL.vcxproj
+..\install\abuse
+```
