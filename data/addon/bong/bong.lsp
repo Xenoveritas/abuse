@@ -334,7 +334,7 @@
 
 (setq current_level 1)
 (defun get_level_name (num)
-  (concatenate 'string pong_dir "pong" (digstr num 2) ".lvl"))
+  (concatenate 'string pong_dir "bong" (digstr num 2) ".lvl"))
 
 (create_players PADDLE)
 (set_first_level (get_level_name current_level))
