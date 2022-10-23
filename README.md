@@ -2,7 +2,18 @@ Abuse README
 ============
 
 This is a fork of the original Abuse SDL port from <http://abuse.zoy.org/>. It
-switches the build system to CMake to make crossplatform building easier.
+switches the build system to CMake to make crossplatform building easier, and
+ports the original SDL version to SDL2. This version also removes some of the
+content that was in the original abuse.zoy.org version (namely, fRaBs), as the
+licensing information for it had some conflicting information.
+
+Restoring fRaBs should be as simple as copying the data file over to the
+install directory, but they're not being included in the GitHub "official"
+builds. Likewise, the sound and music files are currently not included, as
+it's unclear if they were ever really allowed to be distributed.
+
+Placing those files into the "sfx" and "music" directories (or copying them
+into the installed data directory) should re-enable sound and music.
 
 ----
 
@@ -149,17 +160,6 @@ Finally, the location can be set in the configuration file. See section
 ### Scaling:
   Scaling is still experimental and not very fast.  Try scaling by different
   amounts to see which ones work the best.
-
-### OpenGL:
-  OpenGL can be used to provide hardware accelerated scaling and anti-aliasing.
-  You will require a 3D card with the appropriate drivers and GL libraries
-  installed for this to work.
-
-### fRaBs:
-  The current release of fRaBs has some naming issues under Linux.
-  In the 'addon/leon/' directory a lot of the files are uppercase when Abuse
-  is expecting them to be lowercase.
-  Renaming the files to be all lowercase will fix this problem.
 
 ## 8. SPECIAL THANKS
 

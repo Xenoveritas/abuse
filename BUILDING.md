@@ -43,6 +43,8 @@ macOS should have most of the stuff you need already assuming you have XCode ins
     brew install sdl2
     brew install sdl2_mixer
 
+By default, CMake on macOS uses the Makefile generator. To use the Xcode generator (which makes debugging with Xcode easier), specific `-G Xcode` when running CMake.
+
 # Compiling
 
 1. Clone this repository.
@@ -57,16 +59,26 @@ macOS should have most of the stuff you need already assuming you have XCode ins
    In order to get a build that includes all the data, you'll want to specify
    an install directory. All told, you might setup doing something like:
 
-       mkdir abuse
-       cd abuse
-       git clone https://github.com/Xenoveritas/abuse.git
-       mkdir build
-       cd build
-       cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+    ```sh
+    mkdir abuse
+    cd abuse
+    git clone https://github.com/Xenoveritas/abuse.git
+    mkdir build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+    ```
+
+   On macOS, you may wish to use the Xcode generator:
+
+   ```sh
+   cmake -G Xcode -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+   ```
 
    On Windows, the CMake command is likely to require a few extra options, such as pointing to vcpkg, and make end up looking more like:
 
-       cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_PATH%\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+    ```bat
+    cmake -DCMAKE_TOOLCHAIN_FILE=%VCPKG_PATH%\scripts\buildsystems\vcpkg.cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+    ```
 
    Note that `%VCPKG_PATH%` should be where vcpkg is installed. (Either set the variable or replace it in the command line.)
 
@@ -120,7 +132,7 @@ cd abuse
 git clone https://github.com/Xenoveritas/abuse.git
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+cmake -G Xcode -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
 xcodebuild -project abuse.xcodeproj
 xcodebuild -project abuse.xcodeproj -target install
 ../install/abuse.app/Contents/MacOS/abuse
