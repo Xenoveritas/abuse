@@ -40,6 +40,8 @@ using namespace lol;
 //
 // Custom utility functions
 //
+// TODO: Can these be changed to pre-compiler definitions? I'm assuming some compiler didn't optimize
+// properly and these are inline functions due to that.
 static inline int Min(int a, int b) { return a < b ? a : b; }
 static inline int Max(int a, int b) { return a > b ? a : b; }
 static inline unsigned int Min(unsigned int a, unsigned int b) { return a < b ? a : b; }
@@ -48,6 +50,11 @@ static inline long Min(long a, long b) { return a < b ? a : b; }
 static inline long Max(long a, long b) { return a > b ? a : b; }
 static inline unsigned long Min(unsigned long a, unsigned long b) { return a < b ? a : b; }
 static inline unsigned long Max(unsigned long a, unsigned long b) { return a > b ? a : b; }
+#if _WIN64
+// 64-bit Windows considers size_t to be unsigned long long
+static inline unsigned long Min(unsigned long long a, unsigned long long b) { return a < b ? a : b; }
+static inline unsigned long Max(unsigned long long a, unsigned long long b) { return a > b ? a : b; }
+#endif
 static inline float Min(float a, float b) { return a < b ? a : b; }
 static inline float Max(float a, float b) { return a > b ? a : b; }
 

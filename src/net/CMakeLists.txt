@@ -12,7 +12,7 @@ include_directories(
     ${abuse_SOURCE_DIR}/src/imlib
 )
 
-target_link_libraries(net SDL2::SDL2_mixer)
+target_link_libraries(net SDL2_mixer::SDL2_mixer)
 
 add_definitions(-DNO_CHECK)
 

@@ -88,7 +88,7 @@ target_link_libraries(abuse sdlport)
 target_link_libraries(abuse imlib)
 target_link_libraries(abuse net)
 target_link_libraries(abuse SDL2::SDL2)
-target_link_libraries(abuse SDL2::SDL2_mixer)
+target_link_libraries(abuse SDL2_mixer::SDL2_mixer)
 if(OPENGL_FOUND)
     target_link_libraries(abuse ${OPENGL_LIBRARIES})
 endif(OPENGL_FOUND)
@@ -116,7 +116,7 @@ if(WIN32)
         RUNTIME DESTINATION "."
         LIBRARY DESTINATION ".")
     install(FILES $<TARGET_FILE:SDL2::SDL2> DESTINATION ".")
-    install(FILES $<TARGET_FILE:SDL2::SDL2_mixer> DESTINATION ".")
+    install(FILES $<TARGET_FILE:SDL2_mixer::SDL2_mixer> DESTINATION ".")
 else()
     # Under Linux, we want the tools in bin
     install(TARGETS abuse abuse-tool RUNTIME DESTINATION bin
