@@ -121,7 +121,7 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
 make
 make install
-../install/abuse
+../install/bin/abuse
 ```
 
 ## Quickstart: macOS
