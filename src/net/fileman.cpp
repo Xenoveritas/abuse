@@ -23,6 +23,7 @@
 #include <string.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <SDL3/SDL_stdinc.h>
 #ifdef WIN32
 # include <io.h>
 #endif
@@ -307,7 +308,10 @@ file_manager::remote_file::remote_file(net_socket *sock, char const *filename, c
   next=Next;
   open_local=0;
 
-  uint8_t sizes[3]={ CLIENT_NFS,strlen(filename)+1,strlen(mode)+1};
+  size_t filename_len = strlen(filename) + 1;
+  size_t mode_len = strlen(mode) + 1;
+  if (filename_len > SDL_MAX_UINT8 || mode_len > SDL_MAX_UINT8) { r_close("filename/mode too long"); return; }
+  uint8_t sizes[3]={ CLIENT_NFS, (uint8_t) filename_len, (uint8_t) mode_len};
   if (sock->write(sizes,3)!=3) { r_close("could not send open info"); return ; }
   if (sock->write(filename,sizes[1])!=sizes[1]) { r_close("could not send filename"); return ; }
   if (sock->write(mode,sizes[2])!=sizes[2]) { r_close("could not send mode"); return ; }

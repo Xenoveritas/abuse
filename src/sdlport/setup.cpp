@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <signal.h>
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #include "specs.h"
 #include "keys.h"
@@ -94,7 +94,7 @@ void createRCFile( char *rcfile )
         fputs( "; Abuse-SDL Configuration file\n\n", fd );
         fputs( "; Startup fullscreen\nfullscreen=1\n\n", fd );
         fputs( "; Force software renderer\nsoftware=0\n\n", fd );
-#if !((defined __APPLE__) || (defined WIN32))
+#if !((defined SDL_PLATFORM_APPLE) || (defined SDL_PLATFORM_WINDOWS))
         fputs( "; Location of the datafiles\ndatadir=", fd );
         fputs( ASSETDIR "\n\n", fd );
 #endif
@@ -377,7 +377,7 @@ void setup( int argc, char **argv )
     printf( "%s %s\n", PACKAGE_NAME, PACKAGE_VERSION );
 
     // Initialize SDL with video and audio support
-    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER ) < 0 )
+    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD ) < 0 )
     {
         show_startup_error( "Unable to initialize SDL : %s\n", SDL_GetError() );
         exit( 1 );
@@ -440,8 +440,8 @@ void setup( int argc, char **argv )
 
     // Set the datadir to a default value
     // (The current directory)
-#ifdef __APPLE__
-    UInt8 buffer[255];
+#ifdef SDL_PLATFORM_APPLE
+    Uint8 buffer[255];
     CFURLRef bundleurl = CFBundleCopyBundleURL(CFBundleGetMainBundle());
     CFURLRef url = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault, bundleurl, CFSTR("Contents/Resources/data"), true);
 

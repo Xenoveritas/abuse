@@ -1,3 +1,5 @@
+cmake_policy(SET CMP0177 NEW)
+
 INSTALL(FILES
     abuse.lsp
     edit.lsp

@@ -4,11 +4,14 @@
 
 ### All Platforms
 
-- SDL2 2.0 or later <http://www.libsdl.org/> (note that SDL 1 will not work)
-- [SDL2_mixer 2.0 or later](http://www.libsdl.org/projects/SDL_mixer/)
-- [CMake 3.16 or later](http://www.cmake.org/)
-- (Optional) [vcpgk](https://vcpkg.io/en/index.html) (for automating install of SDL2/SDL2_mixer dependencies, should work on all supported platforms)
+- SDL3 3.0 or later <http://www.libsdl.org/> (note that SDL 1 will not work)
+- [SDL3_mixer 3.0 or later](http://www.libsdl.org/projects/SDL_mixer/)
+- [CMake 3.21 or later](http://www.cmake.org/)
 - GL libraries and headers are required for OpenGL support.
+
+#### CPM
+
+With SDL3/SDL3_mixer, it's now possible to use [CPM.cmake](https://github.com/cpm-cmake/cpm.cmake) to grab the SDL libraries. This will build them locally. To use externally built libraries (such as those included with a Linux distro), it will be necessary to configure CPM to use those rather than fetch its own copies. One simple way to do this is by setting [`CPM_USE_LOCAL_PACKAGES`](https://github.com/cpm-cmake/cpm.cmake#cpm_use_local_packages). `CPM_LOCAL_PACKAGES_ONLY` will prevent remote packages from being installed entirely.
 
 #### Directory Structure
 
@@ -37,13 +40,13 @@ With that set up, the CMake generation should succeed without any error.
 
 ### macOS
 
-macOS should have most of the stuff you need already assuming you have XCode installed. The easiest method for getting CMake and SDL2/SDL2_mixer is probably using [Homebrew](http://brew.sh/).
+macOS should have most of the stuff you need already assuming you have XCode installed. The easiest method for getting CMake is probably using [Homebrew](http://brew.sh/).
 
     brew install cmake
-    brew install sdl2
-    brew install sdl2_mixer
 
 By default, CMake on macOS uses the Makefile generator. To use the Xcode generator (which makes debugging with Xcode easier), specific `-G Xcode` when running CMake.
+
+SDL3/SDL3_mixer are now downloaded as subprojects and are built into the generated macOS bundle. This makes distributing the macOS binary much simpler as it no longer requires the user have SDL installed in some fashion.
 
 # Compiling
 
@@ -65,13 +68,13 @@ By default, CMake on macOS uses the Makefile generator. To use the Xcode generat
     git clone https://github.com/Xenoveritas/abuse.git
     mkdir build
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+    cmake --install-prefix $(cd ../install; pwd) ../abuse
     ```
 
    On macOS, you may wish to use the Xcode generator:
 
    ```sh
-   cmake -G Xcode -DCMAKE_INSTALL_PREFIX:PATH=../install ../abuse
+   cmake -G Xcode --install-prefix $(cd ../install; pwd) ../abuse
    ```
 
    On Windows, the CMake command is likely to require a few extra options, such as pointing to vcpkg, and make end up looking more like:

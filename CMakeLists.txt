@@ -1,11 +1,13 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.14)
 
 project(abuse C CXX)
-set(abuse_VERSION 0.9.1)
+set(abuse_VERSION 0.10.0)
 set(abuse_VERSION_MAJOR 0)
-set(abuse_VERSION_MINOR 9)
-set(abuse_VERSION_PATCH 1)
+set(abuse_VERSION_MINOR 10)
+set(abuse_VERSION_PATCH 0)
 set(abuse_VERSION_TWEAK 0)
+
+include(cmake/CPM.cmake)
 
 # Detect the platform, as there's quite a bit of platform variation
 
@@ -14,20 +16,86 @@ if (WIN32)
     enable_language(RC)
 endif()
 
-if (VCPKG_TARGET_TRIPLET)
-    # If using vcpkg, don't specify versions, they're in the manifest
-    find_package(SDL2 CONFIG REQUIRED)
-    find_package(SDL2_mixer CONFIG REQUIRED)
-else()
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-    find_package(SDL2 2.0.0 REQUIRED)
-    find_package(SDL2_mixer 2.0.0 REQUIRED)
-    # For compatibility with vcpkg, configure SDL2_mixer as an imported shared library
-    add_library(SDL2_mixer::SDL2_mixer SHARED IMPORTED)
-    set_property(TARGET SDL2_mixer::SDL2_mixer PROPERTY IMPORTED_LOCATION "${SDL2_MIXER_LIBRARY}")
-    set_property(TARGET SDL2_mixer::SDL2_mixer PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${SDL2_MIXER_INCLUDE_DIRS}")
-endif()
+# Enabling FluidSynth requires a soundfont be loaded which means it doesn't really work
+option(ABUSE_ENABLE_FLUIDSYNTH "Include FluidSynth as a dependency (for music playback)" OFF)
+# Using SDL3_native_midi makes this work a lot like it did with SDL2_mixer
+option(ABUSE_ENABLE_NATIVE_MIDI "Use SDL3_native_midi to play music" ON)
 
+# To avoid downloading a package, configure CPM
+CPMAddPackage(
+    NAME SDL3
+    VERSION 3.0.0
+    GITHUB_REPOSITORY libsdl-org/SDL
+    GIT_TAG release-3.4.14
+)
+if (ABUSE_ENABLE_FLUIDSYNTH)
+    CPMAddPackage(
+        NAME FluidSynth
+        VERSION 2.6.0
+        GITHUB_REPOSITORY FluidSynth/fluidsynth
+        EXCLUDE_FROM_ALL ON
+        OPTIONS
+            # Disable everything SDL3_mixer would
+            "enable-alsa OFF"
+            "enable-aufile OFF"
+            "enable-dbus OFF"
+            "enable-ipv6 OFF"
+            "enable-jack OFF"
+            "enable-ladspa OFF"
+            "enable-libinstpatch OFF"
+            "enable-libsndfile OFF"
+            "enable-midishare OFF"
+            "enable-opensles OFF"
+            "enable-oboe OFF"
+            "enable-network OFF"
+            "enable-oss OFF"
+            "enable-dsound OFF"
+            "enable-wasapi OFF"
+            "enable-waveout OFF"
+            "enable-winmidi OFF"
+            "enable-sdl3 OFF"
+            "enable-pulseaudio OFF"
+            "enable-pipewire OFF"
+            "enable-readline OFF"
+            "enable-threads OFF"
+            "enable-openmp OFF"
+            "enable-unicode OFF"
+            "enable-native OFF"
+            "enable-signalsmith OFF"
+            "enable-framework OFF"
+            "enable-systemd OFF"
+            "enable-coreaudio OFF"
+            "enable-coremidi OFF"
+            "enable-dart OFF"
+            "enable-kai OFF"
+    )
+    add_library(FluidSynth::libfluidsynth ALIAS libfluidsynth)
+    # The final target has been disabled but we do need the libfluidsynth DLL
+    install(FILES $<TARGET_FILE:libfluidsynth> DESTINATION ".")
+endif()
+CPMAddPackage(
+    NAME SDL3_mixer
+    VERSION 3.0.0
+    GITHUB_REPOSITORY libsdl-org/SDL_mixer
+    GIT_TAG release-3.2.4
+    OPTIONS
+        # Don't use the vendored libraries (they all add support for stuff we don't need anyway)
+        "SDLMIXER_VENDORED OFF"
+        "SDLMIXER_MIDI_FLUIDSYNTH ${ABUSE_ENABLE_FLUIDSYNTH}"
+        "SDLMIXER_MIDI_TIMIDITY OFF"
+)
+if (ABUSE_ENABLE_NATIVE_MIDI)
+    # This is really a fancy way to make this an optional, external dependency.
+    # It's never used directly - instead, the source files are added to the sdlport target.
+    CPMAddPackage(
+        NAME SDL3_native_midi
+        # Version number is made up
+        VERSION 1.0
+        GITHUB_REPOSITORY libsdl-org/SDL_native_midi
+        GIT_TAG 64236646bc50ba7a196c2cc05dad86f0bde3f55f
+        EXCLUDE_FROM_ALL ON
+    )
+endif()
 include(CheckIncludeFiles)
 
 check_include_files(unistd.h HAVE_UNISTD_H)

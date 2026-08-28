@@ -87,8 +87,8 @@ target_link_libraries(abuse lisp)
 target_link_libraries(abuse sdlport)
 target_link_libraries(abuse imlib)
 target_link_libraries(abuse net)
-target_link_libraries(abuse SDL2::SDL2)
-target_link_libraries(abuse SDL2_mixer::SDL2_mixer)
+target_link_libraries(abuse SDL3::SDL3)
+target_link_libraries(abuse SDL3_mixer::SDL3_mixer)
 if(OPENGL_FOUND)
     target_link_libraries(abuse ${OPENGL_LIBRARIES})
 endif(OPENGL_FOUND)
@@ -107,22 +107,29 @@ include_directories(
     ${abuse_SOURCE_DIR}/src/lisp
     ${abuse_SOURCE_DIR}/src/imlib
     ${abuse_SOURCE_DIR}/src/net
-    ${SDL2_INCLUDE_DIR}
-    ${SDL2_MIXER_INCLUDE_DIR}
 )
 if(WIN32)
     # Under Windows, throw them into the root
     install(TARGETS abuse abuse-tool
         RUNTIME DESTINATION "."
         LIBRARY DESTINATION ".")
-    install(FILES $<TARGET_FILE:SDL2::SDL2> DESTINATION ".")
-    install(FILES $<TARGET_FILE:SDL2_mixer::SDL2_mixer> DESTINATION ".")
+    install(FILES $<TARGET_FILE:SDL3::SDL3> DESTINATION ".")
+    install(FILES $<TARGET_FILE:SDL3_mixer::SDL3_mixer> DESTINATION ".")
 else()
     # Under Linux, we want the tools in bin
     install(TARGETS abuse abuse-tool RUNTIME DESTINATION bin
     BUNDLE DESTINATION "${CMAKE_INSTALL_PREFIX}")
     if(APPLE)
-        # macOS should probably include SDL rather than dynamically link them like Linux does
+        # Fix up the bundle (basically, install SDL with it)
+        install(CODE "
+            include(BundleUtilities)
+            set(BU_CHMOD_BUNDLE_ITEMS TRUE)
+            fixup_bundle(
+                \"${CMAKE_INSTALL_PREFIX}/abuse.app\"
+                \"\"
+                \"${SDL3_BINARY_DIR};${SDL3_mixer_BINARY_DIR}\"
+            )
+        ")
         # Add icon
         install(FILES "../macOS/abuse.icns" DESTINATION "${CMAKE_INSTALL_PREFIX}/abuse.app/Contents/Resources")
     endif()

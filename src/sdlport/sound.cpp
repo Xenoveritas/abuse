@@ -27,8 +27,12 @@
 #endif
 #include <cstring>
 
-#include "SDL.h"
-#include "SDL_mixer.h"
+#include <SDL3/SDL.h>
+#include <SDL3_mixer/SDL_mixer.h>
+
+#ifdef MUSIC_NATIVE_MIDI
+# include <SDL3_native_midi/SDL_native_midi.h>
+#endif
 
 #include "sound.h"
 #include "hmi.h"
@@ -39,6 +43,82 @@ extern flags_struct flags;
 static int sound_enabled = 0;
 static SDL_AudioSpec audioObtained;
 
+static MIX_Mixer* mixer = NULL;
+// Very tempted to make this a std::vector and dynamically grow as needed
+static MIX_Track** tracks = NULL;
+static size_t numberTracks = 0;
+
+#ifdef MUSIC_NATIVE_MIDI
+static bool haveNativeMidi = 0;
+#endif
+
+void allocate_tracks(size_t count)
+{
+    if (numberTracks == count)
+    {
+        return;
+    }
+    if (count == 0)
+    {
+        if (tracks != NULL)
+        {
+            for (size_t i = 0; i < numberTracks; i++)
+            {
+                MIX_DestroyTrack(tracks[i]);
+            }
+            SDL_free(tracks);
+            tracks = NULL;
+        }
+        numberTracks = 0;
+        return;
+    }
+    // Currently this will only ever allocate tracks up but in the future it
+    // may make sense to enable some form of garbage collection
+    // Destroy tracks past the new count
+    for (size_t i = count; i < numberTracks; i++)
+    {
+        MIX_DestroyTrack(tracks[i]);
+    }
+    // Attempt to reallocate (note that when tracks is NULL this acts like
+    // SDL_malloc so this is safe even on the first try)
+    MIX_Track** newTracks = (MIX_Track**) SDL_realloc(tracks, sizeof(MIX_Track*) * count);
+    if (newTracks == NULL)
+    {
+        printf("Audio: Unable to allocate tracks (out of memory)\n");
+        return;
+    }
+    // Allocate any new tracks
+    for (size_t i = numberTracks; i < count; i++)
+    {
+        newTracks[i] = MIX_CreateTrack(mixer);
+        if (newTracks[i] == NULL)
+        {
+            printf("Error: Unable to allocate audio track: %s\n", SDL_GetError());
+            // In this case set the number of tracks created to the current index
+            count = i;
+            break;
+        }
+    }
+    numberTracks = count;
+    tracks = newTracks;
+}
+
+MIX_Track* find_available_track()
+{
+    if (tracks == NULL)
+    {
+        return NULL;
+    }
+    for (size_t i = 0; i < numberTracks; i++)
+    {
+        if (!MIX_TrackPlaying(tracks[i]))
+        {
+            return tracks[i];
+        }
+    }
+    return NULL;
+}
+
 //
 // sound_init()
 // Initialise audio
@@ -46,6 +126,7 @@ static SDL_AudioSpec audioObtained;
 int sound_init( int argc, char **argv )
 {
     char *sfxdir, *datadir;
+    SDL_AudioSpec audiospec;
 
     // Disable sound if requested.
     if( flags.nosound )
@@ -55,10 +136,33 @@ int sound_init( int argc, char **argv )
         return 0;
     }
 
+    if (!MIX_Init())
+    {
+        printf( "Sound: Failed to initialize: %s\n", SDL_GetError() );
+        return 0;
+    }
+#ifdef MUSIC_NATIVE_MIDI
+    if (NativeMidi_Init())
+    {
+        haveNativeMidi = 1;
+    }
+    else
+    {
+        printf("Sound: Failed to initialize MIDI. Music will not play.\n");
+    }
+#endif
+
     // Check for the sfx directory, disable sound if we can't find it.
     datadir = get_filename_prefix();
-    sfxdir = (char *)malloc( strlen( datadir ) + 5 + 1 );
-    sprintf( sfxdir, "%ssfx", datadir );
+    size_t len = SDL_strlen( datadir ) + 4;
+    sfxdir = (char *)SDL_malloc( len );
+    if (sfxdir == NULL)
+    {
+        printf( "Sound: out of memory\n" );
+        return 0;
+    }
+    SDL_strlcpy( sfxdir, datadir, len );
+    SDL_strlcat( sfxdir, "sfx", len );
 #ifdef WIN32
     // Attempting to fopen a directory under Windows will fail, and
     // opendir does not exist. Use GetFileAttributes instead.
@@ -74,17 +178,22 @@ int sound_init( int argc, char **argv )
     }
     free( sfxdir );
 
-    if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 1024) < 0)
+    audiospec.format = SDL_AUDIO_S16;
+    audiospec.channels = 2;
+    audiospec.freq = 44100;
+    mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &audiospec);
+    if (mixer == NULL)
     {
         printf( "Sound: Unable to open audio - %s\nSound: Disabled (error)\n", SDL_GetError() );
         return 0;
     }
 
-    Mix_AllocateChannels(50);
+    // Allocate 50 tracks
+    allocate_tracks(50);
 
-    int tempChannels = 0;
-    Mix_QuerySpec(&audioObtained.freq, &audioObtained.format, &tempChannels);
-    audioObtained.channels = tempChannels & 0xFF;
+    // FIXME
+    //MIX_GetMixerFormat(&audioObtained.freq, &audioObtained.format, &tempChannels);
+    audioObtained.channels = audiospec.channels;
 
     sound_enabled = SFX_INITIALIZED | MUSIC_INITIALIZED;
 
@@ -104,7 +213,10 @@ void sound_uninit()
     if (!sound_enabled)
         return;
 
-    Mix_CloseAudio();
+    // Destroy all tracks
+    allocate_tracks(0);
+    MIX_DestroyMixer(mixer);
+    MIX_Quit();
 }
 
 //
@@ -121,11 +233,11 @@ sound_effect::sound_effect(char const *filename)
     if (fp.open_failure())
         return;
 
-    void *temp_data = malloc(fp.file_size());
+    void *temp_data = SDL_malloc(fp.file_size());
     fp.read(temp_data, fp.file_size());
-    SDL_RWops *rw = SDL_RWFromMem(temp_data, fp.file_size());
-    m_chunk = Mix_LoadWAV_RW(rw, 1);
-    free(temp_data);
+    SDL_IOStream *ios = SDL_IOFromMem(temp_data, fp.file_size());
+    m_chunk = MIX_LoadAudio_IO(mixer, ios, 1, 1);
+    SDL_free(temp_data);
 }
 
 //
@@ -144,10 +256,14 @@ sound_effect::~sound_effect()
     // Therefore with SDL_mixer, a sound that has not finished playing
     // on a level load will cut off in the middle. This is most noticable
     // for the button sound of the load savegame dialog.
-    Mix_FadeOutGroup(-1, 100);
-    while (Mix_Playing(-1))
-        SDL_Delay(10);
-    Mix_FreeChunk(m_chunk);
+    // FIXME: Original SDL did this
+    // MIX_StopTag(-1, 100);
+    // while (MIX_TrackPlaying(-1))
+    //     SDL_Delay(10);
+    // SDL3_mixer possibly fixes this - tracks with the audio will continue
+    // playing after the audio is destroyed and SDL uses reference counting to
+    // know when to free the audio.
+    MIX_DestroyAudio(m_chunk);
 }
 
 //
@@ -163,13 +279,16 @@ void sound_effect::play(int volume, int pitch, int panpot)
 {
     if (!sound_enabled)
         return;
-
-    int channel = Mix_PlayChannel(-1, m_chunk, 0);
-    if (channel > -1)
-    {
-        Mix_Volume(channel, volume);
-        Mix_SetPanning(channel, panpot, 255 - panpot);
-    }
+    MIX_Track* track = find_available_track();
+    if (track == NULL)
+        return;
+    MIX_SetTrackAudio(track, m_chunk);
+    MIX_SetTrackGain(track, volume / 255.0f);
+    MIX_StereoGains stereo;
+    stereo.left = panpot / 255.0f;
+    stereo.right = 1.0f - stereo.left;
+    MIX_SetTrackStereo(track, &stereo);
+    MIX_PlayTrack(track, 0);
 }
 
 
@@ -177,6 +296,9 @@ void sound_effect::play(int volume, int pitch, int panpot)
 
 song::song(char const * filename)
 {
+#ifndef MUSIC_NATIVE_MIDI
+    activeTrack = NULL;
+#endif
     data = NULL;
     Name = strdup(filename);
     song_id = 0;
@@ -197,49 +319,101 @@ song::song(char const * filename)
         return;
     }
 
-    rw = SDL_RWFromMem(data, data_size);
-    music = Mix_LoadMUS_RW(rw, 0);
+    rw = SDL_IOFromMem(data, data_size);
+#ifdef MUSIC_NATIVE_MIDI
+    music = NativeMidi_LoadSong_IO(rw, 0);
+    if (!music)
+    {
+        printf("Sound: ERROR - could not load %s\n", realname);
+        return;
+    }
+#else
+    music = MIX_LoadAudio_IO(mixer, rw, 0, 0);
 
     if (!music)
     {
         printf("Sound: ERROR - %s while loading %s\n",
-               Mix_GetError(), realname);
+               SDL_GetError(), realname);
         return;
     }
+#endif
 }
 
 song::~song()
 {
     if(playing())
         stop();
+#ifndef MUSIC_NATIVE_MIDI
+    // NULL out the active track - it may still exist if music was playing
+    activeTrack = NULL;
+#endif
     free(data);
     free(Name);
 
-    Mix_FreeMusic(music);
-    SDL_FreeRW(rw);
+#ifdef MUSIC_NATIVE_MIDI
+    NativeMidi_DestroySong(music);
+#else
+    MIX_DestroyAudio(music);
+#endif
+    SDL_free(rw);
 }
 
 void song::play( unsigned char volume )
 {
     song_id = 1;
 
-    Mix_PlayMusic(this->music, 0);
-    Mix_VolumeMusic(volume);
+#ifdef MUSIC_NATIVE_MIDI
+    NativeMidi_SetVolume(volume / 255.0f);
+    NativeMidi_Start(music, 0);
+#else
+    if (activeTrack == NULL)
+    {
+        activeTrack = find_available_track();
+        if (activeTrack == NULL)
+            return;
+    }
+    MIX_SetTrackAudio(activeTrack, music);
+    MIX_SetTrackGain(activeTrack, volume / 255.0f);
+    MIX_PlayTrack(activeTrack, 0);
+#endif
 }
 
 void song::stop( long fadeout_time )
 {
     song_id = 0;
 
-    Mix_FadeOutMusic(100);
+#ifdef MUSIC_NATIVE_MIDI
+    if (NativeMidi_Active())
+    {
+        NativeMidi_Stop();
+    }
+#else
+    if (activeTrack != NULL)
+    {
+        MIX_StopTrack(activeTrack, MIX_TrackMSToFrames(activeTrack, fadeout_time));
+        activeTrack = NULL;
+    }
+#endif
 }
 
 int song::playing()
 {
-    return Mix_PlayingMusic();
+#ifdef MUSIC_NATIVE_MIDI
+    return NativeMidi_Active();
+#else
+    return activeTrack != NULL && MIX_TrackPlaying(activeTrack);
+#endif
 }
 
 void song::set_volume( int volume )
 {
-    Mix_VolumeMusic(volume);
+#ifdef MUSIC_NATIVE_MIDI
+    NativeMidi_SetVolume(volume / 255.0f);
+#else
+    // TODO: Probably should persist this
+    if (activeTrack != NULL)
+    {
+        MIX_SetTrackGain(activeTrack, volume / 255.0f);
+    }
+#endif
 }

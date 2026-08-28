@@ -4,3 +4,10 @@
 # Ignore various backup files
 *.bak
 *~
+
+# Visual Studio junk
+/.vs
+# Visual Studio with CMake support default output directory
+/out
+# Visual Studio *Code* with CMake support default output directory
+/build

@@ -299,7 +299,7 @@ uint8_t* load_hmi(char const *filename, uint32_t &data_size)
     uint8_t num_tracks = (next_offset - offset_tracks) / sizeof(uint32_t);
 
     // Write Midi file header
-    uint8_t midi_header[] = { 0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x01, 0x00, (num_tracks + 1), 0x00, 0xC0 };
+    uint8_t midi_header[] = { 0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x01, 0x00, (uint8_t)(num_tracks + 1), 0x00, 0xC0 };
     memcpy(output_buffer_ptr, midi_header, 14);
     output_buffer_ptr += 14;
 

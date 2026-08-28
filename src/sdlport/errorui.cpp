@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #include "errorui.h"
 

@@ -22,7 +22,7 @@
 #   include "config.h"
 #endif
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #include "common.h"
 
@@ -38,13 +38,11 @@ SDL_Surface *surface = NULL;
 SDL_Surface *screen = NULL;
 SDL_Texture *texture = NULL;
 image *main_screen = NULL;
-int mouse_xpad, mouse_ypad, mouse_xscale, mouse_yscale;
+float mouse_yscale;
 int xres, yres;
 
 extern palette *lastl;
 extern flags_struct flags;
-
-void calculate_mouse_scaling();
 
 //
 // set_mode()
@@ -69,16 +67,14 @@ void set_mode(int argc, char **argv)
     //SDL_WM_SetIcon(SDL_LoadBMP("abuse.bmp"), NULL);
 
     window = SDL_CreateWindow("Abuse",
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
         win_width, win_height,
-        flags.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+        flags.fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
     if(window == NULL)
     {
         show_startup_error("Video : Unable to create window : %s", SDL_GetError());
         exit(1);
     }
-    renderer = SDL_CreateRenderer(window, -1, flags.software ? SDL_RENDERER_SOFTWARE : SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, NULL);
     if (renderer == NULL)
     {
         show_startup_error("Video : Unable to create renderer : %s", SDL_GetError());
@@ -86,9 +82,11 @@ void set_mode(int argc, char **argv)
     }
     if (xres == 320 && yres == 200) {
         // Lie. This fixes the aspect ratio for us.
-        SDL_RenderSetLogicalSize(renderer, 320, 240);
+        SDL_SetRenderLogicalPresentation(renderer, 320, 240, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+        mouse_yscale = 200.0f / 240.0f;
     } else {
-        SDL_RenderSetLogicalSize(renderer, xres, yres);
+        SDL_SetRenderLogicalPresentation(renderer, xres, yres, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+        mouse_yscale = 1.0f;
     }
 
     // Create the screen image
@@ -101,25 +99,22 @@ void set_mode(int argc, char **argv)
     }
     main_screen->clear();
 
-    // Set up the mouse
-    calculate_mouse_scaling();
-
-    // Create our 8-bit surface
-    surface = SDL_CreateRGBSurface(0, xres, yres, 8, 0, 0, 0, 0);
+    // Create our 8-bit surface - this is the surface the game renders to
+    surface = SDL_CreateSurface(xres, yres, SDL_PIXELFORMAT_INDEX8);
     if(surface == NULL)
     {
         // Our surface is no good, we have to bail.
         show_startup_error("Video : Unable to create 8-bit surface: %s", SDL_GetError());
         exit(1);
     }
-    // Create our surface for the OpenGL texture
-    screen = SDL_CreateRGBSurface(0, xres, yres, 32, 0, 0, 0, 0);
+    // This is the screen surface
+    screen = SDL_CreateSurface(xres, yres, SDL_PIXELFORMAT_ARGB8888);
     if (screen == NULL)
     {
         show_startup_error("Video : Unable to create 32-bit surface: %s", SDL_GetError());
         exit(1);
     }
-    // And create our OpenGL texture
+    // And create our texture
     texture = SDL_CreateTexture(renderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_STREAMING,
@@ -130,47 +125,30 @@ void set_mode(int argc, char **argv)
         exit(1);
     }
 
-    SDL_DisplayMode mode;
-    SDL_GetWindowDisplayMode(window, &mode);
-    SDL_RendererInfo rendererInfo;
-    SDL_GetRendererInfo(renderer, &rendererInfo);
-    printf("Video : %dx%d %dbpp (renderer: %s)\n", mode.w, mode.h,
-        SDL_BITSPERPIXEL(mode.format), rendererInfo.name);
+    const SDL_DisplayMode* mode;
+    mode = SDL_GetWindowFullscreenMode(window);
+    if (mode == NULL)
+    {
+        // Mode can be NULL meaning "not full screen"
+        printf("Video : windowed (renderer: %s)", SDL_GetRendererName(renderer));
+    }
+    else
+    {
+        printf("Video : %dx%d %dbpp (renderer: %s)\n", mode->w, mode->h,
+            SDL_BITSPERPIXEL(mode->format), SDL_GetRendererName(renderer));
+    }
 
     // Grab and hide the mouse cursor
-    SDL_ShowCursor(0);
-    // I think grabbing was removed in SDL2
-    //if(flags.grabmouse)
-    //    SDL_WM_GrabInput(SDL_GRAB_ON);
+    SDL_HideCursor();
+    if(flags.grabmouse)
+        SDL_SetWindowMouseGrab(window, 1);
 
     update_dirty(main_screen);
 }
 
 void video_change_settings(void)
 {
-    SDL_SetWindowFullscreen(window,
-        flags.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-    calculate_mouse_scaling();
-}
-
-void calculate_mouse_scaling()
-{
-    // We need to determine the appropriate mouse scaling.
-    SDL_Rect viewport;
-    float scale_x, scale_y;
-    int width, height;
-
-    // Grab the viewport and how it's scaled...
-    SDL_RenderGetViewport(renderer, &viewport);
-    SDL_RenderGetScale(renderer, &scale_x, &scale_y);
-    width = (int)(viewport.w * scale_x);
-    height = (int)(viewport.h * scale_y);
-    // Re-calculate the mouse scaling
-    mouse_xscale = (width << 16) / xres;
-    mouse_yscale = (height << 16) / yres;
-    // And calculate the padding
-    mouse_xpad = viewport.x * scale_x;
-    mouse_ypad = viewport.y * scale_y;
+    SDL_SetWindowFullscreen(window, flags.fullscreen);
 }
 
 //
@@ -184,9 +162,9 @@ void close_graphics()
     lastl = NULL;
     // Free our 8-bit surface
     if(surface)
-        SDL_FreeSurface(surface);
+        SDL_DestroySurface(surface);
     if (screen)
-        SDL_FreeSurface(screen);
+        SDL_DestroySurface(screen);
     if (texture)
         SDL_DestroyTexture(texture);
     delete main_screen;
@@ -247,18 +225,18 @@ void put_part_image(image *im, int x, int y, int x1, int y1, int x2, int y2)
     ystep = (srcrect.h << 16) / dstrect.h;
 
     srcy = ((srcrect.y) << 16);
-    dinset = ((surface->w - dstrect.w)) * surface->format->BytesPerPixel;
+    dinset = ((surface->w - dstrect.w)) * SDL_BYTESPERPIXEL(surface->format);
 
     // Lock the surface if necessary
     if(SDL_MUSTLOCK(surface))
         SDL_LockSurface(surface);
 
     dpixel = (Uint8 *)surface->pixels;
-    dpixel += (dstrect.x + ((dstrect.y) * surface->w)) * surface->format->BytesPerPixel;
+    dpixel += dstrect.x * SDL_BYTESPERPIXEL(surface->format) + (dstrect.y) * surface->pitch;
 
     // Update surface part
     srcy = srcrect.y;
-    dpixel = ((Uint8 *)surface->pixels) + y * surface->w + x ;
+    dpixel = ((Uint8 *)surface->pixels) + y * surface->pitch + x ;
     for(ii=0 ; ii < srcrect.h; ii++)
     {
         memcpy(dpixel, im->scan_line(srcy) + srcrect.x , srcrect.w);
@@ -286,20 +264,22 @@ void palette::load()
     if(ncolors > 256)
         ncolors = 256;
 
-#ifdef WIN32
-	// FIXME: Really, this applies to anything that doesn't allow dynamic stack allocation
-	SDL_Color colors[256];
-#else
-    SDL_Color colors[ncolors];
-#endif
+    // Always create a palette - creates a palette that can be modified
+    // In theory the same palette could (probably) be used, but that would
+    // involve adding SDL code to imlib
+    SDL_Palette* palette = SDL_CreateSurfacePalette(surface);
+    if (palette == NULL)
+    {
+        printf("Video : failed to create palette! %s\n", SDL_GetError());
+        return;
+    }
     for(int ii = 0; ii < ncolors; ii++)
     {
-        colors[ii].r = red(ii);
-        colors[ii].g = green(ii);
-        colors[ii].b = blue(ii);
-        colors[ii].a = 255;
+        palette->colors[ii].r = red(ii);
+        palette->colors[ii].g = green(ii);
+        palette->colors[ii].b = blue(ii);
+        palette->colors[ii].a = 255;
     }
-    SDL_SetPaletteColors(surface->format->palette, colors, 0, ncolors);
 
     // Now redraw the surface
     update_window_done();
@@ -317,11 +297,12 @@ void palette::load_nice()
 
 void update_window_done()
 {
+    // TODO: Handle upscaling internally to make things work more nicely
     // Convert to match the OpenGL texture
     SDL_BlitSurface(surface, NULL, screen, NULL);
     // Copy over to the OpenGL texture
     SDL_UpdateTexture(texture, NULL, screen->pixels, screen->pitch);
     SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_RenderTexture(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
 }

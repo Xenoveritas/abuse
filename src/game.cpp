@@ -26,10 +26,7 @@
 # include <unistd.h>
 #endif
 
-#ifdef __APPLE__
-// SDL for macOS needs to override main()
-#   include "SDL.h"
-#endif
+#include <SDL3/SDL_main.h>
 
 #include "common.h"
 
@@ -2296,7 +2293,7 @@ int main(int argc, char *argv[])
             external_print = 1;
     }
 
-#if (defined(__APPLE__) && !defined(__MACH__))
+#if (defined(SDL_PLATFORM_APPLE) && !defined(__MACH__))
     unsigned char km[16];
 
     fprintf(stderr, "Mac Options: ");
