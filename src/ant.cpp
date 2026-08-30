@@ -467,10 +467,10 @@ void show_stats()
     if (isdigit(dig1) && isdigit(dig2))
     {
       if (dig1!='0')
-        sprintf(msg,"%s : %c%c",symbol_str("lev_complete"),dig1,dig2);
+        snprintf(msg, 50, "%s : %c%c",symbol_str("lev_complete"),dig1,dig2);
       else
-        sprintf(msg,"%s : %c",symbol_str("lev_complete"),dig2);
-    } else sprintf(msg,"%s : %s",symbol_str("lev_complete"),current_level->original_name());
+        snprintf(msg, 50, "%s : %c",symbol_str("lev_complete"),dig2);
+    } else snprintf(msg, 50, "%s : %s",symbol_str("lev_complete"),current_level->original_name());
 
     int w = wm->font()->Size().x * strlen(msg),
         h = wm->font()->Size().y;

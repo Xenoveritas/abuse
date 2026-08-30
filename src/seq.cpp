@@ -106,7 +106,7 @@ sequence::~sequence()
       end=get_number(s);
       for (j=start; j<=end; j++)
       {
-    sprintf(imname,"%s%04d.pcx",t,j);
+    snprintf(imname,100,"%s%04d.pcx",t,j);
     seq[i++]=cache.reg(filename,imname,SPEC_CHARACTER,1);
       }
       get_token(s,t);      // right paren

@@ -8,6 +8,7 @@ add_library(sdlport STATIC
     setup.cpp setup.h
     hmi.cpp hmi.h
     errorui.cpp errorui.h
+    util.cpp util.h
 )
 
 if (ABUSE_ENABLE_NATIVE_MIDI)

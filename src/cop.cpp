@@ -1029,7 +1029,7 @@ void *score_draw()
     for (i=0; i<tp; i++)
     {
       int color=lnumber_value(((LArray *)((LSymbol *)l_player_text_color)->GetValue())->Get(sorted_players[i]->get_tint()));
-      sprintf(msg,"%3ld %s",(long)sorted_players[i]->kills,sorted_players[i]->name);
+      snprintf(msg,100,"%3ld %s",(long)sorted_players[i]->kills,sorted_players[i]->name);
       if (sorted_players[i]==local)
         strcat(msg," <<");
 
@@ -1079,7 +1079,7 @@ void *show_kills()
     char msg[100];
 
 
-    sprintf(msg,"%-17s %3ld  %3ld",max_name,(long)v->kills,(long)(v->tkills+v->kills));
+    snprintf(msg,100,"%-17s %3ld  %3ld",max_name,(long)v->kills,(long)(v->tkills+v->kills));
     fnt->PutString(main_screen, ivec2(x, y), msg, color);
 
     y += fnt->Size().y;

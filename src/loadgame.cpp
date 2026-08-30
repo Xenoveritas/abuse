@@ -47,7 +47,7 @@ void load_number_icons()
     for (int i = 0; i < MAX_SAVE_GAMES * 3; i++)
     {
         char name[100];
-        sprintf(name, "nums%04d.pcx", i + 1);
+        snprintf(name, 100, "nums%04d.pcx", i + 1);
         save_buts[i] = cache.reg("art/icons.spe", name, SPEC_IMAGE, 1);
     }
 }
@@ -95,7 +95,7 @@ int get_save_spot()
   for (; i>0; )
   {
     char name[20];
-    sprintf(name,"%ssave%04d.spe", get_save_filename_prefix(),i);
+    snprintf(name,20,"%ssave%04d.spe", get_save_filename_prefix(),i);
     FILE *fp=open_FILE(name,"rb");
     if (fp)
       i=0;
@@ -148,7 +148,7 @@ int show_load_icon()
     for( i = 0; i < MAX_SAVE_GAMES; i++ )
     {
         char nm[255];
-        sprintf( nm, "%ssave%04d.spe", get_save_filename_prefix(), i + 1 );
+        snprintf( nm, 255, "%ssave%04d.spe", get_save_filename_prefix(), i + 1 );
         bFILE *fp = open_file( nm, "rb" );
         if( fp->open_failure() )
         {
@@ -178,7 +178,7 @@ int load_game(int show_all, char const *title)   // return 0 if the player escap
         char name[255];
         int fail=0;
 
-        sprintf(name,"%ssave%04d.spe", get_save_filename_prefix(), start_num+1);
+        snprintf(name,255,"%ssave%04d.spe", get_save_filename_prefix(), start_num+1);
         bFILE *fp=open_file(name,"rb");
         if (fp->open_failure())
         {

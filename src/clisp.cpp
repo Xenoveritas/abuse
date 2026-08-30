@@ -868,7 +868,7 @@ void *l_caller(long number, void *args)
     case 45 :
     {
       char nm[50];
-      sprintf(nm,"save%04d.pcx", load_game(1,symbol_str("LOAD")));
+      snprintf(nm,50,"save%04d.pcx", load_game(1,symbol_str("LOAD")));
 //      get_savegame_name(nm);
       the_game->reset_keymap();
       return LString::Create(nm);
@@ -1019,14 +1019,14 @@ void *l_caller(long number, void *args)
       {
         for (i=last; i>=first; i--)
         {
-          sprintf(name2,"%s%04ld.pcx",name,i);
+          snprintf(name2,256,"%s%04ld.pcx",name,i);
           push_onto_list(LString::Create(name2),ret);
         }
       } else
       {
         for (i=last; i<=first; i++)
         {
-          sprintf(name2,"%s%04ld.pcx",name,i);
+          snprintf(name2,256,"%s%04ld.pcx",name,i);
           push_onto_list(LString::Create(name2),ret);
         }
       }
@@ -1092,7 +1092,7 @@ long c_caller(long number, void *args)
 /*      if (rcheck_lp)
       {
     char str[100];
-    sprintf(str,"\n\nTick %d, Rand_on %d\n",current_level->tick_counter(),rand_on);
+    snprintf(str,100,"\n\nTick %d, Rand_on %d\n",current_level->tick_counter(),rand_on);
     rcheck_lp->write(str,strlen(str)+1);
     current_print_file=rcheck_lp;
     print_trace_stack(6);
@@ -1888,7 +1888,7 @@ long c_caller(long number, void *args)
       // If a save filename is requested, prepend the savegame directory.
       if( strncmp( lstring_value( CAR(args) ), "save", 4 ) == 0 )
       {
-        sprintf( fn, "%s%s", get_save_filename_prefix(), lstring_value( CAR(args) ) );
+        snprintf( fn, 255, "%s%s", get_save_filename_prefix(), lstring_value( CAR(args) ) );
       }
       else
       {

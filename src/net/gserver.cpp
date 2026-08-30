@@ -71,7 +71,7 @@ void game_server::game_start_wait()
     {
       if (stat) wm->close_window(stat);
       char msg[100];
-      sprintf(msg,symbol_str("min_wait"),main_net_cfg->min_players-total_players());
+      snprintf(msg,100,symbol_str("min_wait"),main_net_cfg->min_players-total_players());
       stat = wm->CreateWindow(ivec2(100, 50), ivec2(-1), new info_field(0, 0, ID_NULL, msg,
                        new button(0, wm->font()->Size().y * 2, ID_CANCEL,symbol_str("cancel_button"),NULL)  ));
       wm->flush_screen();

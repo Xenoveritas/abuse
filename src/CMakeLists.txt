@@ -73,6 +73,7 @@ add_executable(abuse
     id.h netface.h isllist.h sbar.h
     nfserver.h
     ui/volumewindow.cpp ui/volumewindow.h
+    sdlport/util.h
     ${abuse_RESOURCE_FILES}
 )
 

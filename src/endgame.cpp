@@ -165,12 +165,12 @@ void show_end2()
   int explo_frames1[8],explo_frames2[7];
 
   for (i=0; i<8; i++)
-  { char nm[100]; sprintf(nm,"small_wite%04d.pcx",i+1);
+  { char nm[100]; snprintf(nm,100,"small_wite%04d.pcx",i+1);
     explo_frames1[i]=cache.reg("art/exp1.spe",nm,SPEC_CHARACTER,1);
   }
 
   for (i=0; i<7; i++)
-  { char nm[100]; sprintf(nm,"small_fire%04d.pcx",i+1);
+  { char nm[100]; snprintf(nm,100,"small_fire%04d.pcx",i+1);
     explo_frames2[i]=cache.reg("art/exp1.spe",nm,SPEC_CHARACTER,1);
   }
 

@@ -58,7 +58,7 @@ void text_status_manager::update(int percentage)
   {
       char s[256], len;
     first->last_update=percentage;
-    sprintf(s,"\r%s [",first->name);
+    snprintf(s,256,"\r%s [",first->name);
     len = strlen(s);
     int t=percentage*40/100;
     int i=0;

@@ -305,7 +305,7 @@ void jFILE::open_external(char const *filename, char const *mode, int flags)
   if (spec_prefix && filename[0] != '/')
 #endif
   {
-    sprintf(tmp_name,"%s%s",spec_prefix,filename);
+    snprintf(tmp_name,200,"%s%s",spec_prefix,filename);
   }
   else
   {

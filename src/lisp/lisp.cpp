@@ -31,6 +31,7 @@
 #include "dprint.h"
 #include "cache.h"
 #include "dev.h"
+#include "../sdlport/util.h"
 
 /* To bypass the whole garbage collection issue of lisp I am going to have
  * separate spaces where lisp objects can reside.  Compiled code and gloabal
@@ -1295,7 +1296,7 @@ void LObject::Print()
         }
         break;
     case L_NUMBER:
-        sprintf(buf, "%ld", ((LNumber *)this)->m_num);
+        snprintf(buf, 32, "%ld", ((LNumber *)this)->m_num);
         lprint_string(buf);
         break;
     case L_SYMBOL:
@@ -1321,11 +1322,11 @@ void LObject::Print()
             dprintf("\"%s\"", lstring_value(this));
         break;
     case L_POINTER:
-        sprintf(buf, "%p", lpointer_value(this));
+        snprintf(buf, 32, "%p", lpointer_value(this));
         lprint_string(buf);
         break;
     case L_FIXED_POINT:
-        sprintf(buf, "%g", (lfixed_point_value(this) >> 16) +
+        snprintf(buf, 32, "%g", (lfixed_point_value(this) >> 16) +
                 ((lfixed_point_value(this) & 0xffff)) / (double)0x10000);
         lprint_string(buf);
         break;
@@ -1504,7 +1505,7 @@ void pro_print(bFILE *out, LSymbol *p)
     pro_print(out, p->m_right);
     {
       char st[100];
-      sprintf(st, "%20s %f\n", lstring_value(p->GetName()), p->time_taken);
+      snprintf(st, 100, "%20s %f\n", lstring_value(p->GetName()), p->time_taken);
       out->write(st, strlen(st));
     }
     pro_print(out, p->m_left);
@@ -2344,11 +2345,9 @@ LObject *LSysFunction::EvalFunction(LList *arg_list)
             // A special test for gamma.lsp
             if (strcmp(st, "gamma.lsp") == 0)
             {
-                char *gammapath;
-                gammapath = (char *)malloc(strlen(get_save_filename_prefix()) + 9 + 1);
-                sprintf(gammapath, "%sgamma.lsp", get_save_filename_prefix());
+                char *gammapath = join_strings(get_save_filename_prefix(), "gamma.lsp");
                 fp = new jFILE(gammapath, "rb");
-                free(gammapath);
+                SDL_free(gammapath);
             }
             else
                 fp = new jFILE(st, "rb");
@@ -2380,7 +2379,7 @@ LObject *LSysFunction::EvalFunction(LList *arg_list)
             char const *cs = s;
 #ifndef NO_LIBS
             char msg[100];
-            sprintf(msg, "(load \"%s\")", st);
+            snprintf(msg, 100,"(load \"%s\")", st);
             if (stat_man)
                 stat_man->push(msg, NULL);
             crc_manager.get_filenumber(st); // make sure this file gets crc'ed
@@ -2824,7 +2823,7 @@ LObject *LSysFunction::EvalFunction(LList *arg_list)
     case SYS_FUNC_NUM2STR:
     {
         char str[20];
-        sprintf(str, "%ld", (long int)lnumber_value(CAR(arg_list)->Eval()));
+        snprintf(str, 20, "%ld", (long int)lnumber_value(CAR(arg_list)->Eval()));
         ret = LString::Create(str);
         break;
     }

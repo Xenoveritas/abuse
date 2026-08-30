@@ -81,7 +81,7 @@ public:
   {
     char buf[100];
     unsigned char *c=(unsigned char *) (&addr.sin_addr.s_addr);
-    sprintf(buf,"%d.%d.%d.%d:%d",c[0],c[1],c[2],c[3],htons(addr.sin_port));
+    snprintf(buf,100,"%d.%d.%d.%d:%d",c[0],c[1],c[2],c[3],htons(addr.sin_port));
     strncpy(st,buf,st_length);
     st[st_length-1]=0;
   }

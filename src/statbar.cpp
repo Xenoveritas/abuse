@@ -53,16 +53,16 @@ void status_bar::load()
   int i;
   for (i=0; i<TOTAL_WEAPONS; i++)
   {
-    sprintf(iname,"bweap%04d.pcx",i+1);
+    snprintf(iname,20,"bweap%04d.pcx",i+1);
     bweap[i]=cache.reg(sbname,iname,SPEC_IMAGE);
 
-    sprintf(iname,"dweap%04d.pcx",i+1);
+    snprintf(iname,20,"dweap%04d.pcx",i+1);
     dweap[i]=cache.reg(sbname,iname,SPEC_IMAGE);
   }
 
   for (i=0; i<30; i++)
   {
-    sprintf(iname,"bnum%02d",i);
+    snprintf(iname,30,"bnum%02d",i);
     bnum[i]=cache.reg(sbname,iname,SPEC_IMAGE);
   }
 

@@ -64,7 +64,7 @@ void file_picker::note_selection(image *screen, InputManager *inm, int x)
       screen->Bar(ivec2(x1, y1), ivec2(x2, y2), wm->medium_color());
 
       char st[200],curdir[200];
-      sprintf(st,"%s/%s",cd,d[x]);
+      snprintf(st,200,"%s/%s",cd,d[x]);
       getcwd(curdir,200);
       chdir(st);
       getcwd(cd,200);
@@ -88,7 +88,7 @@ void file_picker::note_selection(image *screen, InputManager *inm, int x)
   } else
   {
     char nm[200];
-    sprintf(nm,"%s/%s",cd,f[x-td]);
+    snprintf(nm,200,"%s/%s",cd,f[x-td]);
     text_field *link=(text_field *)inm->get(sid);
     link->change_data(nm,strlen(nm),1,screen);
   }
@@ -106,7 +106,7 @@ void file_picker::draw_item(image *screen, int x, int y, int num, int active)
     if (num >= td)
         dest = f[num - td];
     else
-        sprintf(dest = st, "<%s>", d[num]);
+        snprintf(dest = st, 100, "<%s>", d[num]);
 
     wm->font()->PutString(screen, ivec2(x, y), dest, wm->bright_color());
 }

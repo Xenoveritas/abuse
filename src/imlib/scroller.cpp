@@ -372,7 +372,7 @@ void scroller::scroll_event(int newx, image *screen)
   for (int i=newx,c=0; c<30 && i<100; i++,c++)
   {
     char st[10];
-    sprintf(st,"%d",i);
+    snprintf(st,10,"%d",i);
     wm->font()->PutString(screen, ivec2(xo, yo), st, wm->bright_color());
     xo+=xa; yo+=ya;
   }

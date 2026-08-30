@@ -439,7 +439,7 @@ void menu_handler(Event &ev, InputManager *inm)
       if (got_level)
       {
         char name[255];
-        sprintf(name,"%ssave%04d.spe", get_save_filename_prefix(), got_level);
+        snprintf(name,255,"%ssave%04d.spe", get_save_filename_prefix(), got_level);
 
         the_game->load_level(name);
         the_game->set_state(RUN_STATE);
@@ -519,13 +519,13 @@ static ico_button *load_icon(int num, int id, int x, int y, int &h, ifield *next
   char name[20];
   char const *base = "newi";
   int a,b,c;
-  sprintf(name,"%s%04d.pcx",base,num*3+1);
+  snprintf(name,20,"%s%04d.pcx",base,num*3+1);
   a=cache.reg("art/icons.spe",name,SPEC_IMAGE,1);
 
-  sprintf(name,"%s%04d.pcx",base,num*3+2);
+  snprintf(name,20,"%s%04d.pcx",base,num*3+2);
   b=cache.reg("art/icons.spe",name,SPEC_IMAGE,1);
 
-  sprintf(name,"%s%04d.pcx",base,num*3+3);
+  snprintf(name,20,"%s%04d.pcx",base,num*3+3);
   c=cache.reg("art/icons.spe",name,SPEC_IMAGE,1);
 
   h=cache.img(a)->Size().y;

@@ -41,7 +41,7 @@ static player_keys *key_map = NULL;
 static int binding_for_player( int player )
 {
     char tmp[40];
-    sprintf( tmp, "player%d", player );
+    snprintf( tmp, 40, "player%d", player );
     LSymbol *f = LSymbol::Find(tmp);
     if( !NILP(f) && DEFINEDP(f->GetValue()))
     {
@@ -58,7 +58,7 @@ static int binding_for_player( int player )
 int get_key_binding(char const *dir, int i)
 {
     char tmp[100], kn[50];
-    sprintf( tmp, "player%d-%s", i, dir );
+    snprintf( tmp, 100, "player%d-%s", i, dir );
     Cell *f = find_symbol( tmp );
     if( NILP(f) || !DEFINEDP( symbol_value( f ) ) )
         return 0;

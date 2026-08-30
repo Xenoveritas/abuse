@@ -771,7 +771,7 @@ int level::tick()
     if ((sshot_fcount%70)==0)
     {
       char name[100];
-      sprintf(name,"shot%04d.pcx",screen_shot_on++);
+      snprintf(name,100,"shot%04d.pcx",screen_shot_on++);
       write_PCX(main_screen,pal,name);
     }
   }
@@ -864,7 +864,7 @@ void level::set_size(int w, int h)
   bg_width=nbw;
 
   char msg[80];
-  sprintf(msg,"Level %s size now %d %d\n",name(),foreground_width(),foreground_height());
+  snprintf(msg,80,"Level %s size now %d %d\n",name(),foreground_width(),foreground_height());
   the_game->show_help(msg);
 }
 
@@ -1291,7 +1291,7 @@ level::level(spec_directory *sd, bFILE *fp, char const *lev_name)
   the_game->need_refresh();
 
   char cmd[100];
-  sprintf(cmd,symbol_str("loading"),lev_name);
+  snprintf(cmd,100,symbol_str("loading"),lev_name);
   stack_stat stat(cmd);
   Name = strdup(lev_name);
 
@@ -1483,7 +1483,7 @@ void level::level_loaded_notify()
   if (strstr(n,"levels/level"))
   {
     char nm[100];
-    sprintf(nm,"music/abuse%c%c.hmi",n[12],n[13]);
+    snprintf(nm,100,"music/abuse%c%c.hmi",n[12],n[13]);
     bFILE *fp=open_file(nm,"rb");
     if (fp->open_failure())
     {
@@ -2197,8 +2197,8 @@ int level::save(char const *filename, int save_all)
 {
     char name[255], bkname[255];
 
-    sprintf( name, "%s%s", get_save_filename_prefix(), filename );
-    sprintf( bkname, "%slevsave.bak", get_save_filename_prefix() );
+    snprintf( name, 255, "%s%s", get_save_filename_prefix(), filename );
+    snprintf( bkname, 255, "%slevsave.bak", get_save_filename_prefix() );
     if( !save_all && DEFINEDP( symbol_value( l_keep_backup ) ) &&
         symbol_value( l_keep_backup ) )   // make a backup
     {

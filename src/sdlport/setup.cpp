@@ -42,6 +42,7 @@
 #include "keys.h"
 #include "setup.h"
 #include "errorui.h"
+#include "util.h"
 
 flags_struct flags;
 keys_struct keys;
@@ -127,8 +128,7 @@ void readRCFile()
     char buf[255];
     char *result;
 
-    rcfile = (char *)malloc( strlen( get_save_filename_prefix() ) + 9 );
-    sprintf( rcfile, "%s/abuserc", get_save_filename_prefix() );
+    rcfile = join_strings(get_save_filename_prefix(), "/abuserc");
     if( (fd = fopen( rcfile, "r" )) != NULL )
     {
         while( fgets( buf, sizeof( buf ), fd ) != NULL )
@@ -252,7 +252,7 @@ void readRCFile()
         // Couldn't open the abuserc file so let's create a default one
         createRCFile( rcfile );
     }
-    free( rcfile );
+    SDL_free( rcfile );
 }
 
 //
@@ -412,8 +412,7 @@ void setup( int argc, char **argv )
 #else
     if( (homedir = getenv( "HOME" )) != NULL )
     {
-        savedir = (char *)malloc( strlen( homedir ) + 9 );
-        sprintf( savedir, "%s/.abuse/", homedir );
+        savedir = join_strings(homedir, "/.abuse/");
         // Check if we already have a savegame directory
         if( (fd = fopen( savedir, "r" )) == NULL )
         {
@@ -425,7 +424,7 @@ void setup( int argc, char **argv )
             fclose( fd );
         }
         set_save_filename_prefix( savedir );
-        free( savedir );
+        SDL_free( savedir );
     }
     else
     {

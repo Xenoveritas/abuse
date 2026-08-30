@@ -9,6 +9,7 @@ add_library(lisp STATIC
 include_directories(
     ${abuse_SOURCE_DIR}/src
     ${abuse_SOURCE_DIR}/src/imlib
+    ${abuse_SOURCE_DIR}/src/sdlport
 )
 
 target_link_libraries(lisp PRIVATE SDL3_mixer::SDL3_mixer)

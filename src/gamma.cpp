@@ -13,6 +13,7 @@
 #endif
 
 #include <math.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include "common.h"
 
@@ -25,6 +26,7 @@
 #include "cache.h"
 #include "dprint.h"
 #include "loader2.h"
+#include "sdlport/util.h"
 
 extern int dev_ok;
 palette *old_pal = NULL;
@@ -178,8 +180,7 @@ void gamma_correct(palette *&pal, int force_menu)
             char *gammapath;
             FILE *fp;
 
-            gammapath = (char *)malloc(strlen(get_save_filename_prefix()) + 10);
-            sprintf(gammapath, "%sgamma.lsp", get_save_filename_prefix());
+            gammapath = join_strings(get_save_filename_prefix(), "gamma.lsp");
             fp = open_FILE(gammapath, "wb");
             if(fp)
             {
@@ -195,7 +196,7 @@ void gamma_correct(palette *&pal, int force_menu)
             {
                 dprintf("Unable to write to file gamma.lsp\n");
             }
-            free(gammapath);
+            SDL_free(gammapath);
         }
     }
 

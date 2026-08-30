@@ -27,6 +27,7 @@
 #endif
 
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include "common.h"
 
@@ -63,6 +64,7 @@
 #include "chat.h"
 #include "demo.h"
 #include "netcfg.h"
+#include "sdlport/util.h"
 
 #define SHIFT_RIGHT_DEFAULT 0
 #define SHIFT_DOWN_DEFAULT 30
@@ -105,7 +107,7 @@ FILE *open_FILE(char const *filename, char const *mode)
     if(get_filename_prefix() && filename[0] != '/')
 #endif
     {
-        sprintf(tmp_name, "%s %s", get_filename_prefix(), filename);
+        snprintf(tmp_name, 200, "%s %s", get_filename_prefix(), filename);
     }
     else
         strcpy(tmp_name, filename);
@@ -522,7 +524,7 @@ void Game::load_level(char const *name)
         delete fp;
         current_level = new level(100, 100, name);
         char msg[100];
-        sprintf(msg, symbol_str("no_file"), name);
+        snprintf(msg, 100, symbol_str("no_file"), name);
         show_help(msg);
     }
     else
@@ -1191,7 +1193,7 @@ void do_title()
         char nm[20];
         for (int i = 0; i < 5; i++)
         {
-            sprintf(nm, "smoke%04d.pcx", i + 1);
+            snprintf(nm, 20, "smoke%04d.pcx", i + 1);
             smoke[i] = new image(fp, sd.find(nm));
         }
 
@@ -1300,10 +1302,9 @@ Game::Game(int argc, char **argv)
   else dprintf("not detected\n");
 
     // Clean up that old crap
-    char *fastpath = (char *)malloc(strlen(get_save_filename_prefix()) + 13);
-    sprintf(fastpath, "%sfastload.dat", get_save_filename_prefix());
+    char *fastpath = join_strings(get_save_filename_prefix(), "fastload.dat");
     unlink(fastpath);
-    free(fastpath);
+    SDL_free(fastpath);
 
 //    ProfilerInit(collectDetailed, bestTimeBase, 2000, 200); //prof
     load_data(argc, argv);
@@ -1443,10 +1444,10 @@ void Game::show_time()
         return;
 
     char str[16];
-    sprintf(str, "%ld", (long)(10000.0f / avg_ms));
+    snprintf(str, 16, "%ld", (long)(10000.0f / avg_ms));
     console_font->PutString(main_screen, first_view->m_aa, str);
 
-    sprintf(str, "%d", total_active);
+    snprintf(str, 16, "%d", total_active);
     console_font->PutString(main_screen, first_view->m_aa + ivec2(0, 10), str);
 }
 

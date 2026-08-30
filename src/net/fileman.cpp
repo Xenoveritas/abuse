@@ -480,7 +480,7 @@ int file_manager::rf_open_file(char const *&filename, char const *mode)
   if (get_filename_prefix() && filename[0] != '/')
 #endif
   {
-    sprintf(tmp_name,"%s%s",get_filename_prefix(),filename);
+    snprintf(tmp_name,200,"%s%s",get_filename_prefix(),filename);
   }
   else
   {

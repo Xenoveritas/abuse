@@ -348,7 +348,7 @@ text_field::text_field(int X, int Y, int ID, char const *Prompt,
                        char const *Format, double Data, ifield *Next)
 {
   char num[20];
-  sprintf(num,"%g",Data);
+  snprintf(num,20,"%g",Data);
   int slen=(strlen(Format)>strlen(num) ? strlen(Format) : strlen(num));
   m_pos = ivec2(X, Y); id=ID;
   prompt = strdup(Prompt);

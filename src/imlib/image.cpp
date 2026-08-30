@@ -887,7 +887,7 @@ void image::burn_led(int16_t x, int16_t y, int32_t num, int16_t color, int16_t s
   int16_t dig[]={ 2+4+8+16+32+64, 4+8, 2+4+1+32+16, 2+4+1+8+16, 64+1+4+8,
              2+64+1+8+16, 64+32+1+8+16, 2+4+8, 1+2+4+8+16+32+64, 64+2+4+1+8, 1};
   int16_t xx, yy, zz;
-  sprintf(st, "%8ld", (long int)num);
+  snprintf(st, 100, "%8ld", (long int)num);
   for (xx=0; xx<8; xx++)
   {
     if (st[xx]!=' ')

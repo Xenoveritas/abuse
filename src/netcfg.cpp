@@ -122,7 +122,7 @@ int net_configuration::confirm_inputs(InputManager *i, int server)
     if (!fp->open_failure())
     {
       char str[100];
-      sprintf(str,"(setq gamename \"%s\")\n",game_name);
+      snprintf(str,100,"(setq gamename \"%s\")\n",game_name);
       fp->write(str,strlen(str)+1);
     }
     delete fp;
@@ -134,11 +134,11 @@ int net_configuration::confirm_inputs(InputManager *i, int server)
     {
       char str[100];
       if (((ifield *)(i->get(LEVEL_BOX)->read()))->id==LVL_2)
-        sprintf(str,"(load \"addon/deathmat/small.lsp\")\n");
+        snprintf(str,100,"(load \"addon/deathmat/small.lsp\")\n");
       else if (((ifield *)(i->get(LEVEL_BOX)->read()))->id==LVL_4)
-        sprintf(str,"(load \"addon/deathmat/medium.lsp\")\n");
+        snprintf(str,100,"(load \"addon/deathmat/medium.lsp\")\n");
       else
-        sprintf(str,"(load \"addon/deathmat/large.lsp\")\n");
+        snprintf(str,100,"(load \"addon/deathmat/large.lsp\")\n");
       fp->write(str,strlen(str)+1);
     }
     delete fp;
@@ -156,7 +156,7 @@ int net_configuration::confirm_inputs(InputManager *i, int server)
   if (!fp->open_failure())
   {
     char str[100];
-    sprintf(str,"(setq username \"%s\")\n",name);
+    snprintf(str,100,"(setq username \"%s\")\n",name);
     fp->write(str,strlen(str)+1);
   }
   delete fp;

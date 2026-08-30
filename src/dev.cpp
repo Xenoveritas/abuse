@@ -149,7 +149,7 @@ class amb_cont : public scroller
   {
     screen->Bar(m_pos, m_pos + ivec2(l - 1, h - 1), wm->dark_color());
     char st[100];
-    sprintf(st,"%d",newx);
+    snprintf(st,100,"%d",newx);
     wm->font()->PutString(screen, m_pos + ivec2(30, 1), st, wm->bright_color());
     if (player_list)
       player_list->ambient=newx;
@@ -219,7 +219,7 @@ static void show_object_number (game_object *who)
     if (c==who) number=total;
   }
   char msg[100];
-  sprintf(msg,"%s : %d of %d",object_names[who->otype],number,total);
+  snprintf(msg,100,"%s : %d of %d",object_names[who->otype],number,total);
 }
 
 void dev_controll::search_backward()
@@ -260,7 +260,7 @@ void dev_controll::search_forward()
     if (type==-1)
     {
       char msg[60];
-      sprintf(msg,"Object type '%s' does not existss!\n",name);
+      snprintf(msg,60,"Object type '%s' does not existss!\n",name);
       the_game->show_help(msg);
       the_game->need_refresh();
     } else
@@ -1172,7 +1172,7 @@ void dev_controll::do_command(char const *command, Event &ev)
       last_created_type=t;
     } else
     {
-      sprintf(fword,"No such object type : %s\n",oname);
+      snprintf(fword,50,"No such object type : %s\n",oname);
       the_game->show_help(fword);
     }
   }
@@ -1638,7 +1638,7 @@ void dev_controll::handle_event(Event &ev)
   else if (ev.type==EV_KEY && ev.key==JK_F3)
   {
     char name[100];
-    sprintf(name,"shot%04d.pcx",screen_shot_on++);
+    snprintf(name,100,"shot%04d.pcx",screen_shot_on++);
     write_PCX(main_screen,pal,name);
   } else if (ev.type==EV_KEY && ev.key==JK_F5)
   {
@@ -2020,7 +2020,7 @@ void dev_controll::handle_event(Event &ev)
     case ID_LEVEL_LOAD_OK :
     {
       char cmd[100];
-      sprintf(cmd,"load %s",mess_win->read(ID_MESS_STR1));
+      snprintf(cmd,100,"load %s",mess_win->read(ID_MESS_STR1));
       dev_cont->do_command(cmd,ev);
       wm->Push(new Event(ID_CANCEL,NULL));        // close window
     } break;
@@ -2036,7 +2036,7 @@ void dev_controll::handle_event(Event &ev)
         if (current_level->save(current_level->name(),0))
         {
           char msg[100];
-          sprintf(msg,symbol_str("saved_level"),current_level->name());
+          snprintf(msg,100,symbol_str("saved_level"),current_level->name());
           the_game->show_help(msg);
           the_game->need_refresh();
         }
@@ -2280,7 +2280,7 @@ void dev_controll::handle_event(Event &ev)
     case ID_ADD_PALETTE_OK :
     {
       char name[70];
-      sprintf(name,"(add_palette \"%s\" %d %d)",mess_win->read(ID_MESS_STR3),
+      snprintf(name,70,"(add_palette \"%s\" %d %d)",mess_win->read(ID_MESS_STR3),
           atoi(mess_win->read(ID_MESS_STR1)),
           atoi(mess_win->read(ID_MESS_STR2)));
       char const *s=name;
@@ -2576,7 +2576,7 @@ void dev_controll::handle_event(Event &ev)
     {
       int val=get_omenu_item(((pick_list *)ev.message.data)->get_selection());
       char cmd[100];
-      sprintf(cmd,"create %s",object_names[val]);
+      snprintf(cmd,100,"create %s",object_names[val]);
       do_command(cmd,ev);
       state=DEV_CREATE_OBJECT;
       dev|=(EDIT_MODE | DRAW_PEOPLE_LAYER);
@@ -2751,7 +2751,7 @@ void dev_controll::handle_event(Event &ev)
         {
           int val=last_created_type;
           char cmd[100];
-          sprintf(cmd,"create %s",object_names[val]);
+          snprintf(cmd,100,"create %s",object_names[val]);
           do_command(cmd,ev);
           state=DEV_CREATE_OBJECT;
           dev|=(EDIT_MODE | DRAW_PEOPLE_LAYER);
@@ -2809,7 +2809,7 @@ void dev_controll::handle_event(Event &ev)
       case 'w' :
       {
         ivec2 pos = the_game->MouseToGame(dlast);
-        char msg[100]; sprintf(msg, symbol_str("mouse_at"), pos.x, pos.y);
+        char msg[100]; snprintf(msg, 100, symbol_str("mouse_at"), pos.x, pos.y);
         the_game->show_help(msg);
         the_game->need_refresh();
       } break;

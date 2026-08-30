@@ -13,6 +13,7 @@
 #endif
 
 #include <stdlib.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include "common.h"
 
@@ -26,6 +27,7 @@
 #include "filter.h"
 #include "status.h"
 #include "dev.h"
+#include "sdlport/util.h"
 
 light_source *first_light_source=NULL;
 uint8_t *white_light,*white_light_initial,*green_light,*trans_table;
@@ -217,9 +219,7 @@ void calc_light_table(palette *pal)
         tints[i] = (uint8_t *)malloc( 256 );
     }
 
-    char *lightpath;
-    lightpath = (char *)malloc( strlen( get_save_filename_prefix() ) + 9 + 1 );
-    sprintf( lightpath, "%slight.tbl", get_save_filename_prefix() );
+    char *lightpath = join_strings(get_save_filename_prefix(), "light.tbl");
 
     bFILE *fp=open_file( lightpath, "rb" );
     int recalc = 0;
@@ -369,7 +369,7 @@ void calc_light_table(palette *pal)
         }
         delete f;
     }
-    free( lightpath );
+    SDL_free( lightpath );
 }
 
 
