@@ -62,7 +62,7 @@ void status_bar::load()
 
   for (i=0; i<30; i++)
   {
-    snprintf(iname,30,"bnum%02d",i);
+    snprintf(iname,20,"bnum%02d",i);
     bnum[i]=cache.reg(sbname,iname,SPEC_IMAGE);
   }
 
