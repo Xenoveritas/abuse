@@ -35,7 +35,6 @@
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Surface *surface = NULL;
-SDL_Surface *screen = NULL;
 SDL_Texture *texture = NULL;
 image *main_screen = NULL;
 float mouse_yscale;
@@ -107,14 +106,7 @@ void set_mode(int argc, char **argv)
         show_startup_error("Video : Unable to create 8-bit surface: %s", SDL_GetError());
         exit(1);
     }
-    // This is the screen surface
-    screen = SDL_CreateSurface(xres, yres, SDL_PIXELFORMAT_ARGB8888);
-    if (screen == NULL)
-    {
-        show_startup_error("Video : Unable to create 32-bit surface: %s", SDL_GetError());
-        exit(1);
-    }
-    // And create our texture
+    // And this texture is the actual texture rendered to the screen
     texture = SDL_CreateTexture(renderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_STREAMING,
@@ -124,6 +116,7 @@ void set_mode(int argc, char **argv)
         show_startup_error("Video : Unable to create texture: %s", SDL_GetError());
         exit(1);
     }
+    SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
 
     const SDL_DisplayMode* mode;
     mode = SDL_GetWindowFullscreenMode(window);
@@ -163,8 +156,6 @@ void close_graphics()
     // Free our 8-bit surface
     if(surface)
         SDL_DestroySurface(surface);
-    if (screen)
-        SDL_DestroySurface(screen);
     if (texture)
         SDL_DestroyTexture(texture);
     delete main_screen;
@@ -297,11 +288,14 @@ void palette::load_nice()
 
 void update_window_done()
 {
-    // TODO: Handle upscaling internally to make things work more nicely
-    // Convert to match the OpenGL texture
-    SDL_BlitSurface(surface, NULL, screen, NULL);
-    // Copy over to the OpenGL texture
-    SDL_UpdateTexture(texture, NULL, screen->pixels, screen->pitch);
+    // Convert to match the display texture
+    SDL_Surface* screen;
+    if (SDL_LockTextureToSurface(texture, NULL, &screen))
+    {
+        // Copy over to the display texture
+        SDL_BlitSurface(surface, NULL, screen, NULL);
+        SDL_UnlockTexture(texture);
+    }
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);

@@ -24,7 +24,7 @@ option(ABUSE_ENABLE_NATIVE_MIDI "Use SDL3_native_midi to play music" ON)
 # To avoid downloading a package, configure CPM
 CPMAddPackage(
     NAME SDL3
-    VERSION 3.0.0
+    VERSION 3.2.0
     GITHUB_REPOSITORY libsdl-org/SDL
     GIT_TAG release-3.4.14
 )
