@@ -2,8 +2,8 @@ Abuse README
 ============
 
 This is a fork of the original Abuse SDL port from <http://abuse.zoy.org/>. It
-switches the build system to CMake to make crossplatform building easier, and
-ports the original SDL version to SDL2. This version also removes some of the
+switches the build system to CMake to make cross-platform building easier, and
+ports the original SDL version to SDL3. This version also removes some of the
 content that was in the original abuse.zoy.org version (namely, fRaBs), as the
 licensing information for it had some conflicting information.
 
