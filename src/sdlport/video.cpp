@@ -130,7 +130,7 @@ void set_mode(int argc, char **argv)
     if (mode == NULL)
     {
         // Mode can be NULL meaning "not full screen"
-        printf("Video : windowed (renderer: %s)", SDL_GetRendererName(renderer));
+        printf("Video : windowed (renderer: %s)\n", SDL_GetRendererName(renderer));
     }
     else
     {
