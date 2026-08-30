@@ -23,11 +23,10 @@ typedef struct _FILETIME {
 class time_marker
 {
 public:
-#if defined __CELLOS_LV2__
-    uint64_t ticks;
-#elif defined WIN32
-	// Use FILETIME
-	FILETIME ticks;
+// TODO: Use SDL3 time
+#ifdef WIN32
+    // Use FILETIME
+    FILETIME ticks;
 #else
     long seconds;
     long micro_seconds;

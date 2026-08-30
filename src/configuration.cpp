@@ -139,7 +139,6 @@ void get_key_bindings()
     for( int i = 0; i < key_players; i++ )
     {
         key_map[i].joy = 0;
-#if !defined __CELLOS_LV2__
         key_map[i].left = get_key_binding( "left", i + 1 );
         key_map[i].left_2 = get_key_binding( "left2", i + 1 );
         key_map[i].right = get_key_binding( "right", i + 1 );
@@ -152,20 +151,6 @@ void get_key_bindings()
         key_map[i].b3 = get_key_binding( "b3", i + 1 );
         key_map[i].b2 = get_key_binding( "b2", i + 1 );
         key_map[i].b1 = get_key_binding( "b1", i + 1 );
-#else
-        key_map[i].left = 258;
-        key_map[i].left_2 = 258;
-        key_map[i].right = 259;
-        key_map[i].right_2 = 259;
-        key_map[i].up = 256;
-        key_map[i].up_2 = 256;
-        key_map[i].down = 257;
-        key_map[i].down_2 = 257;
-        key_map[i].b4 = 281;
-        key_map[i].b3 = 261;
-        key_map[i].b2 = 32;
-        key_map[i].b1 = 0;
-#endif
     }
 }
 

@@ -57,7 +57,6 @@ void file_picker::note_selection(image *screen, InputManager *inm, int x)
 {
   if (x<td)
   {
-#if !defined __CELLOS_LV2__
     if (strcmp(d[x],"."))
     {
       int x1,y1,x2,y2;
@@ -86,7 +85,6 @@ void file_picker::note_selection(image *screen, InputManager *inm, int x)
       reconfigure();
       draw_first(screen);
     }
-#endif
   } else
   {
     char nm[200];
