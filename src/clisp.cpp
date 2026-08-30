@@ -862,14 +862,13 @@ void *l_caller(long number, void *args)
     case 44 :
     {
       char nm[50];
-      last_savegame_name(nm);
+      last_savegame_name(nm,50);
       return LString::Create(nm);
     } break;
     case 45 :
     {
       char nm[50];
       snprintf(nm,50,"save%04d.pcx", load_game(1,symbol_str("LOAD")));
-//      get_savegame_name(nm);
       the_game->reset_keymap();
       return LString::Create(nm);
     } break;

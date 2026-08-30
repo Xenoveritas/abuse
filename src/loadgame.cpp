@@ -53,10 +53,10 @@ void load_number_icons()
 }
 
 
-void last_savegame_name(char *buf)
+void last_savegame_name(char *buf, size_t size)
 {
     printf( "last_savegame_name()\n" );
-    sprintf(buf,"%ssave%04d.spe",get_save_filename_prefix(), (last_save_game_number+MAX_SAVE_GAMES-1)%MAX_SAVE_GAMES+1);
+    snprintf(buf,size,"%ssave%04d.spe",get_save_filename_prefix(), (last_save_game_number+MAX_SAVE_GAMES-1)%MAX_SAVE_GAMES+1);
 }
 
 Jwindow *create_num_window(int mx, int total_saved, int lines, image **thumbnails)
@@ -129,17 +129,6 @@ int get_save_spot()
   wm->close_window(l_win);
   the_game->reset_keymap();
   return got_level;
-}
-
-void get_savegame_name(char *buf)  // buf should be at least 50 bytes
-{
-    sprintf(buf,"save%04d.spe",(last_save_game_number++)%MAX_SAVE_GAMES+1);
-/*  FILE *fp=open_FILE("lastsave.lsp","wb");
-  if (fp)
-  {
-    fprintf(fp,"(setq last_save_game %d)\n",last_save_game_number%MAX_SAVE_GAMES);
-    fclose(fp);
-  } else dprintf("Warning unable to open lastsave.lsp for writing\n"); */
 }
 
 int show_load_icon()
