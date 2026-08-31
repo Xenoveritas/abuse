@@ -70,8 +70,6 @@ if (ABUSE_ENABLE_FLUIDSYNTH)
             "enable-kai OFF"
     )
     add_library(FluidSynth::libfluidsynth ALIAS libfluidsynth)
-    # The final target has been disabled but we do need the libfluidsynth DLL
-    install(FILES $<TARGET_FILE:libfluidsynth> DESTINATION ".")
 endif()
 CPMAddPackage(
     NAME SDL3_mixer
@@ -158,3 +156,10 @@ include(CPack)
 
 add_subdirectory(src)
 add_subdirectory(data)
+
+if (ABUSE_ENABLE_FLUIDSYNTH)
+    # Add Fluidsynth to the build
+    target_link_libraries(abuse PRIVATE libfluidsynth)
+    install(FILES $<TARGET_FILE:libfluidsynth> DESTINATION ".")
+    install(FILES "${FluidSynth_SOURCE_DIR}/sf2/VintageDreamsWaves-v2.sf2" DESTINATION "${ASSETDIR}")
+endif()

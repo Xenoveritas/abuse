@@ -38,6 +38,7 @@
 #include "hmi.h"
 #include "specs.h"
 #include "setup.h"
+#include "util.h"
 
 extern flags_struct flags;
 static int sound_enabled = 0;
@@ -306,9 +307,7 @@ song::song(char const * filename)
     rw = NULL;
     music = NULL;
 
-    char realname[255];
-    strcpy(realname, get_filename_prefix());
-    strcat(realname, filename);
+    char* realname = join_strings(get_filename_prefix(), filename);
 
     uint32_t data_size;
     data = load_hmi(realname, data_size);
@@ -325,18 +324,32 @@ song::song(char const * filename)
     if (!music)
     {
         printf("Sound: ERROR - could not load %s\n", realname);
+        SDL_free(realname);
         return;
     }
 #else
-    music = MIX_LoadAudio_IO(mixer, rw, 0, 0);
+    SDL_PropertiesID props = SDL_CreateProperties();
+    if (props == 0)
+    {
+        printf("Sound: ERROR - could not create properties: %s\n", SDL_GetError());
+    }
+    SDL_SetPointerProperty(props, MIX_PROP_AUDIO_LOAD_IOSTREAM_POINTER, rw);
+    SDL_SetBooleanProperty(props, MIX_PROP_AUDIO_LOAD_CLOSEIO_BOOLEAN, 0);
+    SDL_SetBooleanProperty(props, MIX_PROP_AUDIO_LOAD_PREDECODE_BOOLEAN, 0);
+    SDL_SetPointerProperty(props, MIX_PROP_AUDIO_LOAD_PREFERRED_MIXER_POINTER, mixer);
+    // This is documented nowhere except the code, but the path to the sound font to use
+    char* soundfont = join_strings(get_filename_prefix(), "VintageDreamsWaves-v2.sf2");
+    SDL_SetStringProperty(props, "SDL_mixer.decoder.fluidsynth.soundfont_path", soundfont);
+    music = MIX_LoadAudioWithProperties(props);
 
     if (!music)
     {
-        printf("Sound: ERROR - %s while loading %s\n",
-               SDL_GetError(), realname);
+        printf("Sound: ERROR - %s while loading %s\n", SDL_GetError(), realname);
+        SDL_free(realname);
         return;
     }
 #endif
+    SDL_free(realname);
 }
 
 song::~song()
