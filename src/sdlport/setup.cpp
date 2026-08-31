@@ -70,10 +70,7 @@ void showHelp(const char* executableName)
     printf( "  -datadir <arg>    Set the location of the game data to <arg>\n" );
     printf( "  -fullscreen       Enable fullscreen mode\n" );
     printf( "  -window           Enable windowed mode\n" );
-    printf( "  -antialias        Enable anti-aliasing\n" );
-    printf( "  -software         Force software renderer (disable OpenGL)\n");
     printf( "  -h, --help        Display this text\n" );
-    printf( "  -mono             Disable stereo sound\n" );
     printf( "  -nosound          Disable sound\n" );
     printf( "  -scale <arg>      Scale to <arg>\n" );
 //    printf( "  -x <arg>          Set the width to <arg>\n" );
@@ -94,15 +91,12 @@ void createRCFile( char *rcfile )
     {
         fputs( "; Abuse-SDL Configuration file\n\n", fd );
         fputs( "; Startup fullscreen\nfullscreen=1\n\n", fd );
-        fputs( "; Force software renderer\nsoftware=0\n\n", fd );
 #if !((defined SDL_PLATFORM_APPLE) || (defined SDL_PLATFORM_WINDOWS))
         fputs( "; Location of the datafiles\ndatadir=", fd );
         fputs( ASSETDIR "\n\n", fd );
 #endif
-        fputs( "; Use mono audio only\nmono=0\n\n", fd );
         fputs( "; Grab the mouse to the window\ngrabmouse=0\n\n", fd );
         fputs( "; Set the scale factor\nscale=2\n\n", fd );
-        fputs( "; Use anti-aliasing\n; Looks horrible, never enable it\nantialias=0\n\n", fd );
 //        fputs( "; Set the width of the window\nx=320\n\n", fd );
 //        fputs( "; Set the height of the window\ny=200\n\n", fd );
         fputs( "; Key mappings\n", fd );
@@ -139,16 +133,6 @@ void readRCFile()
                 result = strtok( NULL, "\n" );
                 flags.fullscreen = atoi( result );
             }
-            else if( strcasecmp( result, "software" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                flags.software = atoi( result );
-            }
-            else if( strcasecmp( result, "mono" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                flags.mono = atoi( result );
-            }
             else if( strcasecmp( result, "grabmouse" ) == 0 )
             {
                 result = strtok( NULL, "\n" );
@@ -171,14 +155,6 @@ void readRCFile()
                 result = strtok( NULL, "\n" );
                 flags.yres = atoi( result );
             }*/
-            else if( strcasecmp( result, "antialias" ) == 0 )
-            {
-                result = strtok( NULL, "\n" );
-                if( atoi( result ) )
-                {
-                    flags.antialias = 1;
-                }
-            }
             else if( strcasecmp( result, "datadir" ) == 0 )
             {
                 result = strtok( NULL, "\n" );
@@ -308,21 +284,9 @@ void parseCommandLine( int argc, char **argv )
         {
             flags.fullscreen = 0;
         }
-        else if( !strcasecmp( argv[ii], "-software" ) )
-        {
-            flags.software = 1;
-        }
         else if( !strcasecmp( argv[ii], "-nosound" ) )
         {
             flags.nosound = 1;
-        }
-        else if( !strcasecmp( argv[ii], "-antialias" ) )
-        {
-            flags.antialias = 1;
-        }
-        else if( !strcasecmp( argv[ii], "-mono" ) )
-        {
-            flags.mono = 1;
         }
         else if( !strcasecmp( argv[ii], "-datadir" ) )
         {
@@ -354,13 +318,10 @@ void setup( int argc, char **argv )
 {
     // Initialize default settings
     flags.fullscreen         = 1;    // Start fullscreen (actually windowed-fullscreen now)
-    flags.software           = 0;    // Don't use software renderer by default
-    flags.mono               = 0;    // Enable stereo sound
     flags.nosound            = 0;    // Enable sound
     flags.grabmouse          = 0;    // Don't grab the mouse
     flags.xres = xres        = 320;  // Default window width
     flags.yres = yres        = 200;  // Default window height
-    flags.antialias          = 0;    // Don't anti-alias
     keys.up                  = key_value( "UP" );
     keys.down                = key_value( "DOWN" );
     keys.left                = key_value( "LEFT" );
@@ -377,7 +338,7 @@ void setup( int argc, char **argv )
     printf( "%s %s\n", PACKAGE_NAME, PACKAGE_VERSION );
 
     // Initialize SDL with video and audio support
-    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD ) < 0 )
+    if( !SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD ) )
     {
         show_startup_error( "Unable to initialize SDL : %s\n", SDL_GetError() );
         exit( 1 );
