@@ -46,7 +46,8 @@ void image::MakePage(ivec2 size, uint8_t *page_buffer)
 
 void image::DeletePage()
 {
-    if (!m_special || !m_special->static_mem)
+    // Check if the image descriptor (if there is one) says not to delete memory on exit
+    if (m_special == NULL || !(m_special->static_mem))
         free(m_data);
 }
 
@@ -277,6 +278,13 @@ void image::PutPart(image *im, ivec2 pos, ivec2 aa, ivec2 bb, int transparent)
     bb = Min(bb, cbb - pos + aa);
     if (!(aa < bb))
         return;
+    // clamp aa to positive numbers
+    // not sure how they can go negative but it causes a crash if they do
+    if (aa.x < 0 || aa.y < 0)
+    {
+        printf("Warning: image::PutPart with negative size (want to put image at %d,%d clipped size is [%dx%d])\n", pos.x, pos.y, aa.x, aa.y);
+        aa = Max(ivec2(0), aa);
+    }
 
     ivec2 span = bb - aa;
 

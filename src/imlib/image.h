@@ -127,6 +127,8 @@ public:
     void scroll(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
                 int16_t xd, int16_t yd);
     void PutImage(image *screen, ivec2 pos, int transparent = 0);
+    // Put a part of the image. screen = image to place this image onto, pos = where,
+    // aa = size? bb = size?
     void PutPart(image *screen, ivec2 pos, ivec2 aa, ivec2 bb,
                  int transparent = 0);
     image *copy_part_dithered(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
