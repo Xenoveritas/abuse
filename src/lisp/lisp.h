@@ -251,7 +251,7 @@ private:
 static inline LObject *&CAR(void *x) { return ((LList *)x)->m_car; }
 static inline LObject *&CDR(void *x) { return ((LList *)x)->m_cdr; }
 
-#ifdef __GNUC__
+#if defined __GNUC__ && !defined __clang__
 /*
  * C++ spec says "this" is always NON-NULL, recent versions of gcc will warn
  * about this and optimizes the "if (this)" we use in some places away:
