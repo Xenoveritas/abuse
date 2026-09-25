@@ -107,7 +107,7 @@ void lbreak(char const *format, ...)
   char st[300];
   va_list ap;
   va_start(ap, format);
-  vsprintf(st, format, ap);
+  vsnprintf(st, 300, format, ap);
   va_end(ap);
   dprintf("%s\n", st);
   int cont=0;

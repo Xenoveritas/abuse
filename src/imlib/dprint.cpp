@@ -39,7 +39,7 @@ void dprintf(const char *format, ...)
         va_list ap;
 
         va_start(ap, format);
-        vsprintf(st,format,ap);
+        vsnprintf(st,1000,format,ap);
         va_end(ap);
         dprint_fun(st);
     }
