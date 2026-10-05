@@ -262,6 +262,7 @@ void image::PutPart(image *im, ivec2 pos, ivec2 aa, ivec2 bb, int transparent)
 
     // see if the are to be put is outside of actual image, if so adjust
     // to fit in the image
+    // (move position if aa is negative and also adjust aa for this new larger area)
     pos += Min(aa, ivec2(0));
     aa += Min(aa, ivec2(0));
     bb = Min(bb, im->m_size);
@@ -278,17 +279,26 @@ void image::PutPart(image *im, ivec2 pos, ivec2 aa, ivec2 bb, int transparent)
     bb = Min(bb, cbb - pos + aa);
     if (!(aa < bb))
         return;
-    // clamp aa to positive numbers
-    // not sure how they can go negative but it causes a crash if they do
-    if (aa.x < 0 || aa.y < 0)
-    {
-        printf("Warning: image::PutPart with negative size (want to put image at %d,%d clipped size is [%dx%d])\n", pos.x, pos.y, aa.x, aa.y);
-        aa = Max(ivec2(0), aa);
-    }
 
     ivec2 span = bb - aa;
 
     AddDirty(pos, pos + span);
+
+    // clamp to >= 0
+    // can otherwise go negative when the mouse is at the upper left corner of windows
+    if (aa.x < 0 || aa.y < 0 || pos.x < 0 || pos.y < 0)
+    {
+        ivec2 adjust = ivec2(Max(Min(aa.x, pos.x), 0), Max(Min(aa.y, pos.y), 0));
+        aa -= adjust;
+        pos -= adjust;
+        // Also need to fix the span
+        span -= adjust;
+        if (span.x <= 0 || span.y <= 0)
+        {
+            // Space is now empty, so abort
+            return;
+        }
+    }
 
     Lock();
     im->Lock();
