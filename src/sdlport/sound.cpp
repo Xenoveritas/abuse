@@ -112,7 +112,7 @@ void sound_uninit()
 //
 // Read in the requested .wav file.
 //
-sound_effect::sound_effect(char const *filename)
+sound_effect::sound_effect(char const *filename) : m_chunk(NULL)
 {
     if (!sound_enabled)
         return;
@@ -135,7 +135,7 @@ sound_effect::sound_effect(char const *filename)
 //
 sound_effect::~sound_effect()
 {
-    if(!sound_enabled)
+    if(!sound_enabled || !m_chunk)
         return;
 
     // Sound effect deletion only happens on level load, so there
@@ -161,7 +161,7 @@ sound_effect::~sound_effect()
 //
 void sound_effect::play(int volume, int pitch, int panpot)
 {
-    if (!sound_enabled)
+    if (!sound_enabled || !m_chunk)
         return;
 
     int channel = Mix_PlayChannel(-1, m_chunk, 0);
